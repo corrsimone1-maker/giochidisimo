@@ -30,6 +30,16 @@ button{cursor:pointer;touch-action:manipulation}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
 .back{display:inline-block;padding:8px 0;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:#F0A493}
+.improw{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.improw .lbl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
+.qbtn{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--night-3);color:var(--gold);font-weight:800;font-size:15px;line-height:1}
+.qbtn[aria-expanded="true"]{background:var(--gold);color:#1A1F2B;border-color:var(--gold)}
+.info{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:var(--night-3);border:1px solid var(--line);font-size:14.5px;line-height:1.5}
+.info b{color:var(--gold)}
+.info .row{margin-top:10px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,52px);line-height:.95;letter-spacing:-.02em;margin:6px 0 8px}
 h2{font-family:var(--display);font-weight:800;font-size:22px;margin:0 0 10px}
 .lede{margin:0 0 22px;color:var(--muted);font-size:15.5px;line-height:1.45;max-width:40ch}
@@ -97,7 +107,7 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 
 <!-- Inizio -->
 <main class="wrap" id="setup">
-  <a class="back" href="../../">‹ Giochi</a>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
   <h1>Impostore</h1>
   <p class="lede">Tutti ricevono la stessa parola segreta, tranne l’impostore. A turno ognuno dice una parola collegata, poi si vota chi bluffa.</p>
 
@@ -109,6 +119,11 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
       <button class="btn small">Aggiungi</button>
     </form>
     <ul class="players" id="players"></ul>
+    <div class="improw">
+      <span class="lbl">Impostori <button class="qbtn" id="impInfoBtn" aria-expanded="false" aria-controls="impInfo" aria-label="Quanti impostori?">?</button></span>
+      <div class="stepper"><button id="impMinus" aria-label="Meno impostori">−</button><span class="v" id="impN">1</span><button id="impPlus" aria-label="Più impostori">+</button></div>
+    </div>
+    <div class="info" id="impInfo" hidden></div>
   </section>
 
   <section class="panel">
@@ -128,13 +143,6 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
     <h2>Pacchetti di parole</h2>
     <p class="sub">Si pesca a caso tra le parole dei pacchetti accesi.</p>
     <div id="packs"></div>
-  </section>
-  <section class="panel">
-    <div class="between">
-      <h2 style="margin:0">Impostori</h2>
-      <div class="stepper"><button id="impMinus" aria-label="Meno impostori">−</button><span class="v" id="impN">1</span><button id="impPlus" aria-label="Più impostori">+</button></div>
-    </div>
-    <p class="sub" style="margin:10px 0 0" id="impInfo"></p>
   </section>
   <section class="panel">
     <label class="switch"><span>L’impostore vede la categoria<small>Es. «Cibo» o «Cantanti italiani»: gli rende la vita più facile.</small></span><input type="checkbox" id="hint"></label>
@@ -233,10 +241,12 @@ const maxImp = () => Math.max(1, Math.floor((players.length - 1) / 2));
 
 function renderSetup() {
   $('players').innerHTML = players.map((p, i) => `<li>${esc(p)}<button class="x" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
-  const on = PACCHETTI.filter(isOn), n = pool().length, k = Math.min(cfg.imp, maxImp());
+  const on = PACCHETTI.filter(isOn), n = pool().length;
+  cfg.imp = Math.min(Math.max(1, cfg.imp), maxImp());
+  $('impN').textContent = cfg.imp;
+  renderImpInfo();
   $('recap').innerHTML = `
     <div><dt>Pacchetti</dt><dd>${on.length ? on.map(p => esc(p.nome)).join(', ') : 'nessuno'} <small>${n} parole</small></dd></div>
-    <div><dt>Impostori</dt><dd>${k}</dd></div>
     <div><dt>Indizio</dt><dd>${cfg.indizio ? 'l’impostore vede la categoria' : 'nessuno'}</dd></div>`;
   const warn = players.length < 3 ? 'Servono almeno 3 giocatori.' : (!n ? 'Accendi almeno un pacchetto di parole nelle Impostazioni.' : '');
   $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn;
@@ -246,9 +256,6 @@ function renderSettings() {
   $('packs').innerHTML = PACCHETTI.map(p => `
     <label class="pack"><span><b>${esc(p.nome)}</b><small>${esc(p.descrizione || '')} · ${countOf(p)} parole</small></span>
       <input type="checkbox" data-pack="${esc(p.id)}" ${isOn(p) ? 'checked' : ''}></label>`).join('') || '<p class="sub">Nessun pacchetto in parole.js.</p>';
-  cfg.imp = Math.min(Math.max(1, cfg.imp), maxImp());
-  $('impN').textContent = cfg.imp;
-  $('impInfo').textContent = players.length >= 3 ? `Con ${players.length} giocatori al massimo ${maxImp()}.` : 'Il massimo dipende da quanti giocatori siete.';
   $('hint').checked = !!cfg.indizio;
 }
 $('addPlayer').addEventListener('submit', e => {
@@ -259,8 +266,36 @@ $('addPlayer').addEventListener('submit', e => {
 });
 $('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderSetup(); });
 $('packs').addEventListener('change', e => { const c = e.target.closest('[data-pack]'); if (!c) return; cfg.pacchetti[c.dataset.pack] = c.checked; saveCfg(); });
-$('impMinus').onclick = () => { cfg.imp = Math.max(1, cfg.imp - 1); saveCfg(); renderSettings(); };
-$('impPlus').onclick = () => { if (cfg.imp >= maxImp()) { toast(players.length < 3 ? 'Prima aggiungi i giocatori' : `Con ${players.length} giocatori al massimo ${maxImp()}`); return; } cfg.imp++; saveCfg(); renderSettings(); };
+$('impMinus').onclick = () => { cfg.imp = Math.max(1, cfg.imp - 1); saveCfg(); renderSetup(); };
+$('impPlus').onclick = () => { if (cfg.imp >= maxImp()) { toast(players.length < 3 ? 'Prima aggiungi i giocatori' : `Con ${players.length} giocatori al massimo ${maxImp()}`); return; } cfg.imp++; saveCfg(); renderSetup(); };
+/* Consiglio sul numero di impostori: regola pratica, non una regola ufficiale */
+const consigliati = n => n >= 13 ? 3 : n >= 8 ? 2 : 1;
+function renderImpInfo() {
+  const n = players.length, c = consigliati(n);
+  $('impInfo').innerHTML = n < 3
+    ? 'Aggiungi almeno 3 giocatori e ti dico quanti impostori mettere.'
+    : `Con <b>${n} giocatori</b> consiglio <b>${c} ${c === 1 ? 'impostore' : 'impostori'}</b>.<br>
+       Di solito: da 3 a 7 giocatori 1, da 8 a 12 giocatori 2, da 13 in su 3. Più impostori rendono il round più caotico.
+       Al massimo se ne possono mettere ${maxImp()}, così chi ha la parola è sempre la maggioranza.
+       ${cfg.imp !== c ? `<div class="row"><button class="btn small" id="useRec">Usa ${c}</button></div>` : ''}`;
+}
+$('impInfoBtn').onclick = () => { const i = $('impInfo'); i.hidden = !i.hidden; $('impInfoBtn').setAttribute('aria-expanded', !i.hidden); };
+$('impInfo').addEventListener('click', e => { if (e.target.id === 'useRec') { cfg.imp = Math.min(consigliati(players.length), maxImp()); saveCfg(); renderSetup(); } });
+/* Reset: giocatori, impostori, pacchetti e indizio tornano a quelli di base (serve un secondo tocco) */
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  players = []; savePl();
+  cfg = { pacchetti: {}, imp: 1, indizio: false, usate: cfg.usate || [] }; saveCfg();
+  $('impInfo').hidden = true; $('impInfoBtn').setAttribute('aria-expanded', false);
+  renderSetup(); toast('Tutto come all’inizio');
+};
 $('hint').onchange = e => { cfg.indizio = e.target.checked; saveCfg(); };
 $('settingsBtn').onclick = () => { renderSettings(); show('settings'); };
 $('settingsBack').onclick = $('settingsDone').onclick = () => { show('setup'); renderSetup(); };

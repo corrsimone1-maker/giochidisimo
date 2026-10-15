@@ -69,6 +69,14 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .ripple{position:absolute;left:0;top:0;width:0;height:0;z-index:1;pointer-events:none}
 .ripple::before{content:'';position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:var(--c);opacity:.35;animation:ripple .9s ease-out forwards}
 @keyframes ripple{to{transform:scale(14);opacity:0}}
+.go{display:block;width:100%;margin-bottom:8px;padding:14px;border:0;border-radius:14px;background:var(--gold);color:#1A1F2B;font-weight:800;font-size:17px}
+.more{display:block;margin:8px auto 0;padding:4px 8px;border:0;background:none;color:#6F7A90;font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(4,6,12,.75)}
+.sheet{width:min(420px,100%);background:var(--night-2);border:1px solid var(--line);border-radius:18px;padding:18px;line-height:1.5}
+.sheet h2{margin:0 0 10px;font-family:var(--display);font-weight:800;font-size:22px}
+.sheet p{margin:0 0 10px;color:#C9CEDC;font-size:15px}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;padding:12px 0;border-top:1px solid var(--line);font-weight:700}
+.sw input{width:24px;height:24px;accent-color:var(--gold)}
 @media (prefers-reduced-motion:reduce){.dot{animation:none;transition:none}.ripple{display:none}.f.charging .ring circle{animation:none;stroke-dashoffset:0}}
 </style>
 </head>
@@ -88,11 +96,23 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
     <div class="status" id="status" hidden></div>
   </div>
   <div class="bottom">
+    <button class="go" id="goBtn" hidden>Scegli</button>
     <div class="seg" id="modes" role="group" aria-label="Cosa scegliere">
       <button data-m="chi">Chi inizia</button>
       <button data-m="squadre">Squadre</button>
       <button data-m="ordine">Ordine</button>
     </div>
+    <button class="more" id="moreBtn">più di 5 giocatori?</button>
+  </div>
+</div>
+
+<div class="overlay" id="more" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
+    <h2 id="moreTitle">Più di 5 giocatori</h2>
+    <p>Lo schermo dell’iPhone regge al massimo <b>5 dita insieme</b>: al sesto iOS annulla tutti i tocchi, e l’app non può farci niente. L’iPad ne regge 11.</p>
+    <p>Con più giocatori usate un tocco alla volta: ognuno tocca lo schermo e lascia il suo cerchio (toccandolo di nuovo lo togliete), poi premete <b>Scegli</b>.</p>
+    <label class="sw"><span>Un tocco alla volta</span><input type="checkbox" id="unoToggle"></label>
+    <button class="go" id="moreClose" style="margin-top:16px">Fatto</button>
   </div>
 </div>
 
@@ -129,10 +149,12 @@ function renderControls() {
   $('kseg').innerHTML = [2, 3, 4].map(k => `<button data-k="${k}" aria-pressed="${cfg.k === k}" aria-label="${k} squadre">${k}</button>`).join('');
   $('title').hidden = cfg.modo === 'squadre';
   $('title').textContent = { chi: 'Chi inizia', ordine: 'Ordine di gioco', squadre: '' }[cfg.modo];
+  $('hintBig').textContent = cfg.uno ? 'Toccate lo schermo uno alla volta' : 'Un dito a testa sullo schermo';
+  const fine = cfg.uno ? 'Ogni tocco lascia un cerchio; quando ci siete tutti premete Scegli' : 'Restate fermi due secondi';
   $('hintSmall').textContent = {
-    chi: 'Restate fermi due secondi: uno di voi viene scelto per iniziare.',
-    squadre: `Restate fermi due secondi: vi divido in ${cfg.k} squadre il più possibile pari.`,
-    ordine: 'Restate fermi due secondi: ognuno riceve il suo turno, da 1 in su.'
+    chi: `${fine}: uno di voi viene scelto per iniziare.`,
+    squadre: `${fine}: vi divido in ${cfg.k} squadre il più possibile pari.`,
+    ordine: `${fine}: ognuno riceve il suo turno, da 1 in su.`
   }[cfg.modo];
 }
 $('modes').addEventListener('click', e => {
@@ -145,10 +167,14 @@ $('kseg').addEventListener('click', e => {
 });
 
 /* ---------- Dita ---------- */
+/* Su iPhone lo schermo regge al massimo 5 dita insieme (al sesto iOS annulla tutti i tocchi);
+   iPad ne regge 11. Per gruppi più grandi c'è la modalità «un tocco alla volta»: ognuno tocca
+   e lascia il suo cerchio, poi si preme Scegli. */
 const area = $('area');
-const fingers = new Map();     // pointerId -> { el, x, y, down }
+const fingers = new Map();     // id interno -> { el, x, y, down }
+const ptr = new Map();         // pointerId -> id interno
 let state = 'idle';            // idle | waiting | result
-let timer = null, colorIdx = 0;
+let timer = null, colorIdx = 0, seq = 0;
 
 function status(html) { const s = $('status'); s.innerHTML = html || ''; s.hidden = !html; }
 function place(f) { f.el.style.transform = `translate(${f.x}px,${f.y}px)`; }
@@ -166,18 +192,20 @@ function makeFinger(x, y) {
 }
 function clearAll() {
   clearTimeout(timer); timer = null;
-  fingers.forEach(f => f.el.remove()); fingers.clear();
+  fingers.forEach(f => f.el.remove()); fingers.clear(); ptr.clear();
   area.querySelectorAll('.ripple').forEach(r => r.remove());
   colorIdx = 0; state = 'idle';
-  $('hint').hidden = false; status('');
+  $('hint').hidden = false; status(''); $('goBtn').hidden = true;
 }
 function restartCountdown() {
   clearTimeout(timer); timer = null;
   const n = fingers.size;
   $('hint').hidden = n > 0;
   fingers.forEach(f => { f.el.classList.remove('charging'); void f.el.offsetWidth; });
+  $('goBtn').hidden = !(cfg.uno && n >= minFingers());
   if (n === 0) { state = 'idle'; status(''); return; }
-  if (n < minFingers()) { status(`Servono almeno ${minFingers()} dita`); return; }
+  if (n < minFingers()) { status(cfg.uno ? `${n} · servono almeno ${minFingers()} tocchi` : `Servono almeno ${minFingers()} dita`); return; }
+  if (cfg.uno) { status(`${n} giocatori · quando ci siete tutti premi Scegli`); return; }
   status(`${n} giocatori · fermi…`);
   fingers.forEach(f => f.el.classList.add('charging'));
   timer = setTimeout(choose, WAIT);
@@ -193,27 +221,48 @@ area.addEventListener('pointerdown', e => {
     clearAll();
   }
   const [x, y] = pos(e);
-  const f = { el: makeFinger(x, y), x, y, down: true };
-  fingers.set(e.pointerId, f); place(f);
+  if (cfg.uno) {                     // un tocco su un cerchio già messo lo toglie (per sbaglio)
+    for (const [id, f] of fingers) if (Math.hypot(f.x - x, f.y - y) < 50) { f.el.remove(); fingers.delete(id); restartCountdown(); return; }
+  }
+  const id = ++seq, f = { el: makeFinger(x, y), x, y, down: true };
+  fingers.set(id, f); ptr.set(e.pointerId, id); place(f);
   state = 'waiting';
   restartCountdown();
 });
 area.addEventListener('pointermove', e => {
-  const f = fingers.get(e.pointerId); if (!f || !f.down) return;
+  const f = fingers.get(ptr.get(e.pointerId)); if (!f || !f.down) return;
   [f.x, f.y] = pos(e); place(f);
 });
+let tooMany = false;
 function lift(e) {
-  const f = fingers.get(e.pointerId); if (!f || !f.down) return;
+  const id = ptr.get(e.pointerId), f = fingers.get(id);
+  ptr.delete(e.pointerId);
+  if (!f || !f.down) return;
   if (state === 'result') {
     f.down = false; f.el.classList.add('lifted');      // il risultato resta sullo schermo
     if (downCount() === 0) setTimeout(() => { if (state === 'result' && downCount() === 0) appendStatus('Tocca per rifare'); }, 400);
     return;
   }
-  f.el.remove(); fingers.delete(e.pointerId);
+  if (cfg.uno) { f.down = false; f.el.classList.add('lifted'); return; }   // il cerchio resta
+  /* iOS al sesto dito annulla tutti i tocchi: lo si riconosce e si spiega cosa fare */
+  if (e.type === 'pointercancel' && fingers.size >= 5) tooMany = true;
+  f.el.remove(); fingers.delete(id);
   restartCountdown();
+  if (tooMany && fingers.size === 0) { tooMany = false; status('Questo telefono regge al massimo 5 dita: con più giocatori tocca «più di 5 giocatori?» qui sotto'); }
 }
 area.addEventListener('pointerup', lift);
 area.addEventListener('pointercancel', lift);
+$('goBtn').onclick = () => { if (fingers.size >= minFingers()) { $('goBtn').hidden = true; fingers.forEach(f => { f.down = false; }); choose(); } };
+
+/* Opzione nascosta: un tocco alla volta */
+function renderUno() {
+  $('unoToggle').checked = !!cfg.uno;
+  $('moreBtn').textContent = cfg.uno ? 'un tocco alla volta: attivo' : 'più di 5 giocatori?';
+}
+$('moreBtn').onclick = () => { renderUno(); $('more').hidden = false; };
+$('moreClose').onclick = () => { $('more').hidden = true; };
+$('more').addEventListener('click', e => { if (e.target === $('more')) $('more').hidden = true; });
+$('unoToggle').onchange = e => { cfg.uno = e.target.checked; saveCfg(); clearAll(); renderControls(); renderUno(); };
 
 let lastStatus = '';
 function appendStatus(extra) { status(lastStatus ? `${lastStatus}<span style="color:var(--muted)">· ${extra}</span>` : extra); }
@@ -257,7 +306,7 @@ function choose() {
   if (navigator.vibrate) try { navigator.vibrate([30, 40, 60]); } catch (e) {}
 }
 
-renderControls();
+renderControls(); renderUno();
 </script>
 <script src="../../comune/app.js"></script>
 </body>

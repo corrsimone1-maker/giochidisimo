@@ -47,6 +47,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:1
 
 .top{display:flex;flex-direction:column;gap:12px}
 .back{align-self:flex-start;color:var(--accent);text-decoration:none;font-weight:700;font-size:15px;padding:2px 0}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.reset{appearance:none;padding:2px 0;border:0;background:none;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.reset.armed{color:var(--neg)}
 .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}
 h1{margin:0;font-size:30px;line-height:1.1;font-weight:850;font-variation-settings:"CASL" 1,"slnt" -7;letter-spacing:-0.01em;text-wrap:balance}
 .progress{font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
@@ -173,7 +176,7 @@ button:focus-visible,.num:focus-visible,.pick:focus-visible,.name:focus-visible{
 <body>
 <div class="app">
   <header class="top">
-    <a class="back" href="../../">‹ Giochi</a>
+    <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button type="button" class="reset" id="resetAll">Reset</button></div>
     <div class="titlebar">
       <h1>Segnapunti</h1>
       <span class="progress" id="progress"></span>
@@ -674,6 +677,20 @@ $('doReset').addEventListener('click', () => {
   else if (state.tab === 'g2'){ state.g2.players = null; state.g2.rows = []; }
   else state.g3.rows = blankRows(T_ROWS, 2, g3Cell);
   save(); render();
+});
+
+/* Reset: il gioco aperto torna come all'inizio, nomi compresi (serve un secondo tocco entro 3 secondi) */
+let resetT = null;
+$('resetAll').addEventListener('click', () => {
+  const b = $('resetAll');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  state[state.tab] = fresh()[state.tab];
+  hideConfirm(); save(); render();
 });
 
 applyLock();

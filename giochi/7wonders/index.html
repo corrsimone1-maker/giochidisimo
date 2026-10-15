@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Giochi">
-<meta name="theme-color" content="#E4E2C8">
+<meta name="theme-color" content="#161A2C">
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="icon" type="image/png" href="../../icone/icon-192.png">
 <link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
@@ -16,18 +16,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#E4E2C8; --surface:#FAF8EF; --surface-border:#D9D4B6;
-    --ink:#2B2A22; --ink-soft:#726D57; --accent:#3F5D4E; --accent-soft:#DCE4D8; --gold:#AD8A4E;
-    --c-mil:#B0412E; --c-coin:#B88A2C; --c-won:#857B63; --c-civ:#3A6A98; --c-sci:#3F7A57; --c-com:#C9971F; --c-gui:#6C4A8C; --c-ext:#4A4A4A;
+    /* Lato notte: blu profondo, testo color pergamena, accenti oro */
+    --bg:#161A2C; --surface:#1F2439; --surface-border:#30365A; --line:#2A3050; --field:#12152A;
+    --ink:#ECE6D3; --ink-soft:#A3A8C0; --accent:#D6B062; --accent-soft:#2B3152; --gold:#E9C46A; --on-accent:#1A1C2A;
+    --c-mil:#E06450; --c-coin:#E0B040; --c-won:#BCA67E; --c-civ:#5B95DB; --c-sci:#4FB37E; --c-com:#E8C13E; --c-gui:#A47BD6; --c-ext:#9A9AAD;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Work Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,24px)}
+  body{margin:0;background:radial-gradient(90% 40% at 80% -5%,rgba(233,196,106,.10),transparent 60%),var(--bg);min-height:100dvh;color:var(--ink);font-family:'Work Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,24px)}
   button,input{font:inherit;color:inherit}
   button{cursor:pointer;touch-action:manipulation}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .page{max-width:520px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 18px 28px}
   .back{display:inline-block;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px;padding:8px 0 14px}
+  .toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .toprow .back{padding-bottom:8px}
+  .reset{padding:8px 0;border:0;background:none;color:var(--ink-soft);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+  .reset.armed{color:var(--c-mil)}
   .hero h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(28px,8vw,34px);margin:0 0 6px;letter-spacing:-0.01em}
   .hero .lede{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px;line-height:1.5;max-width:40ch}
   .num{font-family:'Fraunces',serif;font-variant-numeric:tabular-nums}
@@ -35,8 +40,8 @@
   .panel{background:var(--surface);border:1px solid var(--surface-border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
   .panel h2{font-size:13px;font-weight:600;color:var(--ink-soft);margin:0 0 10px}
   .leader-row{display:flex;align-items:center;gap:10px;padding:6px 0}
-  .leader-rank{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .leader-row.is-first .leader-rank{background:var(--gold)}
+  .leader-rank{width:24px;height:24px;border-radius:50%;background:#3A4168;color:var(--ink);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .leader-row.is-first .leader-rank{background:var(--gold);color:var(--on-accent)}
   .leader-name{flex:1;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .leader-coins{font-size:12px;color:var(--ink-soft)}
   .leader-score{font-family:'Fraunces',serif;font-weight:700;font-size:18px;min-width:52px;text-align:right}
@@ -50,7 +55,7 @@
   .player-total small{font-family:'Work Sans';font-size:12px;color:var(--ink-soft);font-weight:500}
   .remove-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--surface-border);background:transparent;color:var(--ink-soft);font-size:17px;line-height:1;flex-shrink:0}
 
-  .cat{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #ECE8D6}
+  .cat{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
   .cat-label{display:flex;align-items:center;gap:9px;min-width:0;font-size:14.5px}
   .chip{width:14px;height:14px;border-radius:4px;flex-shrink:0;background:var(--c)}
   .chip.round{border-radius:50%}
@@ -58,11 +63,11 @@
   .stepper{display:flex;align-items:center;gap:4px}
   .stepper button{width:34px;height:36px;border-radius:9px;border:1px solid var(--surface-border);background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600}
   .stepper button:active{transform:scale(0.93)}
-  .stepper input{width:52px;height:36px;text-align:center;border:1px solid var(--surface-border);border-radius:9px;background:#fff;font-family:'Fraunces',serif;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stepper input{width:52px;height:36px;text-align:center;border:1px solid var(--surface-border);border-radius:9px;background:var(--field);font-family:'Fraunces',serif;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
   .stepper input:focus{outline:none;border-color:var(--accent)}
   .stepper input.bad{border-color:var(--c-mil)}
 
-  .science{border-top:1px solid #ECE8D6;padding-top:10px;margin-top:2px}
+  .science{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
   .science-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:14.5px}
   .science-head .pts{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--c-sci)}
   .symbols{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -75,14 +80,14 @@
   .jolly .stepper button{width:30px;height:30px}
   .breakdown{margin-top:8px;font-size:12px;color:var(--ink-soft);text-align:center}
 
-  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;margin-top:4px}
+  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:15px;margin-top:4px}
   .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
-  .btn.danger{background:var(--c-mil)}
+  .btn.danger{background:var(--c-mil);color:#fff}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .toggle{display:flex;align-items:center;gap:10px;margin:18px 2px 0;font-size:14px;color:var(--ink-soft)}
   .toggle input{width:20px;height:20px;accent-color:var(--accent)}
 
-  .hist-item{border-top:1px solid #ECE8D6;padding:10px 0}
+  .hist-item{border-top:1px solid var(--line);padding:10px 0}
   .hist-item:first-of-type{border-top:0}
   .hist-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
   .hist-date{font-size:12.5px;color:var(--ink-soft)}
@@ -92,17 +97,17 @@
   .linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
   .linkbtn.del{color:var(--c-mil)}
   table.detail{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;font-variant-numeric:tabular-nums}
-  table.detail th,table.detail td{padding:4px 3px;text-align:right;border-bottom:1px solid #ECE8D6}
+  table.detail th,table.detail td{padding:4px 3px;text-align:right;border-bottom:1px solid var(--line)}
   table.detail th:first-child,table.detail td:first-child{text-align:left}
   .rules{margin-top:22px;text-align:center;color:var(--ink-soft);font-size:12px;line-height:1.6;padding:0 10px}
-  .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:90vw;box-shadow:0 8px 24px rgba(43,42,34,.25)}
+  .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--on-accent);padding:11px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:90vw;box-shadow:0 8px 24px rgba(0,0,0,.45)}
   .confirm{margin-top:10px;padding:12px 14px;border:1px solid var(--c-mil);border-radius:12px;background:var(--surface)}
   .confirm p{margin:0 0 10px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="page">
-  <a class="back" href="../../">‹ Giochi</a>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn2">Reset</button></div>
   <header class="hero">
     <h1>7 Wonders</h1>
     <p class="lede">I punti finali di tutti, senza foglietto. Ognuno conta la sua città e la scrive qui: la classifica si aggiorna da sola.</p>
@@ -129,20 +134,20 @@
 
   <section id="history" class="panel" hidden style="margin-top:18px"></section>
 
-  <p class="rules">Si sommano militare (anche negativo), monete (1 punto ogni 3), meraviglia, edifici civili, scienza, commercio e gilde.<br>
+  <p class="rules">Si sommano guerra (anche negativa), punti monete (1 ogni 3 monete), meraviglia, carte blu, scienza, carte gialle e carte viola.<br>
   Scienza: compasso² + ingranaggio² + tavoletta² + 7 per ogni tris di simboli diversi; i simboli jolly vengono assegnati da soli nel modo migliore.<br>
-  Pareggio: vince chi ha più monete.</p>
+  Pareggio: vince chi ha più monete; l’app confronta i punti monete.</p>
 </div>
 
 <script>
 /*SCORE-START*/
 const CATS = [
-  { k: 'mil',   label: 'Militare',          hint: 'gettoni vittoria e sconfitta', c: 'var(--c-mil)', neg: true },
-  { k: 'coins', label: 'Monete',            hint: 'scrivi le monete: 1 punto ogni 3', c: 'var(--c-coin)', round: true },
+  { k: 'mil',   label: 'Guerra',            hint: 'gettoni vittoria e sconfitta', c: 'var(--c-mil)', neg: true },
+  { k: 'coins', label: 'Pti. Monete',       hint: 'punti delle monete (1 ogni 3)', c: 'var(--c-coin)', round: true },
   { k: 'won',   label: 'Meraviglia',        hint: 'fasi costruite', c: 'var(--c-won)' },
-  { k: 'civ',   label: 'Edifici civili',    hint: 'carte blu', c: 'var(--c-civ)' },
-  { k: 'com',   label: 'Commercio',         hint: 'carte gialle', c: 'var(--c-com)' },
-  { k: 'gui',   label: 'Gilde',             hint: 'carte viola', c: 'var(--c-gui)' },
+  { k: 'civ',   label: 'Carte blu',         hint: 'edifici civili', c: 'var(--c-civ)' },
+  { k: 'com',   label: 'Carte gialle',      hint: 'commercio', c: 'var(--c-com)' },
+  { k: 'gui',   label: 'Carte viola',       hint: 'gilde', c: 'var(--c-gui)' },
   { k: 'ext',   label: 'Extra',             hint: 'espansioni (anche negativo)', c: 'var(--c-ext)', neg: true, extra: true }
 ];
 // Science: a,b,c identical-symbol counts; j wild symbols assigned to maximise the score.
@@ -158,12 +163,12 @@ function sciScore(s) {
 }
 function scoreOf(p, extraOn) {
   const parts = {
-    mil: p.mil, coins: Math.floor(Math.max(0, p.coins) / 3), won: p.won, civ: p.civ,
+    mil: p.mil, coins: Math.max(0, p.coins), won: p.won, civ: p.civ,
     sci: sciScore(p.sci).total, com: p.com, gui: p.gui, ext: extraOn ? p.ext : 0
   };
   return { parts, total: Object.values(parts).reduce((x, y) => x + y, 0) };
 }
-// Ranking: total desc, then coins desc (official tie-break); equal both -> same rank.
+// Ranking: total desc, then coin points desc (the official tie-break is coins; with points only, equal points -> same rank).
 function ranking(players, extraOn) {
   const r = players.map(p => ({ p, ...scoreOf(p, extraOn) }))
     .sort((x, y) => y.total - x.total || y.p.coins - x.p.coins);
@@ -191,8 +196,12 @@ function normPlayer(p) {
     com: int(p.com), gui: int(p.gui), ext: int(p.ext), sci: { a: Math.max(0, int(s.a)), b: Math.max(0, int(s.b)), c: Math.max(0, int(s.c)), j: Math.max(0, int(s.j)) } };
 }
 let state = load(KEY, null);
-if (!state || !Array.isArray(state.players) || !state.players.length) state = { players: [], extra: false };
-else state = { players: state.players.map(normPlayer), extra: !!state.extra };
+if (!state || !Array.isArray(state.players) || !state.players.length) state = { v: 2, players: [], extra: false };
+else {
+  const old = !state.v;   // versione 1: «coins» era il numero di monete, ora sono i punti monete
+  state = { v: 2, players: state.players.map(normPlayer), extra: !!state.extra };
+  if (old) state.players.forEach(p => { p.coins = Math.floor(p.coins / 3); });
+}
 if (!state.players.length) state.players.push(newPlayer('Giocatore 1'));
 let history = load(HKEY, []); if (!Array.isArray(history)) history = [];
 const save = () => store(KEY, state);
@@ -212,7 +221,7 @@ function symbolBlock(p, key, label, icon) {
 function cardHTML(p) {
   const rows = CATS.filter(c => !c.extra || state.extra).map(c => {
     const v = p[c.k];
-    const after = c.k === 'coins' ? `<span class="cat-hint" data-coinpts="${p.id}">= ${Math.floor(v / 3)} punti</span>` : `<span class="cat-hint">${c.hint}</span>`;
+    const after = `<span class="cat-hint">${c.hint}</span>`;
     return `<div class="cat"><div class="cat-label"><span class="chip${c.round ? ' round' : ''}" style="--c:${c.c}"></span><span>${c.label}${after}</span></div>${stepperHTML(p, c.k, v, c.neg, c.label)}</div>`;
   }).join('');
   return `<div class="player-card" data-card="${p.id}">
@@ -245,7 +254,6 @@ function update() {
     const wild = p.sci.j ? ` (con ${p.sci.j} jolly)` : '';
     q(`[data-sciform="${p.id}"]`).innerHTML = `${s.a}² + ${s.b}² + ${s.c}² + 7×${s.sets} = ${s.total}${wild}`;
     for (const k of ['a', 'b', 'c', 'j']) q(`[data-count="${p.id}.${k}"]`).textContent = p.sci[k];
-    const cp = q(`[data-coinpts="${p.id}"]`); if (cp) cp.textContent = `= ${Math.floor(p.coins / 3)} punti`;
   }
   renderLeaderboard();
   save();
@@ -260,10 +268,10 @@ function renderLeaderboard() {
     <div class="leader-row ${e.rank === 1 ? 'is-first' : ''}">
       <span class="leader-rank">${e.rank}</span>
       <span class="leader-name">${esc(e.p.name || 'Senza nome')}</span>
-      ${tieTotals ? `<span class="leader-coins">${e.p.coins} monete</span>` : ''}
+      ${tieTotals ? `<span class="leader-coins">${e.p.coins} pt monete</span>` : ''}
       <span class="leader-score">${e.total}</span>
     </div>`).join('') +
-    (tieTotals ? '<p class="tie">A pari punti vince chi ha più monete; se anche le monete sono pari, la vittoria è condivisa.</p>' : '');
+    (tieTotals ? '<p class="tie">A pari punti vince chi ha più monete. Qui confronto i punti monete: se sono pari anche quelli, contate le monete rimaste; se sono pari anche quelle, la vittoria è condivisa.</p>' : '');
 }
 
 function setVal(p, k, v) {
@@ -347,7 +355,7 @@ $('histBtn').addEventListener('click', () => {
   if (!h.hidden) { renderHistory(); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 });
 
-const LABELS = { mil: 'Mil.', coins: 'Mon.', won: 'Mer.', civ: 'Civ.', sci: 'Sci.', com: 'Com.', gui: 'Gil.', ext: 'Ext.' };
+const LABELS = { mil: 'Gue.', coins: 'Mon.', won: 'Mer.', civ: 'Blu', sci: 'Sci.', com: 'Gia.', gui: 'Vio.', ext: 'Ext.' };
 function renderHistory() {
   const h = $('history');
   $('histBtn').textContent = history.length ? `Storico (${history.length})` : 'Storico';
@@ -372,6 +380,19 @@ $('history').addEventListener('click', e => {
   if (b.dataset.del) { const i = +b.dataset.del; ask('Eliminare questa partita dallo storico?', () => { history.splice(i, 1); store(HKEY, history); renderHistory(); }); }
 });
 
+/* Reset: tutto torna come all'inizio (serve un secondo tocco entro 3 secondi) */
+let resetT = null;
+document.getElementById('resetBtn2').addEventListener('click', () => {
+  const b = document.getElementById('resetBtn2');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  nextId = 1; state = { v: 2, players: [], extra: false }; state.players.push(newPlayer('Giocatore 1'));
+  render(); toast('Tutto come all’inizio: lo storico resta');
+});
 render(); renderHistory();
 </script>
 <script src="../../comune/app.js"></script>

@@ -32,6 +32,9 @@ button{cursor:pointer;touch-action:manipulation}
 /* ---------- Impostazione squadre (segue l'orientamento del telefono) ---------- */
 .wrap{max-width:920px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(26px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 .back{display:inline-block;padding:8px 0;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:#F0A493}
 .head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px;margin:6px 0 18px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,9vw,48px);line-height:.95;letter-spacing:-.02em;margin:0}
 .lede{margin:6px 0 0;color:var(--muted);font-size:15px;line-height:1.4;max-width:46ch}
@@ -99,8 +102,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,9vw,48px);lin
 .panel .sc{display:inline-block;font-family:var(--display);font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin-top:4%}
 .panel .sc.bump{animation:bump .18s ease-out}
 @keyframes bump{40%{transform:scale(1.07)}}
-.panel .minus{position:absolute;left:10px;bottom:10px;width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.16);color:inherit;font-size:28px;font-weight:700;line-height:1;touch-action:none}
-.board.n4 .panel .minus{width:40px;height:40px;font-size:24px;left:8px;bottom:8px}
+.panel .minus{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.16);color:inherit;font-size:28px;font-weight:700;line-height:1;touch-action:none}
+.board.n4 .panel .minus{width:40px;height:40px;font-size:24px;right:max(10px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom))}
 .pop{position:absolute;pointer-events:none;font-family:var(--display);font-weight:800;font-size:clamp(20px,7vmin,40px);animation:pop .6s ease-out forwards}
 .pop.neg{color:inherit}
 @keyframes pop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-60%)}}
@@ -123,7 +126,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,9vw,48px);lin
 
 <!-- Impostazione -->
 <main class="wrap" id="setup">
-  <a class="back" href="../../">‹ Giochi</a>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
   <div class="head">
     <div>
       <h1 id="setupTitle">Contapunti</h1>
@@ -267,6 +270,19 @@ $('actions').addEventListener('click', e => {
   if (e.target.id === 'applyBtn') applyEdit();
   if (e.target.id === 'cancelBtn') { editing = false; showGame(); }
 });
+
+/* Reset: nomi, colori, punti e numero di squadre tornano a quelli di base (serve un secondo tocco) */
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  const d = defaults(); S.n = d.n; S.squadre = d.squadre; save(); renderSetup();
+};
 
 /* Tavolozza */
 let palFor = 0;
