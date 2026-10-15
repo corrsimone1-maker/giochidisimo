@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1814" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Segnapunti Prese</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+/* Layout: one-column score pad; a sticky table head carries names + running totals aligned to the player columns */
+:root{
+  --bg:#eef2ee; --surface:#fbfcfa; --fg:#17211c; --muted:#5c6a62; --line:#d3dbd4;
+  --accent:#15603f; --accent-ink:#f6fbf8; --pos:#22773a; --neg:#b33528; --on-neg:#fff7f5;
+  --gold:#94650f; --hi:#dfeae2; --now:#dde9e0;
+  --nobr:#e0e7f6; --nobr-ink:#34508f; --badbg:#f6d5cf; --badsoft:#fbebe8;
+  --font-ui:"Recursive", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num:"Recursive", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1814; --surface:#13221c; --fg:#e4ebe6; --muted:#93a49a; --line:#253a30;
+    --accent:#58c08f; --accent-ink:#08140f; --pos:#6ccf85; --neg:#f17d6e; --on-neg:#1a0b08;
+    --gold:#e4b452; --hi:#1b3328; --now:#173026;
+    --nobr:#17233b; --nobr-ink:#a3baee; --badbg:#47201b; --badsoft:#2a1714; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1814; --surface:#13221c; --fg:#e4ebe6; --muted:#93a49a; --line:#253a30;
+  --accent:#58c08f; --accent-ink:#08140f; --pos:#6ccf85; --neg:#f17d6e; --on-neg:#1a0b08;
+  --gold:#e4b452; --hi:#1b3328; --now:#173026;
+  --nobr:#17233b; --nobr-ink:#a3baee; --badbg:#47201b; --badsoft:#2a1714; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:15px;line-height:1.45;font-variation-settings:"CASL" 0}
+.app{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:14px}
+
+.top{display:flex;flex-direction:column;gap:12px}
+.back{align-self:flex-start;color:var(--accent);text-decoration:none;font-weight:700;font-size:15px;padding:2px 0}
+.titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}
+h1{margin:0;font-size:30px;line-height:1.1;font-weight:850;font-variation-settings:"CASL" 1,"slnt" -7;letter-spacing:-0.01em;text-wrap:balance}
+.progress{font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+
+.tabs{display:flex;gap:3px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.tabs button{flex:1 1 0;min-width:0;appearance:none;border:0;background:transparent;color:var(--muted);border-radius:9px;padding:8px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left}
+.tabs button:hover{color:var(--fg)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs .t{font-weight:750;font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs .s{font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+.rules{font-size:13.5px;color:var(--muted);max-width:65ch;display:flex;flex-direction:column;gap:4px}
+.rules p{margin:0}
+.rules b{color:var(--fg);font-weight:700}
+.rules .k{font-family:var(--font-num);font-variation-settings:"MONO" 1;font-weight:700;color:var(--fg)}
+.rules .nb{padding:0 5px;border-radius:4px;background:var(--nobr);color:var(--nobr-ink);font-weight:700}
+
+.opts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.opts-l{font-weight:700;font-size:14px}
+.seg{display:inline-flex;padding:3px;gap:3px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);padding:6px 16px;border-radius:7px;font:inherit;font-weight:650;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.dealinfo{margin:0;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:13px;font-weight:600;color:var(--fg);padding:8px 12px;border-radius:10px;background:var(--hi)}
+.alert{margin:0;padding:10px 12px;border-radius:10px;background:var(--neg);color:var(--on-neg);font-weight:650;font-size:14px}
+
+/* Pegno setup */
+.setup{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.setup h2{margin:0;font-size:20px;font-weight:800;font-variation-settings:"CASL" 1,"slnt" -5}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper button{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;font-size:24px;font-weight:700;cursor:pointer}
+.stepper button:disabled{opacity:.4;cursor:default}
+.stepper output{min-width:52px;text-align:center;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:40px;font-weight:800;line-height:1}
+.stepper .unit{color:var(--muted);font-size:14px}
+.deal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.deal div{display:flex;flex-direction:column;justify-content:space-between;gap:4px;padding:10px;border-radius:10px;background:var(--bg);min-width:0}
+.deal dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.25}
+.deal dd{margin:0;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:24px;font-weight:800;line-height:1.1}
+.deal dd.word{font-family:var(--font-ui);font-variation-settings:"CASL" 1;font-size:17px}
+.deal-note{margin:0;font-size:13.5px;color:var(--muted);max-width:60ch}
+.deal-note .k{font-family:var(--font-num);font-variation-settings:"MONO" 1;font-weight:700;color:var(--fg)}
+
+/* Score sheet */
+.sheet-wrap{border-radius:12px}
+.sheet-wrap.wide{overflow:auto;max-height:76vh;border:1px solid var(--line);overscroll-behavior:contain}
+.sheet-wrap.err{outline:2px solid var(--neg);outline-offset:3px}
+.sheet{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-variant-numeric:tabular-nums}
+.sheet col.c-hand{width:42px}
+.sheet col.c-sum{width:54px}
+.sheet thead th{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border-bottom:2px solid var(--fg);padding:8px 3px 6px;vertical-align:bottom;font-weight:inherit}
+.sheet thead th:first-child{border-top-left-radius:12px}
+.sheet thead th:last-child{border-top-right-radius:12px}
+.sheet-wrap.wide .sheet thead th{top:0;border-radius:0}
+.sheet-wrap.wide .sheet .hand{position:sticky;left:0}
+.sheet-wrap.wide .sheet thead th.hand{z-index:4}
+.sheet-wrap.wide .sheet tbody th.hand{z-index:1}
+.sheet-wrap.err .sheet thead th{border-bottom-color:var(--neg)}
+.sheet-wrap.err .tot span{color:var(--neg)}
+
+.hand{text-align:center;font-family:var(--font-num);font-variation-settings:"MONO" 1;color:var(--muted);font-size:12px}
+thead .lbl{display:block;font-family:var(--font-ui);font-variation-settings:"CASL" 0;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+thead .lbl + .lbl{margin-top:14px}
+.name{width:100%;min-width:0;border:0;border-bottom:1px dashed var(--line);background:transparent;color:var(--fg);font:inherit;font-size:16px;font-weight:700;text-align:center;padding:2px 2px 4px;text-overflow:ellipsis;border-radius:0}
+.name:focus{outline:none;border-bottom-color:var(--accent)}
+.tot{margin-top:4px;text-align:center;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:24px;font-weight:800;line-height:1.2}
+.tot span{display:inline-block;padding:0 8px;border-radius:8px}
+th.lead .tot span{background:var(--hi);color:var(--accent)}
+
+.sheet tbody th,.sheet tbody td{background:var(--rowbg,var(--bg));border-bottom:1px solid var(--line);padding:6px 3px 4px;vertical-align:top}
+.sheet tbody th.hand{padding-top:14px;font-size:13px;font-weight:700}
+.sheet tbody th.hand .no{display:inline-block;min-width:26px;padding:2px 0;border-radius:6px}
+.sheet tbody th.hand .sub{display:block;margin-top:3px;font-family:var(--font-ui);font-size:9.5px;font-weight:700;letter-spacing:.02em;line-height:1.1}
+tbody tr.now{--rowbg:var(--now)}
+tbody tr.now th.hand .no{background:var(--accent);color:var(--accent-ink)}
+tbody tr.nobr{--rowbg:var(--nobr)}
+tbody tr.nobr th.hand{color:var(--nobr-ink)}
+tbody tr.nobr.now th.hand .no{background:var(--nobr-ink);color:var(--nobr)}
+.sheet-wrap.err tbody tr{--rowbg:var(--badsoft)}
+.sheet-wrap.err tbody tr.bad,tbody tr.bad{--rowbg:var(--badbg)}
+tbody tr.bad th.hand{color:var(--neg)}
+
+.in{display:flex;gap:4px;align-items:center}
+.num,.pick{flex:1 1 auto;min-width:0;width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:17px;font-weight:650;text-align:center;padding:0 2px}
+.pick{appearance:none;-webkit-appearance:none;text-align-last:center;cursor:pointer;padding:0 4px}
+.pick.empty{color:var(--muted)}
+.pick.bgsel{flex:0 0 52px;width:52px;font-size:15px}
+.num::placeholder{color:var(--muted);opacity:.55}
+.num.bad{border-color:var(--neg);box-shadow:0 0 0 1px var(--neg)}
+tbody tr.bad .num,tbody tr.bad .pick{border-color:var(--neg)}
+.cell.busted .pick{text-decoration:line-through;color:var(--muted)}
+.bust,.mult{flex:0 0 auto;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font:inherit;padding:0}
+.bust{width:32px;font-size:15px;font-weight:800}
+.bust[aria-pressed="true"]{background:var(--neg);border-color:var(--neg);color:var(--on-neg)}
+.mult{width:32px;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:12.5px;font-weight:750}
+.mult[data-m="2"]{border-color:var(--accent);color:var(--accent);border-width:1.5px}
+.mult[data-m="4"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pts{min-height:18px;margin-top:3px;text-align:center;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:13px;font-weight:750;white-space:nowrap}
+.pts.pos{color:var(--pos)}
+.pts.neg,.pts.zero{color:var(--neg)}
+.pts.solo{color:var(--gold)}
+.pts.plain{color:var(--fg)}
+.sheet td.sum{text-align:center;padding-top:15px;font-family:var(--font-num);font-variation-settings:"MONO" 1;font-size:13px;font-weight:750;color:var(--muted);white-space:nowrap}
+.sheet td.sum.ok{color:var(--pos)}
+.sheet td.sum.ko{color:var(--neg)}
+
+button:focus-visible,.num:focus-visible,.pick:focus-visible,.name:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.rowbtns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{appearance:none;font:inherit;font-size:14px;font-weight:650;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.danger{background:var(--neg);border-color:var(--neg);color:var(--on-neg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);align-self:flex-start;padding:11px 18px;font-size:15px}
+.btn.quiet{background:transparent}
+.confirm{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border:1px solid var(--neg);border-radius:12px;background:var(--surface)}
+.confirm p{margin:0;font-size:14px}
+.confirm div{display:flex;gap:8px;flex-wrap:wrap}
+.note{margin:0;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion: no-preference){
+  .tabs button,.seg button,.bust,.mult,.btn{transition:background-color .12s,color .12s,border-color .12s}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <div class="titlebar">
+      <h1>Segnapunti</h1>
+      <span class="progress" id="progress"></span>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Gioco">
+      <button type="button" role="tab" id="tab-g1" data-tab="g1" aria-selected="true"><span class="t">Dichiarare</span><span class="s">n² + 10</span></button>
+      <button type="button" role="tab" id="tab-g2" data-tab="g2" aria-selected="false"><span class="t">Pegno</span><span class="s">+10 −5 ×4</span></button>
+      <button type="button" role="tab" id="tab-g3" data-tab="g3" aria-selected="false"><span class="t">Tresette</span><span class="s">11 a mano</span></button>
+    </div>
+  </header>
+
+  <div class="rules" id="rules"></div>
+
+  <div class="opts" id="opts" hidden>
+    <span class="opts-l" id="bgLabel">Buongiochi</span>
+    <div class="seg" role="group" aria-labelledby="bgLabel">
+      <button type="button" id="bgNo" aria-pressed="true">No</button>
+      <button type="button" id="bgYes" aria-pressed="false">Sì</button>
+    </div>
+  </div>
+
+  <p class="dealinfo" id="dealInfo" hidden></p>
+  <p class="alert" id="alert" role="alert" hidden></p>
+
+  <section class="setup" id="setup" hidden aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Quanti giocate?</h2>
+    <div class="stepper">
+      <button type="button" id="nMinus" aria-label="Un giocatore in meno">−</button>
+      <output id="nOut" aria-live="polite">4</output>
+      <span class="unit">giocatori</span>
+      <button type="button" id="nPlus" aria-label="Un giocatore in più">+</button>
+    </div>
+    <dl class="deal">
+      <div><dt>Carte a testa</dt><dd id="dPer">13</dd></div>
+      <div><dt>Briscola</dt><dd class="word" id="dBr">cuori</dd></div>
+      <div><dt>Carte da togliere</dt><dd id="dRm">0</dd></div>
+    </dl>
+    <p class="deal-note" id="dNote"></p>
+    <button type="button" class="btn primary" id="startPegno">Crea partita</button>
+  </section>
+
+  <div class="sheet-wrap" id="wrap">
+    <table class="sheet" id="sheet">
+      <colgroup id="cols"></colgroup>
+      <thead id="head"></thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <div class="rowbtns" id="rowbtns" hidden>
+      <button type="button" class="btn" id="addRow">+ Aggiungi mano</button>
+      <button type="button" class="btn" id="delRow">Togli ultima mano</button>
+    </div>
+    <button type="button" class="btn quiet" id="resetBtn">Nuova partita</button>
+  </div>
+  <div class="confirm" id="confirm" hidden role="alertdialog" aria-labelledby="confirmText">
+    <p id="confirmText"></p>
+    <div><button type="button" class="btn danger" id="doReset">Conferma</button><button type="button" class="btn" id="cancelReset">Annulla</button></div>
+  </div>
+  <p class="note">Le partite restano salvate su questo dispositivo finché non premi «Nuova partita».</p>
+</div>
+
+<script>
+/*SCORE-START*/
+// Dichiarare: alla mano k (1-based) si hanno k carte, dalla 13 in poi sempre 13.
+function maxDecl(r){ return Math.min(r + 1, 13); }      // r = indice 0-based
+function scoreG1(c){
+  if (c.bust) return { v: 0, bust: true, solo: false };
+  if (c.n === null) return null;
+  return { v: c.n * c.n + 10, bust: false, solo: false };
+}
+// Pegno, 52 carte francesi. Pari: briscola cuori, si dividono 52 carte.
+// Dispari: si estrae la briscola, si dividono le altre 51. Il resto va tolto.
+function deal(N){
+  const odd = N % 2 === 1;
+  const pool = odd ? 51 : 52;
+  return { odd, pool, per: Math.floor(pool / N), remove: pool % N };
+}
+// d = scarto, m = moltiplicatore. d=0 -> +10*m (+15*m se unico a fare giusto), d>0 -> -5*d*m
+function scorePegnoRow(row){
+  const complete = row.every(c => c.d !== null);
+  const made = row.filter(c => c.d === 0).length;
+  return row.map(c => {
+    if (c.d === null) return null;
+    if (c.d === 0){
+      const solo = complete && made === 1;
+      return { v: (solo ? 15 : 10) * c.m, bust: false, solo };
+    }
+    return { v: -5 * c.d * c.m, bust: false, solo: false };
+  });
+}
+// Tresette: i punti carte di una mano completa devono sommare un multiplo positivo di 11.
+// I buongiochi (somme di 3 e 4) si aggiungono al punteggio ma non entrano nel controllo.
+function tresetteRow(row, bgOn){
+  const complete = row.every(c => c.pt !== null);
+  const cards = row.reduce((s, c) => s + (c.pt ?? 0), 0);
+  const ok = !complete || (cards > 0 && cards % 11 === 0);
+  const scores = row.map(c => c.pt === null ? null : { v: c.pt + (bgOn ? c.bg : 0), bust: false, solo: false });
+  return { complete, cards, ok, scores };
+}
+/*SCORE-END*/
+
+const KEY = 'segnapunti-prese-v2', KEY_OLD = 'segnapunti-prese-v1';
+const HANDS = 16, MIN_P = 2, MAX_P = 10, T_ROWS = 6;
+const BG_VALUES = [0, 3, 4]; for (let v = 6; v <= 24; v++) BG_VALUES.push(v);
+const isInt = x => Number.isInteger(x) && x >= 0;
+const blankRows = (k, n, mk) => Array.from({length: k}, () => Array.from({length: n}, mk));
+const g1Cell = () => ({ n: null, bust: false });
+const g2Cell = () => ({ d: null, m: 1 });
+const g3Cell = () => ({ pt: null, bg: 0 });
+
+function fresh(){
+  return {
+    tab: 'g1',
+    g1: { names: ['Giocatore 1', 'Giocatore 2', 'Giocatore 3'], rows: blankRows(HANDS, 3, g1Cell) },
+    g2: { players: null, setupN: 4, names: [], rows: [] },
+    g3: { bg: false, names: ['Noi', 'Voi'], rows: blankRows(T_ROWS, 2, g3Cell) }
+  };
+}
+const strNames = (arr, n, fb) => Array.from({length: n}, (_, i) => Array.isArray(arr) && typeof arr[i] === 'string' ? arr[i] : fb(i));
+function normG1Rows(rows){
+  if (!Array.isArray(rows) || rows.length !== HANDS) return blankRows(HANDS, 3, g1Cell);
+  return rows.map((row, r) => Array.from({length: 3}, (_, p) => {
+    const c = Array.isArray(row) ? row[p] : null;
+    const n = c && isInt(c.n) && c.n <= maxDecl(r) ? c.n : null;
+    return { n, bust: !!(c && c.bust) };
+  }));
+}
+function normG2Rows(rows, N, per){
+  return rows.map(row => Array.from({length: N}, (_, p) => {
+    const c = Array.isArray(row) ? row[p] : null;
+    return { d: c && isInt(c.d) && c.d <= per ? c.d : null, m: c && [1, 2, 4].includes(c.m) ? c.m : 1 };
+  }));
+}
+function normalize(s){
+  const f = fresh();
+  if (!s || typeof s !== 'object') return f;
+  if (Array.isArray(s.g1)){                       // formato della prima versione
+    f.g1.names = strNames(s.names, 3, i => `Giocatore ${i + 1}`);
+    f.g1.rows = normG1Rows(s.g1);
+    if (Array.isArray(s.g2) && s.g2.some(row => Array.isArray(row) && row.some(c => c && isInt(c.d)))){
+      f.g2.players = 3; f.g2.setupN = 3; f.g2.names = f.g1.names.slice();
+      f.g2.rows = normG2Rows(s.g2.slice(0, 60), 3, deal(3).per);
+    }
+    return f;
+  }
+  if (['g1', 'g2', 'g3'].includes(s.tab)) f.tab = s.tab;
+  if (s.g1){ f.g1.names = strNames(s.g1.names, 3, i => f.g1.names[i]); f.g1.rows = normG1Rows(s.g1.rows); }
+  if (s.g2){
+    if (Number.isInteger(s.g2.setupN) && s.g2.setupN >= MIN_P && s.g2.setupN <= MAX_P) f.g2.setupN = s.g2.setupN;
+    const N = s.g2.players;
+    if (Number.isInteger(N) && N >= MIN_P && N <= MAX_P && Array.isArray(s.g2.rows) && s.g2.rows.length >= 1){
+      f.g2.players = N;
+      f.g2.names = strNames(s.g2.names, N, i => `Giocatore ${i + 1}`);
+      f.g2.rows = normG2Rows(s.g2.rows.slice(0, 60), N, deal(N).per);
+    } else if (Array.isArray(s.g2.names)) f.g2.names = s.g2.names.filter(n => typeof n === 'string');
+  }
+  if (s.g3){
+    f.g3.bg = !!s.g3.bg;
+    f.g3.names = strNames(s.g3.names, 2, i => f.g3.names[i]);
+    if (Array.isArray(s.g3.rows) && s.g3.rows.length >= 1){
+      f.g3.rows = s.g3.rows.slice(0, 200).map(row => Array.from({length: 2}, (_, p) => {
+        const c = Array.isArray(row) ? row[p] : null;
+        return { pt: c && isInt(c.pt) && c.pt <= 99 ? c.pt : null, bg: c && BG_VALUES.includes(c.bg) ? c.bg : 0 };
+      }));
+    }
+  }
+  return f;
+}
+let state;
+try {
+  const raw = localStorage.getItem(KEY) ?? localStorage.getItem(KEY_OLD);
+  state = normalize(JSON.parse(raw));
+} catch (e) { state = fresh(); }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const $ = id => document.getElementById(id);
+// Dall'hub si apre un solo gioco: #dichiarare, #pegno, #tresette. Senza # restano le tre schede.
+const LOCK = { '#dichiarare': 'g1', '#pegno': 'g2', '#tresette': 'g3' };
+const GAME_NAME = { g1: 'Dichiarare', g2: 'Pegno', g3: 'Tresette' };
+function applyLock(){
+  const t = LOCK[location.hash.toLowerCase()];
+  document.querySelector('.tabs').hidden = !!t;
+  if (t) state.tab = t;
+  document.querySelector('h1').textContent = t ? GAME_NAME[t] : 'Segnapunti';
+  document.title = t ? GAME_NAME[t] : 'Segnapunti';
+}
+window.addEventListener('hashchange', () => { applyLock(); save(); render(); });
+const tbody = $('body'), thead = $('head');
+const cur = () => state[state.tab];
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const signed = v => v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0';
+const carte = n => n === 1 ? 'carta' : 'carte';
+function filled(c){
+  if (state.tab === 'g1') return c.bust || c.n !== null;
+  if (state.tab === 'g2') return c.d !== null;
+  return c.pt !== null;
+}
+function scoresFor(row){
+  if (state.tab === 'g1') return row.map(scoreG1);
+  if (state.tab === 'g2') return scorePegnoRow(row);
+  return tresetteRow(row, state.g3.bg).scores;
+}
+
+const RULES = {
+  g1: '<p>Alla mano <b>k</b> si hanno k carte, quindi si dichiarano da <span class="k">0</span> a <span class="k">k</span> prese. Dalla mano 13 il massimo resta <span class="k">13</span> (40 = 3 × 13 + briscola); le mani <span class="nb">14–16</span> si giocano senza briscola.</p>' +
+      '<p>Prese rispettate: <span class="k">n² + 10</span>. Se sballi tocca <span class="k">✗</span> e la mano vale <span class="k">0</span>.</p>',
+  g2setup: '<p>Pegno si gioca con le 52 carte francesi. Se siete pari si distribuiscono tutte e la briscola è <b>cuori</b>; se siete dispari si estrae prima la briscola e si dividono le altre 51.</p>',
+  g2: '<p>Scegli di <b>quante prese ti sei discostato</b>: <span class="k">0</span> è giusto e vale <span class="k">+10</span>, ogni presa di scarto vale <span class="k">−5</span>. Se in una mano sei l’unico a fare giusto prendi <span class="k">+15</span> <span class="k">★</span>.</p>' +
+      '<p>Tocca <span class="k">×1</span> per cambiare moltiplicatore: <span class="k">×1</span> coperta, <span class="k">×2</span> esposta o con briscola, <span class="k">×4</span> esposta con briscola. Vale anche sul +15.</p>',
+  g3: '<p>Ogni mano vale 11 punti in tutto. Scrivi i punti di ciascuno: la colonna <span class="k">Σ</span> controlla che la somma sia un multiplo di 11, altrimenti tutto diventa rosso.</p>' +
+      '<p>Con i buongiochi attivi segna a parte quelli di ciascuno (<span class="k">+3</span> o <span class="k">+4</span> l’uno): si sommano al punteggio ma restano fuori dal controllo.</p>'
+};
+
+function cellHTML(r, p, c){
+  const id = `${state.tab}-r${r}-p${p}`;
+  const who = `mano ${r + 1}, ${esc(cur().names[p] || 'giocatore ' + (p + 1))}`;
+  if (state.tab === 'g1'){
+    const max = maxDecl(r);
+    let o = `<option value=""${c.n === null ? ' selected' : ''}>–</option>`;
+    for (let k = 0; k <= max; k++) o += `<option value="${k}"${c.n === k ? ' selected' : ''}>${k}</option>`;
+    return `<td class="cell"><div class="in">` +
+      `<select class="pick${c.n === null ? ' empty' : ''}" id="${id}" aria-label="Prese dichiarate, ${who} (da 0 a ${max})">${o}</select>` +
+      `<button type="button" class="bust" id="${id}-x" aria-pressed="${c.bust}" aria-label="Sballata, ${who}">✗</button>` +
+      `</div><div class="pts"></div></td>`;
+  }
+  if (state.tab === 'g2'){
+    const per = deal(state.g2.players).per;
+    let o = `<option value=""${c.d === null ? ' selected' : ''}>–</option>`;
+    for (let k = 0; k <= per; k++) o += `<option value="${k}"${c.d === k ? ' selected' : ''}>${k}</option>`;
+    return `<td class="cell"><div class="in">` +
+      `<select class="pick${c.d === null ? ' empty' : ''}" id="${id}" aria-label="Prese di scarto, ${who} (0 = giusto)">${o}</select>` +
+      `<button type="button" class="mult" id="${id}-m" data-m="${c.m}" aria-label="Moltiplicatore ×${c.m}, ${who}">×${c.m}</button>` +
+      `</div><div class="pts"></div></td>`;
+  }
+  let bg = '';
+  if (state.g3.bg){
+    let o = '';
+    for (const v of BG_VALUES) o += `<option value="${v}"${c.bg === v ? ' selected' : ''}>+${v}</option>`;
+    bg = `<select class="pick bgsel${c.bg === 0 ? ' empty' : ''}" id="${id}-bg" aria-label="Buongiochi, ${who}">${o}</select>`;
+  }
+  return `<td class="cell"><div class="in">` +
+    `<input class="num" id="${id}" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="–" value="${c.pt ?? ''}" aria-label="Punti, ${who}">${bg}` +
+    `</div><div class="pts"></div></td>`;
+}
+
+function rowHTML(r){
+  const row = cur().rows[r];
+  let cls = '', hand = `<span class="no">${r + 1}</span>`;
+  if (state.tab === 'g1' && r >= 13){ cls = 'nobr'; hand += '<span class="sub">no br.</span>'; }
+  let h = `<tr data-r="${r}" class="${cls}"><th scope="row" class="hand">${hand}</th>`;
+  row.forEach((c, p) => { h += cellHTML(r, p, c); });
+  if (state.tab === 'g3') h += '<td class="sum"></td>';
+  return h + '</tr>';
+}
+
+function renderSetup(){
+  const N = state.g2.setupN, d = deal(N);
+  $('nOut').textContent = N;
+  $('nMinus').disabled = N <= MIN_P;
+  $('nPlus').disabled = N >= MAX_P;
+  $('dPer').textContent = d.per;
+  $('dBr').textContent = d.odd ? 'si estrae' : 'cuori ♥';
+  $('dRm').textContent = d.remove === 0 ? '0' : d.remove;
+  const eq = `<span class="k">${d.pool} = ${N} × ${d.per}${d.remove ? ' + ' + d.remove : ''}</span>`;
+  $('dNote').innerHTML = (d.odd
+    ? `Siete in ${N}, dispari: si estrae la briscola e restano 51 carte. ${eq}`
+    : `Siete in ${N}, pari: la briscola è cuori e si dividono tutte le 52 carte. ${eq}`) +
+    (d.remove ? `, quindi togli ${d.remove} ${carte(d.remove)} a tua scelta prima di distribuire.` : ', i conti tornano esatti.');
+}
+
+function render(){
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === state.tab)));
+  const g = cur();
+  const setup = state.tab === 'g2' && !g.players;
+  $('rules').innerHTML = setup ? RULES.g2setup : RULES[state.tab];
+  $('setup').hidden = !setup;
+  $('wrap').hidden = setup;
+  $('opts').hidden = state.tab !== 'g3';
+  $('rowbtns').hidden = !(state.tab === 'g2' && g.players);
+  $('dealInfo').hidden = !(state.tab === 'g2' && g.players);
+  $('alert').hidden = true;
+  $('wrap').classList.remove('err');
+  hideConfirm();
+  if (setup){
+    renderSetup();
+    $('resetBtn').hidden = true;
+    $('progress').textContent = 'Pegno · nuova partita';
+    return;
+  }
+  if (state.tab === 'g2'){
+    const d = deal(g.players);
+    $('dealInfo').textContent = `${g.players} giocatori · ${d.per} carte a testa · briscola ${d.odd ? 'estratta' : 'cuori'}` + (d.remove ? ` · togli ${d.remove} ${carte(d.remove)}` : '');
+  }
+  if (state.tab === 'g3'){
+    $('bgNo').setAttribute('aria-pressed', String(!g.bg));
+    $('bgYes').setAttribute('aria-pressed', String(g.bg));
+  }
+  const N = g.names.length;
+  $('cols').innerHTML = '<col class="c-hand">' + '<col>'.repeat(N) + (state.tab === 'g3' ? '<col class="c-sum">' : '');
+  let h = '<tr><th scope="col" class="hand"><span class="lbl">Mano</span><span class="lbl">Tot</span></th>';
+  g.names.forEach((n, p) => {
+    h += `<th scope="col" id="h-${p}"><input class="name" id="${state.tab}-name-${p}" data-p="${p}" type="text" autocomplete="off" value="${esc(n)}" aria-label="Nome ${p + 1}"><div class="tot"><span id="tot-${p}">0</span></div></th>`;
+  });
+  if (state.tab === 'g3') h += '<th scope="col" class="hand"><span class="lbl">Carte</span><span class="lbl">Σ</span></th>';
+  thead.innerHTML = h + '</tr>';
+  $('sheet').style.minWidth = state.tab === 'g2' ? (42 + N * 76) + 'px' : '';
+  tbody.innerHTML = g.rows.map((_, r) => rowHTML(r)).join('');
+  g.rows.forEach((_, r) => updateRow(r));
+  refresh();
+  fit();
+}
+
+function updateRow(r){
+  const tr = tbody.children[r];
+  const row = cur().rows[r];
+  if (state.tab === 'g3'){
+    const res = tresetteRow(row, state.g3.bg);
+    res.scores.forEach((s, p) => {
+      const el = tr.children[p + 1].querySelector('.pts');
+      el.className = 'pts plain';
+      el.textContent = s ? String(s.v) : '';
+    });
+    const sum = tr.lastElementChild;
+    const some = row.some(c => c.pt !== null);
+    sum.textContent = some ? res.cards + (res.complete ? (res.ok ? ' ✓' : ' ✗') : '') : '';
+    sum.className = 'sum' + (res.complete ? (res.ok ? ' ok' : ' ko') : '');
+    tr.classList.toggle('bad', res.complete && !res.ok);
+    return;
+  }
+  scoresFor(row).forEach((s, p) => {
+    const td = tr.children[p + 1];
+    const el = td.querySelector('.pts');
+    el.className = 'pts'; el.textContent = ''; el.removeAttribute('title');
+    td.classList.toggle('busted', state.tab === 'g1' && row[p].bust);
+    if (!s) return;
+    if (state.tab === 'g1'){
+      el.textContent = String(s.v);
+      el.classList.add(s.bust ? 'zero' : 'pos');
+    } else {
+      el.textContent = signed(s.v) + (s.solo ? ' ★' : '');
+      el.classList.add(s.v > 0 ? 'pos' : 'neg');
+      if (s.solo){ el.classList.add('solo'); el.title = 'Unico a fare giusto: 15 × ' + row[p].m; }
+    }
+  });
+}
+
+function refresh(){
+  const g = cur(), N = g.names.length;
+  const t = Array(N).fill(0); let any = false;
+  g.rows.forEach(row => scoresFor(row).forEach((s, p) => { if (s){ t[p] += s.v; any = true; } }));
+  const max = Math.max(...t);
+  for (let p = 0; p < N; p++){
+    $('tot-' + p).textContent = state.tab === 'g2' ? signed(t[p]) : String(t[p]);
+    $('h-' + p).classList.toggle('lead', any && t[p] === max);
+  }
+  const now = g.rows.findIndex(row => row.some(c => !filled(c)));
+  [...tbody.children].forEach((tr, r) => tr.classList.toggle('now', r === now));
+  let prog;
+  if (state.tab === 'g1'){
+    prog = now === -1 ? 'Partita completa' : `Mano ${now + 1} di ${HANDS} · ${maxDecl(now)} ${carte(maxDecl(now))}${now >= 13 ? ', senza briscola' : ''}`;
+  } else if (state.tab === 'g2'){
+    prog = now === -1 ? 'Partita completa' : `Mano ${now + 1} di ${g.rows.length}`;
+    const last = g.rows[g.rows.length - 1];
+    $('delRow').disabled = g.rows.length <= 1 || last.some(c => c.d !== null || c.m !== 1);
+    $('addRow').disabled = g.rows.length >= 60;
+  } else {
+    prog = `Mano ${now === -1 ? g.rows.length : now + 1}`;
+    const bad = [];
+    g.rows.forEach((row, r) => { const res = tresetteRow(row, g.bg); if (res.complete && !res.ok) bad.push({ r, cards: res.cards }); });
+    $('wrap').classList.toggle('err', bad.length > 0);
+    $('alert').hidden = bad.length === 0;
+    if (bad.length === 1){
+      $('alert').textContent = `I conti non tornano alla mano ${bad[0].r + 1}: i punti${g.bg ? ' carte' : ''} sommano ${bad[0].cards}, che non è un multiplo di 11.`;
+    } else if (bad.length > 1){
+      $('alert').textContent = `I conti non tornano alle mani ${bad.map(b => b.r + 1).join(', ')}: ogni mano deve sommare un multiplo di 11${g.bg ? ', buongiochi esclusi' : ''}.`;
+    }
+  }
+  $('progress').textContent = prog;
+}
+
+function fit(){
+  const w = $('wrap');
+  w.classList.remove('wide');
+  if ($('sheet').offsetWidth > w.clientWidth + 1) w.classList.add('wide');
+}
+window.addEventListener('resize', () => { if (!$('wrap').hidden) fit(); });
+
+function ensureTrailing(){
+  const rows = state.g3.rows;
+  if (rows.length >= 200) return;
+  if (rows[rows.length - 1].some(c => c.pt !== null || c.bg !== 0)){
+    rows.push([g3Cell(), g3Cell()]);
+    tbody.insertAdjacentHTML('beforeend', rowHTML(rows.length - 1));
+    updateRow(rows.length - 1);
+  }
+}
+function commit(r){
+  updateRow(r);
+  if (state.tab === 'g3') ensureTrailing();
+  save();
+  refresh();
+}
+function locate(el){
+  const tr = el.closest('tr'), td = el.closest('td');
+  return { r: +tr.dataset.r, p: [...tr.children].indexOf(td) - 1 };
+}
+
+tbody.addEventListener('change', e => {
+  const s = e.target.closest('select'); if (!s) return;
+  const { r, p } = locate(s);
+  const c = cur().rows[r][p];
+  const v = s.value === '' ? null : parseInt(s.value, 10);
+  if (s.classList.contains('bgsel')){ c.bg = v ?? 0; s.classList.toggle('empty', c.bg === 0); }
+  else {
+    if (state.tab === 'g1') c.n = v; else c.d = v;
+    s.classList.toggle('empty', v === null);
+  }
+  commit(r);
+});
+
+tbody.addEventListener('input', e => {
+  const inp = e.target.closest('input.num'); if (!inp) return;
+  const { r, p } = locate(inp);
+  const raw = inp.value.trim();
+  let v = null, bad = false;
+  if (raw !== ''){ if (/^\d{1,2}$/.test(raw)) v = parseInt(raw, 10); else bad = true; }
+  inp.classList.toggle('bad', bad);
+  cur().rows[r][p].pt = v;
+  commit(r);
+});
+
+tbody.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const { r, p } = locate(b);
+  const c = cur().rows[r][p];
+  const who = `mano ${r + 1}, ${cur().names[p] || 'giocatore ' + (p + 1)}`;
+  if (b.classList.contains('bust')){
+    c.bust = !c.bust;
+    b.setAttribute('aria-pressed', String(c.bust));
+  } else if (b.classList.contains('mult')){
+    c.m = c.m === 1 ? 2 : c.m === 2 ? 4 : 1;
+    b.dataset.m = String(c.m);
+    b.textContent = '×' + c.m;
+    b.setAttribute('aria-label', `Moltiplicatore ×${c.m}, ${who}`);
+  } else return;
+  commit(r);
+});
+
+thead.addEventListener('input', e => {
+  const inp = e.target.closest('input.name'); if (!inp) return;
+  cur().names[+inp.dataset.p] = inp.value;
+  save();
+});
+
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tab]'); if (!b || b.dataset.tab === state.tab) return;
+  state.tab = b.dataset.tab; save(); render();
+});
+
+$('bgNo').addEventListener('click', () => { if (state.g3.bg){ state.g3.bg = false; save(); render(); } });
+$('bgYes').addEventListener('click', () => { if (!state.g3.bg){ state.g3.bg = true; save(); render(); } });
+
+$('nMinus').addEventListener('click', () => { if (state.g2.setupN > MIN_P){ state.g2.setupN--; save(); renderSetup(); } });
+$('nPlus').addEventListener('click', () => { if (state.g2.setupN < MAX_P){ state.g2.setupN++; save(); renderSetup(); } });
+$('startPegno').addEventListener('click', () => {
+  const g = state.g2, N = g.setupN, prev = g.names || [];
+  g.players = N;
+  g.names = Array.from({length: N}, (_, i) => prev[i] || state.g1.names[i] || `Giocatore ${i + 1}`);
+  g.rows = blankRows(HANDS, N, g2Cell);
+  save(); render();
+});
+
+$('addRow').addEventListener('click', () => {
+  const g = state.g2; if (!g.players || g.rows.length >= 60) return;
+  g.rows.push(Array.from({length: g.players}, g2Cell));
+  save(); render();
+});
+$('delRow').addEventListener('click', () => {
+  const g = state.g2; if (g.rows.length <= 1) return;
+  g.rows.pop(); save(); render();
+});
+
+function hideConfirm(){ $('confirm').hidden = true; $('resetBtn').hidden = false; }
+$('resetBtn').addEventListener('click', () => {
+  const txt = {
+    g1: 'Azzerare tutti i punti di <b>Dichiarare</b>? I nomi restano.',
+    g2: 'Chiudere questa partita di <b>Pegno</b> e tornare alla scelta dei giocatori?',
+    g3: 'Azzerare tutti i punti di <b>Tresette</b>? Nomi e impostazione dei buongiochi restano.'
+  };
+  $('confirmText').innerHTML = txt[state.tab];
+  $('confirm').hidden = false; $('resetBtn').hidden = true; $('doReset').focus();
+});
+$('cancelReset').addEventListener('click', hideConfirm);
+$('doReset').addEventListener('click', () => {
+  if (state.tab === 'g1') state.g1.rows = blankRows(HANDS, 3, g1Cell);
+  else if (state.tab === 'g2'){ state.g2.players = null; state.g2.rows = []; }
+  else state.g3.rows = blankRows(T_ROWS, 2, g3Cell);
+  save(); render();
+});
+
+applyLock();
+render();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

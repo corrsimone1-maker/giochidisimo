@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<meta name="theme-color" content="#E4E2C8">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<title>7 Wonders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E4E2C8; --surface:#FAF8EF; --surface-border:#D9D4B6;
+    --ink:#2B2A22; --ink-soft:#726D57; --accent:#3F5D4E; --accent-soft:#DCE4D8; --gold:#AD8A4E;
+    --c-mil:#B0412E; --c-coin:#B88A2C; --c-won:#857B63; --c-civ:#3A6A98; --c-sci:#3F7A57; --c-com:#C9971F; --c-gui:#6C4A8C; --c-ext:#4A4A4A;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Work Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,24px)}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer;touch-action:manipulation}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .page{max-width:520px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 18px 28px}
+  .back{display:inline-block;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px;padding:8px 0 14px}
+  .hero h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(28px,8vw,34px);margin:0 0 6px;letter-spacing:-0.01em}
+  .hero .lede{margin:0 0 20px;color:var(--ink-soft);font-size:14.5px;line-height:1.5;max-width:40ch}
+  .num{font-family:'Fraunces',serif;font-variant-numeric:tabular-nums}
+
+  .panel{background:var(--surface);border:1px solid var(--surface-border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .panel h2{font-size:13px;font-weight:600;color:var(--ink-soft);margin:0 0 10px}
+  .leader-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+  .leader-rank{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .leader-row.is-first .leader-rank{background:var(--gold)}
+  .leader-name{flex:1;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .leader-coins{font-size:12px;color:var(--ink-soft)}
+  .leader-score{font-family:'Fraunces',serif;font-weight:700;font-size:18px;min-width:52px;text-align:right}
+  .tie{margin:8px 0 0;font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+
+  .player-card{background:var(--surface);border:1px solid var(--surface-border);border-radius:14px;padding:16px 16px 14px;margin-bottom:14px}
+  .player-card__head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .player-name{flex:1;min-width:0;font-weight:600;font-size:17px;background:transparent;border:none;border-bottom:1px solid transparent;padding:4px 0}
+  .player-name:focus{outline:none;border-bottom-color:var(--accent)}
+  .player-total{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(--accent);white-space:nowrap}
+  .player-total small{font-family:'Work Sans';font-size:12px;color:var(--ink-soft);font-weight:500}
+  .remove-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--surface-border);background:transparent;color:var(--ink-soft);font-size:17px;line-height:1;flex-shrink:0}
+
+  .cat{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #ECE8D6}
+  .cat-label{display:flex;align-items:center;gap:9px;min-width:0;font-size:14.5px}
+  .chip{width:14px;height:14px;border-radius:4px;flex-shrink:0;background:var(--c)}
+  .chip.round{border-radius:50%}
+  .cat-hint{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:1px}
+  .stepper{display:flex;align-items:center;gap:4px}
+  .stepper button{width:34px;height:36px;border-radius:9px;border:1px solid var(--surface-border);background:var(--accent-soft);color:var(--accent);font-size:18px;font-weight:600}
+  .stepper button:active{transform:scale(0.93)}
+  .stepper input{width:52px;height:36px;text-align:center;border:1px solid var(--surface-border);border-radius:9px;background:#fff;font-family:'Fraunces',serif;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stepper input:focus{outline:none;border-color:var(--accent)}
+  .stepper input.bad{border-color:var(--c-mil)}
+
+  .science{border-top:1px solid #ECE8D6;padding-top:10px;margin-top:2px}
+  .science-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:14.5px}
+  .science-head .pts{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--c-sci)}
+  .symbols{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .symbol{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .symbol svg{width:26px;height:26px;color:var(--c-sci);margin-bottom:4px}
+  .symbol-label{font-size:11.5px;color:var(--ink-soft);margin-bottom:8px}
+  .symbol .stepper button{width:32px;height:32px}
+  .count{min-width:24px;text-align:center;font-family:'Fraunces',serif;font-size:18px;font-weight:600}
+  .jolly{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+  .jolly .stepper button{width:30px;height:30px}
+  .breakdown{margin-top:8px;font-size:12px;color:var(--ink-soft);text-align:center}
+
+  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;margin-top:4px}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.danger{background:var(--c-mil)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .toggle{display:flex;align-items:center;gap:10px;margin:18px 2px 0;font-size:14px;color:var(--ink-soft)}
+  .toggle input{width:20px;height:20px;accent-color:var(--accent)}
+
+  .hist-item{border-top:1px solid #ECE8D6;padding:10px 0}
+  .hist-item:first-of-type{border-top:0}
+  .hist-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .hist-date{font-size:12.5px;color:var(--ink-soft)}
+  .hist-win{font-weight:600}
+  .hist-scores{font-size:13.5px;margin-top:4px;line-height:1.5}
+  .hist-actions{display:flex;gap:12px;margin-top:6px}
+  .linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
+  .linkbtn.del{color:var(--c-mil)}
+  table.detail{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;font-variant-numeric:tabular-nums}
+  table.detail th,table.detail td{padding:4px 3px;text-align:right;border-bottom:1px solid #ECE8D6}
+  table.detail th:first-child,table.detail td:first-child{text-align:left}
+  .rules{margin-top:22px;text-align:center;color:var(--ink-soft);font-size:12px;line-height:1.6;padding:0 10px}
+  .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:90vw;box-shadow:0 8px 24px rgba(43,42,34,.25)}
+  .confirm{margin-top:10px;padding:12px 14px;border:1px solid var(--c-mil);border-radius:12px;background:var(--surface)}
+  .confirm p{margin:0 0 10px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="../../">‹ Giochi</a>
+  <header class="hero">
+    <h1>7 Wonders</h1>
+    <p class="lede">I punti finali di tutti, senza foglietto. Ognuno conta la sua città e la scrive qui: la classifica si aggiorna da sola.</p>
+  </header>
+
+  <section id="leaderboard" class="panel" hidden></section>
+  <section id="players"></section>
+  <button id="addPlayerBtn" class="btn ghost">+ Aggiungi giocatore</button>
+
+  <div class="row2">
+    <button id="saveBtn" class="btn">Fine partita: salva</button>
+    <button id="shareBtn" class="btn ghost">Condividi</button>
+  </div>
+  <div class="row2">
+    <button id="resetBtn" class="btn ghost">Azzera i punti</button>
+    <button id="histBtn" class="btn ghost">Storico</button>
+  </div>
+  <div class="confirm" id="confirm" hidden>
+    <p id="confirmText"></p>
+    <div class="row2" style="margin-top:0"><button class="btn ghost" id="confirmNo">Annulla</button><button class="btn danger" id="confirmYes">Conferma</button></div>
+  </div>
+
+  <label class="toggle"><input type="checkbox" id="extraToggle"> Riga extra per le espansioni (Leaders, Cities, Armada…)</label>
+
+  <section id="history" class="panel" hidden style="margin-top:18px"></section>
+
+  <p class="rules">Si sommano militare (anche negativo), monete (1 punto ogni 3), meraviglia, edifici civili, scienza, commercio e gilde.<br>
+  Scienza: compasso² + ingranaggio² + tavoletta² + 7 per ogni tris di simboli diversi; i simboli jolly vengono assegnati da soli nel modo migliore.<br>
+  Pareggio: vince chi ha più monete.</p>
+</div>
+
+<script>
+/*SCORE-START*/
+const CATS = [
+  { k: 'mil',   label: 'Militare',          hint: 'gettoni vittoria e sconfitta', c: 'var(--c-mil)', neg: true },
+  { k: 'coins', label: 'Monete',            hint: 'scrivi le monete: 1 punto ogni 3', c: 'var(--c-coin)', round: true },
+  { k: 'won',   label: 'Meraviglia',        hint: 'fasi costruite', c: 'var(--c-won)' },
+  { k: 'civ',   label: 'Edifici civili',    hint: 'carte blu', c: 'var(--c-civ)' },
+  { k: 'com',   label: 'Commercio',         hint: 'carte gialle', c: 'var(--c-com)' },
+  { k: 'gui',   label: 'Gilde',             hint: 'carte viola', c: 'var(--c-gui)' },
+  { k: 'ext',   label: 'Extra',             hint: 'espansioni (anche negativo)', c: 'var(--c-ext)', neg: true, extra: true }
+];
+// Science: a,b,c identical-symbol counts; j wild symbols assigned to maximise the score.
+function sciBase(a, b, c) { return a * a + b * b + c * c + 7 * Math.min(a, b, c); }
+function sciScore(s) {
+  let best = { total: sciBase(s.a, s.b, s.c), a: s.a, b: s.b, c: s.c };
+  for (let x = 0; x <= s.j; x++) for (let y = 0; x + y <= s.j; y++) {
+    const z = s.j - x - y, a = s.a + x, b = s.b + y, c = s.c + z, t = sciBase(a, b, c);
+    if (t > best.total) best = { total: t, a, b, c };
+  }
+  best.sets = Math.min(best.a, best.b, best.c);
+  return best;
+}
+function scoreOf(p, extraOn) {
+  const parts = {
+    mil: p.mil, coins: Math.floor(Math.max(0, p.coins) / 3), won: p.won, civ: p.civ,
+    sci: sciScore(p.sci).total, com: p.com, gui: p.gui, ext: extraOn ? p.ext : 0
+  };
+  return { parts, total: Object.values(parts).reduce((x, y) => x + y, 0) };
+}
+// Ranking: total desc, then coins desc (official tie-break); equal both -> same rank.
+function ranking(players, extraOn) {
+  const r = players.map(p => ({ p, ...scoreOf(p, extraOn) }))
+    .sort((x, y) => y.total - x.total || y.p.coins - x.p.coins);
+  r.forEach((e, i) => { e.rank = i > 0 && e.total === r[i - 1].total && e.p.coins === r[i - 1].p.coins ? r[i - 1].rank : i + 1; });
+  return r;
+}
+/*SCORE-END*/
+
+const KEY = 'giochidisimo:7wonders', HKEY = 'giochidisimo:7wonders:storico';
+const ICON_COMPASS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><line x1="12" y1="6.5" x2="7" y2="20"/><line x1="12" y1="6.5" x2="17" y2="20"/><line x1="9.2" y1="13" x2="14.8" y2="13"/></svg>`;
+const ICON_GEAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><line x1="12" y1="2.5" x2="12" y2="5.5"/><line x1="12" y1="18.5" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="5.5" y2="12"/><line x1="18.5" y1="12" x2="21.5" y2="12"/><line x1="5.6" y1="5.6" x2="7.7" y2="7.7"/><line x1="16.3" y1="16.3" x2="18.4" y2="18.4"/><line x1="5.6" y1="18.4" x2="7.7" y2="16.3"/><line x1="16.3" y1="7.7" x2="18.4" y2="5.6"/></svg>`;
+const ICON_TABLET = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="1.5"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>`;
+
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+const int = (v, d = 0) => Number.isInteger(v) ? v : d;
+let nextId = 1;
+function newPlayer(name) {
+  return { id: nextId++, name: name || `Giocatore ${state.players.length + 1}`, mil: 0, coins: 0, won: 0, civ: 0, com: 0, gui: 0, ext: 0, sci: { a: 0, b: 0, c: 0, j: 0 } };
+}
+function normPlayer(p) {
+  const s = p && p.sci || {};
+  return { id: nextId++, name: typeof p.name === 'string' ? p.name : 'Giocatore', mil: int(p.mil), coins: Math.max(0, int(p.coins)), won: int(p.won), civ: int(p.civ),
+    com: int(p.com), gui: int(p.gui), ext: int(p.ext), sci: { a: Math.max(0, int(s.a)), b: Math.max(0, int(s.b)), c: Math.max(0, int(s.c)), j: Math.max(0, int(s.j)) } };
+}
+let state = load(KEY, null);
+if (!state || !Array.isArray(state.players) || !state.players.length) state = { players: [], extra: false };
+else state = { players: state.players.map(normPlayer), extra: !!state.extra };
+if (!state.players.length) state.players.push(newPlayer('Giocatore 1'));
+let history = load(HKEY, []); if (!Array.isArray(history)) history = [];
+const save = () => store(KEY, state);
+const $ = id => document.getElementById(id);
+
+function stepperHTML(p, k, v, neg, label) {
+  return `<div class="stepper"><button data-act="dec" data-id="${p.id}" data-k="${k}" aria-label="Meno">−</button>` +
+    `<input data-id="${p.id}" data-k="${k}" value="${v}" inputmode="${neg ? 'text' : 'numeric'}" ${neg ? '' : 'pattern="[0-9]*"'} autocomplete="off" aria-label="${label}">` +
+    `<button data-act="inc" data-id="${p.id}" data-k="${k}" aria-label="Più">+</button></div>`;
+}
+function symbolBlock(p, key, label, icon) {
+  return `<div class="symbol">${icon}<div class="symbol-label">${label}</div>
+    <div class="stepper"><button data-act="dec" data-id="${p.id}" data-k="sci.${key}" aria-label="Diminuisci ${label}">−</button>
+    <span class="count" data-count="${p.id}.${key}">${p.sci[key]}</span>
+    <button data-act="inc" data-id="${p.id}" data-k="sci.${key}" aria-label="Aumenta ${label}">+</button></div></div>`;
+}
+function cardHTML(p) {
+  const rows = CATS.filter(c => !c.extra || state.extra).map(c => {
+    const v = p[c.k];
+    const after = c.k === 'coins' ? `<span class="cat-hint" data-coinpts="${p.id}">= ${Math.floor(v / 3)} punti</span>` : `<span class="cat-hint">${c.hint}</span>`;
+    return `<div class="cat"><div class="cat-label"><span class="chip${c.round ? ' round' : ''}" style="--c:${c.c}"></span><span>${c.label}${after}</span></div>${stepperHTML(p, c.k, v, c.neg, c.label)}</div>`;
+  }).join('');
+  return `<div class="player-card" data-card="${p.id}">
+    <div class="player-card__head">
+      <input class="player-name" value="${esc(p.name)}" data-name="${p.id}" aria-label="Nome">
+      <span class="player-total" data-total="${p.id}"></span>
+      ${state.players.length > 1 ? `<button class="remove-btn" data-remove="${p.id}" aria-label="Rimuovi giocatore">×</button>` : ''}
+    </div>
+    ${rows}
+    <div class="science">
+      <div class="science-head"><span class="cat-label"><span class="chip" style="--c:var(--c-sci)"></span>Scienza</span><span class="pts" data-scipts="${p.id}"></span></div>
+      <div class="symbols">${symbolBlock(p, 'a', 'Compasso', ICON_COMPASS)}${symbolBlock(p, 'b', 'Ingranaggio', ICON_GEAR)}${symbolBlock(p, 'c', 'Tavoletta', ICON_TABLET)}</div>
+      <div class="jolly"><span>Simboli jolly (Gilda degli scienziati, Babilonia…)</span>
+        <div class="stepper"><button data-act="dec" data-id="${p.id}" data-k="sci.j" aria-label="Meno jolly">−</button><span class="count" data-count="${p.id}.j">${p.sci.j}</span><button data-act="inc" data-id="${p.id}" data-k="sci.j" aria-label="Più jolly">+</button></div></div>
+      <div class="breakdown" data-sciform="${p.id}"></div>
+    </div>
+  </div>`;
+}
+function render() {
+  $('players').innerHTML = state.players.map(cardHTML).join('');
+  $('extraToggle').checked = state.extra;
+  update();
+}
+function update() {
+  for (const p of state.players) {
+    const { total } = scoreOf(p, state.extra), s = sciScore(p.sci);
+    const q = sel => document.querySelector(sel);
+    q(`[data-total="${p.id}"]`).innerHTML = `${total} <small>pt</small>`;
+    q(`[data-scipts="${p.id}"]`).textContent = `${s.total} pt`;
+    const wild = p.sci.j ? ` (con ${p.sci.j} jolly)` : '';
+    q(`[data-sciform="${p.id}"]`).innerHTML = `${s.a}² + ${s.b}² + ${s.c}² + 7×${s.sets} = ${s.total}${wild}`;
+    for (const k of ['a', 'b', 'c', 'j']) q(`[data-count="${p.id}.${k}"]`).textContent = p.sci[k];
+    const cp = q(`[data-coinpts="${p.id}"]`); if (cp) cp.textContent = `= ${Math.floor(p.coins / 3)} punti`;
+  }
+  renderLeaderboard();
+  save();
+}
+function renderLeaderboard() {
+  const el = $('leaderboard');
+  if (state.players.length < 2) { el.hidden = true; return; }
+  const r = ranking(state.players, state.extra);
+  const tieTotals = r.some((e, i) => i > 0 && e.total === r[i - 1].total);
+  el.hidden = false;
+  el.innerHTML = '<h2>Classifica</h2>' + r.map(e => `
+    <div class="leader-row ${e.rank === 1 ? 'is-first' : ''}">
+      <span class="leader-rank">${e.rank}</span>
+      <span class="leader-name">${esc(e.p.name || 'Senza nome')}</span>
+      ${tieTotals ? `<span class="leader-coins">${e.p.coins} monete</span>` : ''}
+      <span class="leader-score">${e.total}</span>
+    </div>`).join('') +
+    (tieTotals ? '<p class="tie">A pari punti vince chi ha più monete; se anche le monete sono pari, la vittoria è condivisa.</p>' : '');
+}
+
+function setVal(p, k, v) {
+  if (k.startsWith('sci.')) { p.sci[k.slice(4)] = Math.max(0, Math.min(20, v)); return; }
+  const cat = CATS.find(c => c.k === k);
+  p[k] = cat.neg ? Math.max(-99, Math.min(999, v)) : Math.max(0, Math.min(999, v));
+}
+function getVal(p, k) { return k.startsWith('sci.') ? p.sci[k.slice(4)] : p[k]; }
+const byId = id => state.players.find(p => p.id == id);
+
+$('players').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.remove) { state.players = state.players.filter(p => p.id != b.dataset.remove); render(); return; }
+  const p = byId(b.dataset.id); if (!p) return;
+  const k = b.dataset.k, v = getVal(p, k) + (b.dataset.act === 'inc' ? 1 : -1);
+  setVal(p, k, v);
+  const inp = document.querySelector(`input[data-id="${p.id}"][data-k="${k}"]`); if (inp) { inp.value = getVal(p, k); inp.classList.remove('bad'); }
+  update();
+});
+$('players').addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.name) { const p = byId(t.dataset.name); if (p) { p.name = t.value; renderLeaderboard(); save(); } return; }
+  if (!t.dataset.k) return;
+  const p = byId(t.dataset.id); if (!p) return;
+  const raw = t.value.trim().replace('−', '-');
+  if (raw === '' || raw === '-') { setVal(p, t.dataset.k, 0); t.classList.remove('bad'); update(); return; }
+  if (!/^-?\d{1,3}$/.test(raw)) { t.classList.add('bad'); return; }
+  t.classList.remove('bad'); setVal(p, t.dataset.k, parseInt(raw, 10)); update();
+});
+$('players').addEventListener('focusin', e => { if (e.target.matches('.stepper input')) setTimeout(() => e.target.select(), 0); });
+$('players').addEventListener('focusout', e => { const t = e.target; if (t.dataset && t.dataset.k) { const p = byId(t.dataset.id); if (p) { t.value = getVal(p, t.dataset.k); t.classList.remove('bad'); } } });
+
+$('addPlayerBtn').addEventListener('click', () => {
+  if (state.players.length >= 8) return toast('Massimo 8 giocatori');
+  state.players.push(newPlayer()); render();
+  const last = document.querySelector('.player-card:last-of-type .player-name'); if (last) { last.focus(); last.select(); }
+});
+$('extraToggle').addEventListener('change', e => { state.extra = e.target.checked; render(); });
+
+let toastT;
+function toast(msg) {
+  let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600);
+}
+let pending = null;
+function ask(text, fn) { $('confirmText').textContent = text; $('confirm').hidden = false; pending = fn; $('confirm').scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+$('confirmNo').onclick = () => { $('confirm').hidden = true; pending = null; };
+$('confirmYes').onclick = () => { $('confirm').hidden = true; const f = pending; pending = null; f && f(); };
+
+const anyPoints = () => state.players.some(p => scoreOf(p, state.extra).total !== 0 || p.coins > 0);
+function zeroScores() { state.players = state.players.map(p => newPlayer(p.name)); render(); }
+function resultText(entry) {
+  const d = new Date(entry.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+  return `7 Wonders, ${d}\n` + entry.players.map(e => `${e.rank}. ${e.name}: ${e.total}`).join('\n');
+}
+function snapshot() {
+  const r = ranking(state.players, state.extra);
+  return { date: Date.now(), extra: state.extra, players: r.map(e => ({ name: e.p.name || 'Senza nome', rank: e.rank, total: e.total, coins: e.p.coins, parts: e.parts, sci: { ...e.p.sci } })) };
+}
+$('saveBtn').addEventListener('click', () => {
+  if (!anyPoints()) return toast('Prima scrivete i punti');
+  const entry = snapshot();
+  history.unshift(entry); if (history.length > 200) history.length = 200;
+  store(HKEY, history);
+  const winners = entry.players.filter(e => e.rank === 1).map(e => e.name).join(' e ');
+  zeroScores(); renderHistory();
+  toast(`Salvata: vince ${winners}. Punti azzerati, nomi tenuti.`);
+});
+$('resetBtn').addEventListener('click', () => {
+  if (!anyPoints()) return toast('Non ci sono punti da azzerare');
+  ask('Azzerare i punti senza salvare la partita? I nomi restano.', zeroScores);
+});
+$('shareBtn').addEventListener('click', async () => {
+  if (!anyPoints()) return toast('Prima scrivete i punti');
+  const text = resultText(snapshot());
+  if (navigator.share) { try { await navigator.share({ text }); } catch (e) {} return; }
+  try { await navigator.clipboard.writeText(text); toast('Risultato copiato'); } catch (e) { toast(text); }
+});
+$('histBtn').addEventListener('click', () => {
+  const h = $('history'); h.hidden = !h.hidden;
+  if (!h.hidden) { renderHistory(); h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+});
+
+const LABELS = { mil: 'Mil.', coins: 'Mon.', won: 'Mer.', civ: 'Civ.', sci: 'Sci.', com: 'Com.', gui: 'Gil.', ext: 'Ext.' };
+function renderHistory() {
+  const h = $('history');
+  $('histBtn').textContent = history.length ? `Storico (${history.length})` : 'Storico';
+  if (h.hidden) return;
+  if (!history.length) { h.innerHTML = '<h2>Storico</h2><p class="tie">Ancora nessuna partita salvata. A fine partita tocca «Fine partita: salva».</p>'; return; }
+  h.innerHTML = '<h2>Storico</h2>' + history.map((g, i) => {
+    const d = new Date(g.date).toLocaleString('it-IT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const win = g.players.filter(e => e.rank === 1).map(e => esc(e.name)).join(' e ');
+    const keys = ['mil', 'coins', 'won', 'civ', 'sci', 'com', 'gui'].concat(g.extra ? ['ext'] : []);
+    return `<div class="hist-item">
+      <div class="hist-head"><span class="hist-win">Vince ${win}</span><span class="hist-date">${d}</span></div>
+      <div class="hist-scores">${g.players.map(e => `${esc(e.name)} <b>${e.total}</b>`).join(', ')}</div>
+      <div class="hist-actions"><button class="linkbtn" data-det="${i}">Dettagli</button><button class="linkbtn del" data-del="${i}">Elimina</button></div>
+      <div hidden data-detail="${i}"><table class="detail"><tr><th></th>${keys.map(k => `<th>${LABELS[k]}</th>`).join('')}<th>Tot</th></tr>
+        ${g.players.map(e => `<tr><td>${esc(e.name)}</td>${keys.map(k => `<td>${e.parts[k] ?? 0}</td>`).join('')}<td><b>${e.total}</b></td></tr>`).join('')}</table></div>
+    </div>`;
+  }).join('');
+}
+$('history').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.det) { const d = document.querySelector(`[data-detail="${b.dataset.det}"]`); d.hidden = !d.hidden; b.textContent = d.hidden ? 'Dettagli' : 'Chiudi'; }
+  if (b.dataset.del) { const i = +b.dataset.del; ask('Eliminare questa partita dallo storico?', () => { history.splice(i, 1); store(HKEY, history); renderHistory(); }); }
+});
+
+render(); renderHistory();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

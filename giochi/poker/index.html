@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E382F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<title>Fiches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#0E382F; --felt-deep:#09271F; --felt-lift:#134638;
+  --line:rgba(242,235,220,.13); --ivory:#F2EBDC; --muted:#9CB7AC;
+  --brass:#E2B04A; --brass-ink:#2B1F06; --red:#C9402F; --red-deep:#8E2A1F;
+  --num:'Big Shoulders Display','Big Shoulders','Arial Narrow','Roboto Condensed',sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;color:var(--ivory);font-family:var(--ui);font-size:16px;-webkit-tap-highlight-color:transparent}
+body{min-height:100dvh;background:var(--felt-deep)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(90% 55% at 50% 18%,var(--felt-lift) 0%,var(--felt) 55%,var(--felt-deep) 100%)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:disabled{opacity:.38;cursor:default}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+.hidden{display:none!important}
+.num{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+small,.muted{color:var(--muted)}
+
+/* ---------- home ---------- */
+#home .wrap{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:40px}
+.back{display:inline-block;color:var(--brass);text-decoration:none;font-weight:700;font-size:15px;padding:6px 0 4px}
+.brand{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+.brand h1{font-family:var(--num);font-weight:800;font-size:64px;line-height:.9;margin:0;letter-spacing:.01em}
+.brand .mini{width:46px;height:46px}
+.tagline{margin:6px 0 26px;color:var(--muted);max-width:30ch;line-height:1.4}
+.card{border:1px solid var(--line);border-radius:18px;padding:18px 16px 16px;margin-bottom:16px;background:rgba(9,39,31,.55)}
+.card h2{font-size:20px;margin:0 0 12px;font-weight:700}
+label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
+.field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--felt-deep);font-size:18px}
+.field:focus{outline:none;border-color:var(--brass)}
+.field.code{font-family:var(--num);font-size:30px;letter-spacing:.25em;text-transform:uppercase;padding:8px 14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;min-height:52px;padding:10px 14px;border-radius:14px;font-weight:700;font-size:17px;line-height:1.1;text-align:center}
+.btn small{font-weight:600;font-size:12px;color:inherit;opacity:.75}
+.btn.brass{background:var(--brass);color:var(--brass-ink)}
+.btn.ivory{background:var(--ivory);color:#13332B}
+.btn.red{background:var(--red);color:#fff}
+.btn.line{border:1.5px solid rgba(242,235,220,.35)}
+.btn.wide{width:100%;margin-top:16px}
+.resume{margin:-6px 0 18px}
+.hint{font-size:13px;color:var(--muted);margin:8px 0 0;line-height:1.4}
+details.opts summary{color:var(--muted);font-size:14px;margin-top:14px;cursor:pointer}
+
+/* ---------- table ---------- */
+#table{padding-bottom:calc(var(--dock-h,260px) + 12px)}
+.top{position:sticky;top:0;z-index:5;background:linear-gradient(var(--felt-deep),rgba(9,39,31,.0));padding-top:max(8px,env(safe-area-inset-top))}
+.top .wrap{display:flex;align-items:center;gap:10px;height:52px}
+.codebtn{font-family:var(--num);font-weight:800;font-size:24px;letter-spacing:.14em;padding:4px 10px;border:1.5px solid var(--line);border-radius:10px}
+.phase{flex:1;font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(201,64,47,.25)}
+.dot.on{background:#7FD3A6;box-shadow:0 0 0 3px rgba(127,211,166,.18)}
+.menubtn{width:44px;height:44px;border-radius:12px;font-size:26px;line-height:1}
+
+.potzone{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px}
+.chip{--c:var(--red);position:relative;width:min(48vw,196px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:repeating-conic-gradient(from 7.5deg,var(--ivory) 0deg 15deg,var(--c) 15deg 45deg);
+  box-shadow:0 0 0 3px var(--red-deep),0 14px 34px rgba(0,0,0,.38)}
+.chip::before{content:"";position:absolute;inset:12%;border-radius:50%;background:var(--c);box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}
+.chip::after{content:"";position:absolute;inset:18%;border-radius:50%;border:2px dashed rgba(242,235,220,.5)}
+.chip .in{position:relative;z-index:1;text-align:center}
+.chip .lbl{font-size:13px;font-weight:600;opacity:.85}
+.chip .val{font-family:var(--num);font-weight:800;font-size:clamp(36px,12vw,56px);line-height:.95;font-variant-numeric:tabular-nums}
+.chip.bump{animation:bump .38s ease-out}
+@keyframes bump{40%{transform:scale(1.07) rotate(8deg)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.chip.bump{animation:none}}
+.underpot{margin-top:14px;min-height:44px;display:flex;justify-content:center}
+.endbtn{padding:10px 18px;border-radius:999px;border:1.5px solid rgba(242,235,220,.4);font-weight:700}
+
+.watch{margin:10px 0;padding:12px 14px;border-radius:14px;background:rgba(226,176,74,.12);border:1px solid rgba(226,176,74,.35);display:flex;gap:10px;align-items:center;justify-content:space-between}
+
+ul.players{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.pl{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:11px 4px 11px 12px;border-bottom:1px solid var(--line);position:relative}
+.pl.me::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:4px;background:var(--brass)}
+.pl .who{display:flex;align-items:center;gap:7px;min-width:0}
+.pl .nm{font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .st{font-family:var(--num);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;text-align:right}
+.pl .sub{grid-column:1/-1;font-size:14px;color:var(--muted)}
+.pl .sub b{color:var(--brass);font-weight:700}
+.pl.out{opacity:.45}
+.badge{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border-radius:12px;font-size:11px;font-weight:800;flex:none}
+.badge.d{background:var(--ivory);color:#13332B;border-radius:50%;min-width:24px;padding:0}
+.badge.b{border:1.5px solid var(--brass);color:var(--brass)}
+.you{font-size:12px;color:var(--muted);flex:none}
+
+.log{margin:18px 0 0;padding:0;list-style:none;font-size:14px;color:var(--muted)}
+.log li{padding:5px 0;border-bottom:1px dashed rgba(242,235,220,.08);line-height:1.35}
+.log li.win{color:var(--brass)}
+.logmore{margin-top:8px;font-size:14px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- dock ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--felt-deep);border-top:1px solid var(--line);
+  box-shadow:0 -10px 30px rgba(0,0,0,.35);padding:12px 0 calc(12px + var(--safe-b))}
+.mine{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
+.mine .big{font-family:var(--num);font-weight:800;font-size:40px;line-height:.9;font-variant-numeric:tabular-nums}
+.mine .tc{font-size:15px;text-align:right;color:var(--muted)}
+.mine .tc b{display:block;font-family:var(--num);font-size:26px;color:var(--ivory);line-height:1}
+.amt{display:grid;grid-template-columns:52px 1fr 52px;gap:8px}
+.amt button{height:52px;border-radius:12px;background:var(--felt-lift);font-size:26px;font-weight:700}
+.amt input{height:52px;width:100%;text-align:center;border-radius:12px;border:1px solid var(--line);background:var(--felt);font-family:var(--num);font-weight:800;font-size:30px;font-variant-numeric:tabular-nums}
+.amt input:focus{outline:none;border-color:var(--brass)}
+.quick{display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.quick button{flex:none;padding:8px 12px;border-radius:999px;border:1.5px solid var(--line);font-weight:700;font-size:14px;white-space:nowrap}
+.quick button.cl{border-style:dashed}
+.acts{display:grid;grid-template-columns:.8fr 1fr 1.25fr;gap:8px}
+.dock .say{margin:0 0 10px;font-size:15px;line-height:1.35}
+.dock h3{margin:0 0 4px;font-size:20px}
+.claims{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.claims .btn{min-height:46px;font-size:15px;padding:8px 12px;flex:1 1 40%}
+.lobbyshare{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.lobbyshare .bigcode{font-family:var(--num);font-weight:800;font-size:44px;letter-spacing:.16em;line-height:1}
+
+/* ---------- sheets & toast ---------- */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(3,15,12,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;max-height:88dvh;overflow:auto;background:var(--felt);border-radius:22px 22px 0 0;border:1px solid var(--line);border-bottom:0;
+  padding:18px 16px calc(18px + var(--safe-b));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet h3{margin:0 0 6px;font-size:21px}
+.sheet p{margin:6px 0 12px;line-height:1.45;color:var(--muted)}
+.sheet .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.menu button.item{display:block;width:100%;text-align:left;padding:14px 4px;border-bottom:1px solid var(--line);font-size:17px;font-weight:600}
+.menu button.item small{display:block;font-weight:400;font-size:13px;margin-top:2px}
+.mg{border-bottom:1px solid var(--line);padding:12px 0}
+.mg .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mg .h b{font-size:18px}
+.mg .tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mg .tools button{padding:7px 11px;border-radius:10px;border:1.5px solid var(--line);font-size:14px;font-weight:600}
+.mg .tools button.danger{border-color:rgba(201,64,47,.6);color:#F0A99E}
+.pick{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);font-size:17px}
+.pick input{width:22px;height:22px;accent-color:var(--brass)}
+.pick .amtp{margin-left:auto;font-family:var(--num);font-size:22px;color:var(--brass)}
+.qr{display:grid;place-items:center;margin:8px 0}
+.qr img{width:min(64vw,240px);height:auto;border-radius:12px;background:#fff;padding:8px;image-rendering:pixelated}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--dock-h,240px) + 14px);z-index:30;max-width:min(92vw,480px);
+  background:var(--ivory);color:#13332B;padding:12px 16px;border-radius:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.toast.win{background:var(--brass);color:var(--brass-ink)}
+.toast.err{background:#F3D3CD;color:#5C150D}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<main id="home" class="hidden">
+  <div class="wrap">
+    <a class="back" href="../../">‹ Giochi</a>
+    <div class="brand">
+      <svg class="mini" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#C9402F"/><circle cx="24" cy="24" r="23" fill="none" stroke="#F2EBDC" stroke-width="5" stroke-dasharray="6 12.06"/><circle cx="24" cy="24" r="15" fill="#C9402F" stroke="rgba(242,235,220,.55)" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+      <h1>Fiches</h1>
+    </div>
+    <p class="tagline">Le fiches sul telefono, le carte sul tavolo.</p>
+
+    <button id="resume" class="btn ivory wide resume hidden"></button>
+
+    <form class="card" id="fCreate" autocomplete="off">
+      <h2>Apri un tavolo</h2>
+      <label for="cName">Il tuo nome</label>
+      <input class="field" id="cName" maxlength="16" required placeholder="es. Simo">
+      <label for="cStart">Fiches iniziali per giocatore</label>
+      <input class="field num" id="cStart" inputmode="numeric" pattern="[0-9]*" value="1000" required>
+      <details class="opts">
+        <summary>Bui automatici (facoltativo)</summary>
+        <div class="row2">
+          <div><label for="cSb">Small blind</label><input class="field num" id="cSb" inputmode="numeric" pattern="[0-9]*" placeholder="0"></div>
+          <div><label for="cBb">Big blind</label><input class="field num" id="cBb" inputmode="numeric" pattern="[0-9]*" placeholder="0"></div>
+        </div>
+        <p class="hint">Se li imposti, a ogni mano l'app sposta il mazziere e preleva i bui da sola.</p>
+      </details>
+      <button class="btn brass wide" type="submit">Apri il tavolo</button>
+    </form>
+
+    <form class="card" id="fJoin" autocomplete="off">
+      <h2>Siediti a un tavolo</h2>
+      <label for="jCode">Codice del tavolo</label>
+      <input class="field code" id="jCode" maxlength="5" required placeholder="ABCDE" autocapitalize="characters" spellcheck="false">
+      <label for="jName">Il tuo nome</label>
+      <input class="field" id="jName" maxlength="16" required placeholder="es. Luca">
+      <button class="btn ivory wide" type="submit">Siediti</button>
+    </form>
+    <p class="hint">Niente account: chi ha il codice entra. Le fiches restano salvate anche se chiudi la pagina.</p>
+  </div>
+</main>
+
+<!-- ============ TABLE ============ -->
+<main id="table" class="hidden">
+  <header class="top"><div class="wrap">
+    <button class="codebtn" id="codeBtn" aria-label="Condividi il tavolo"></button>
+    <div class="phase" id="phase"></div>
+    <span class="dot" id="dot" title="Connessione"></span>
+    <button class="menubtn" id="menuBtn" aria-label="Menu">⋯</button>
+  </div></header>
+  <div class="wrap">
+    <div id="waiting" class="watch hidden"><span id="waitTxt">Cerco il tavolo…</span></div>
+    <section class="potzone" id="potzone">
+      <div class="chip" id="chip"><div class="in"><div class="lbl">piatto</div><div class="val" id="pot">0</div></div></div>
+      <div class="underpot" id="underpot"></div>
+    </section>
+    <ul class="players" id="players"></ul>
+    <ul class="log" id="log"></ul>
+    <button class="logmore" id="logMore">Tutto lo storico</button>
+  </div>
+  <section class="dock" id="dock"><div class="wrap" id="dockIn">
+    <!-- betting controls (kept in DOM so the input keeps focus) -->
+    <div id="dBet" class="hidden">
+      <div class="mine">
+        <div><small>Le tue fiches</small><div class="big" id="myStack">0</div></div>
+        <div class="tc" id="tcBox"></div>
+      </div>
+      <div class="amt">
+        <button id="minus" aria-label="Meno">−</button>
+        <input id="amt" inputmode="numeric" pattern="[0-9]*" aria-label="Quante fiches">
+        <button id="plus" aria-label="Più">+</button>
+      </div>
+      <div class="quick" id="quick"></div>
+      <div class="acts">
+        <button class="btn red" id="foldBtn">Lascio</button>
+        <button class="btn ivory" id="callBtn">Check</button>
+        <button class="btn brass" id="betBtn">Punto</button>
+      </div>
+    </div>
+    <div id="dOther"></div>
+  </div></section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.16.1/dist/mqtt.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/mqtt@5.16.1/dist/mqtt.min.js';document.head.appendChild(s)"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js" async onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@2.0.4/dist/qrcode.js';document.head.appendChild(s)"></script>
+
+<script>
+'use strict';
+/* =====================================================================
+   CORE-START  — pure game logic + sync engine (no DOM). Tested in node.
+   ===================================================================== */
+const SV = 1, HMAX = 12, LMAX = 60, AMAX = 500, TTL = 180000;
+const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // 32 symbols, no I/O/0/1
+function rid(n = 10) { const a = new Uint8Array(n); globalThis.crypto.getRandomValues(a); return Array.from(a, x => ALPH[x % 32]).join(''); }
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmt = n => String(Math.trunc(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const isInt = x => Number.isInteger(x);
+class GameError extends Error {}
+function fail(msg, quiet = false) { const e = new GameError(msg); e.quiet = quiet; throw e; }
+const SNAP = ['cfg', 'players', 'phase', 'hand', 'dealer', 'sbId', 'bbId', 'issued', 'lastW'];
+
+function cleanName(n) { return String(n || '').replace(/\s+/g, ' ').trim().slice(0, 16); }
+function mkPlayer(id, name, stack) { return { id, name, stack, put: 0, rem: 0, folded: false, inHand: false }; }
+function newGame({ code, gid, wid, pid, name, start, sb = 0, bb = 0, t }) {
+  return {
+    app: 'fiches', sv: SV, code, gid, created: t, ver: 1, w: wid, t,
+    cfg: { start, sb, bb }, players: [mkPlayer(pid, name, start)], phase: 'lobby', hand: 0,
+    dealer: null, sbId: null, bbId: null, issued: start, lastW: [],
+    log: [{ t, k: 'sys', txt: `${name} apre il tavolo: ${fmt(start)} fiches a testa` }], aids: [], hist: []
+  };
+}
+
+const P = (s, id) => s.players.find(p => p.id === id);
+function need(s, id) { const p = P(s, id); if (!p) fail('Giocatore non trovato'); return p; }
+function potOf(s) { return s.players.reduce((a, p) => a + (s.phase === 'showdown' ? p.rem : p.put), 0); }
+function maxPut(s) { return s.players.reduce((m, p) => Math.max(m, p.put), 0); }
+function toCall(s, p) { return Math.max(0, maxPut(s) - p.put); }
+function inPlay(s) { return s.players.filter(p => p.inHand && !p.folded); }
+function eligible(s) { return s.players.filter(p => p.inHand && !p.folded && p.rem > 0); }
+function seatAfter(s, i, pred) { const n = s.players.length; for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (pred(s.players[j])) return j; } return -1; }
+function chipsOnTable(s) { return s.players.reduce((a, p) => a + p.stack + (s.phase === 'showdown' ? p.rem : p.put), 0); }
+
+function post(s, i, amt, label, L) {
+  const p = s.players[i], x = Math.min(amt, p.stack);
+  if (x <= 0) return false;
+  p.stack -= x; p.put += x;
+  L(`${p.name}: ${label} ${fmt(x)}${p.stack === 0 ? ' (all-in)' : ''}`);
+  return true;
+}
+
+function startHand(s, L, keepDealer) {
+  for (const p of s.players) { p.put = 0; p.rem = 0; p.folded = false; p.inHand = p.stack > 0; }
+  s.sbId = s.bbId = null; s.lastW = [];
+  const n = s.players.filter(p => p.inHand).length;
+  if (n < 2) {
+    for (const p of s.players) p.inHand = false;
+    s.phase = 'lobby';
+    L(n === 1 ? 'Solo un giocatore ha ancora fiches: ricomprate da Gestione o ricominciate' : 'Nessuno ha fiches', 'sys');
+    return;
+  }
+  const di = s.players.findIndex(p => p.id === s.dealer);
+  const d = (keepDealer && di >= 0 && s.players[di].inHand) ? di : seatAfter(s, di, p => p.inHand);
+  s.dealer = s.players[d].id; s.hand += 1; s.phase = 'betting';
+  L(`Mano ${s.hand}: mazziere ${s.players[d].name}`, 'sys');
+  if (s.cfg.bb > 0 || s.cfg.sb > 0) {
+    const sbi = n === 2 ? d : seatAfter(s, d, p => p.inHand);          // heads-up: il mazziere è small blind
+    const bbi = seatAfter(s, sbi, p => p.inHand);
+    if (post(s, sbi, s.cfg.sb, 'small blind', L)) s.sbId = s.players[sbi].id;
+    if (post(s, bbi, s.cfg.bb, 'big blind', L)) s.bbId = s.players[bbi].id;
+  }
+}
+
+/* Side-pot-correct award: each winner w takes min(c_w, c_j) from every contribution c_j;
+   ties split equally (odd chips to the first winner left of the button). */
+function award(s, ids) {
+  const n = s.players.length, di = Math.max(0, s.players.findIndex(p => p.id === s.dealer));
+  const dist = p => (s.players.indexOf(p) - di - 1 + 2 * n) % n;
+  const W0 = ids.map(id => P(s, id));
+  let W = [...W0].sort((a, b) => dist(a) - dist(b));
+  const won = new Map(W0.map(p => [p.id, 0]));
+  while (W.length) {
+    const m = Math.min(...W.map(p => p.rem));
+    let amt = 0;
+    if (m > 0) for (const p of s.players) { const x = Math.min(m, p.rem); p.rem -= x; amt += x; }
+    const share = Math.floor(amt / W.length), r = amt - share * W.length;
+    W.forEach((p, i) => { const g = share + (i < r ? 1 : 0); p.stack += g; won.set(p.id, won.get(p.id) + g); });
+    W = W.filter(p => p.rem > 0);
+  }
+  s.lastW = ids.slice();
+  return won;
+}
+function previewWin(s, ids) { const c = clone(s); return award(c, ids); }
+
+function settle(s, L) {                        // called in showdown after each award
+  const pot = s.players.reduce((a, p) => a + p.rem, 0);
+  if (pot > 0) {
+    const el = eligible(s);
+    if (el.length >= 2) return;                // aspetta chi ha vinto il piatto laterale
+    const to = el[0] || (s.lastW.length ? P(s, s.lastW[0]) : null);
+    if (to) { for (const p of s.players) { to.stack += p.rem; p.rem = 0; } L(`${to.name} ritira il resto del piatto: ${fmt(pot)}`, 'win'); }
+    else { for (const p of s.players) { p.stack += p.rem; p.rem = 0; } L('Piatto restituito', 'sys'); }
+  }
+  startHand(s, L, false);
+}
+
+function lastStanding(s, L) {                  // in betting: everyone else folded
+  if (s.phase !== 'betting') return;
+  const ip = inPlay(s);
+  if (ip.length !== 1) return;
+  const w = ip[0], pot = potOf(s);
+  for (const p of s.players) { w.stack += p.put; p.put = 0; }
+  s.lastW = [w.id];
+  L(`${w.name} vince ${fmt(pot)}`, 'win');
+  startHand(s, L, false);
+}
+
+function reduceInto(s, a, L) {
+  const by = a.by ? P(s, a.by) : null, who = by ? by.name : 'Qualcuno';
+  const sameHand = () => { if (a.hand !== s.hand) fail('Nel frattempo è iniziata un\'altra mano'); };
+  const actor = () => {
+    sameHand();
+    if (s.phase !== 'betting') fail(s.phase === 'showdown' ? 'La mano è chiusa: ora si sceglie chi ha vinto' : 'La mano non è iniziata');
+    const p = need(s, a.by);
+    if (!p.inHand) fail('Non sei in questa mano: giochi dalla prossima');
+    if (p.folded) fail('Hai già lasciato questa mano');
+    return p;
+  };
+  switch (a.type) {
+    case 'join': {
+      const name = cleanName(a.name); if (!name) fail('Scrivi un nome');
+      const p = P(s, a.by);
+      if (p) { if (p.name === name) fail('Sei già al tavolo', true); L(`${p.name} ora si chiama ${name}`, 'sys'); p.name = name; break; }
+      if (s.players.length >= 12) fail('Il tavolo è pieno (massimo 12)');
+      s.players.push(mkPlayer(a.by, name, s.cfg.start)); s.issued += s.cfg.start;
+      L(`${name} si siede con ${fmt(s.cfg.start)}${s.phase === 'lobby' ? '' : ' (gioca dalla prossima mano)'}`, 'sys');
+      break;
+    }
+    case 'start': {
+      if (s.phase !== 'lobby') fail('La partita è già iniziata', true);
+      startHand(s, L, false);
+      if (s.phase === 'lobby') fail('Servono almeno 2 giocatori con fiches');
+      break;
+    }
+    case 'bet': {
+      const p = actor(), x = a.amount;
+      if (!isInt(x) || x < 1) fail('Scrivi quante fiches');
+      if (x > p.stack) fail(`Hai solo ${fmt(p.stack)} fiches`);
+      const tc = toCall(s, p);
+      // the minimum-call rule guards the UI; a bet made offline and replayed later is a physical fact: keep it
+      if (x < tc && x < p.stack && !a.replay) fail(`Per vedere servono ${fmt(tc)}`);
+      p.stack -= x; p.put += x;
+      const t = tc === 0 ? `punta ${fmt(x)}` : x === tc ? `vede ${fmt(x)}` : x < tc ? (p.stack === 0 ? `vede con ${fmt(x)}` : `mette ${fmt(x)} (ne mancano ${fmt(tc - x)})`) : `vede ${fmt(tc)} e rilancia di ${fmt(x - tc)}`;
+      L(`${p.name} ${t}${p.stack === 0 ? ' (all-in)' : ''}`);
+      break;
+    }
+    case 'check': {
+      const p = actor(), tc = toCall(s, p);
+      if (tc > 0) fail(`Non puoi fare check: da vedere ci sono ${fmt(tc)}`);
+      L(`${p.name}: check`);
+      break;
+    }
+    case 'fold': {
+      const p = actor(); p.folded = true;
+      L(`${p.name} lascia`);
+      lastStanding(s, L);
+      break;
+    }
+    case 'end': {
+      sameHand();
+      if (s.phase !== 'betting') fail('La mano è già chiusa', true);
+      for (const p of s.players) p.rem = p.put;
+      s.phase = 'showdown'; s.lastW = [];
+      L(`${who} chiude la mano: piatto ${fmt(potOf(s))}`, 'sys');
+      settle(s, L);
+      break;
+    }
+    case 'win': {
+      sameHand();
+      if (s.phase !== 'showdown') fail('Prima bisogna chiudere la mano');
+      const ids = [...new Set(a.winners || [])];
+      if (!ids.length) fail('Scegli chi ha vinto');
+      for (const id of ids) { const p = need(s, id); if (!(p.inHand && !p.folded && p.rem > 0)) fail(`${p.name} non può vincere questo piatto`); }
+      const won = award(s, ids);
+      const self = ids.length === 1 && ids[0] === a.by;
+      const tail = self ? '' : ` (segna ${who})`;
+      L(ids.length === 1 ? `${P(s, ids[0]).name} vince ${fmt(won.get(ids[0]))}${tail}`
+        : `Piatto diviso: ${ids.map(id => `${P(s, id).name} +${fmt(won.get(id))}`).join(', ')}${tail}`, 'win');
+      settle(s, L);
+      break;
+    }
+    case 'undo': {
+      const h = s.hist[s.hist.length - 1];
+      if (!h) fail('Non c\'è niente da annullare');
+      if (a.target !== h.aid) fail('Nel frattempo qualcuno ha giocato: riprova');
+      s.hist.pop();
+      for (const k of SNAP) s[k] = clone(h.snap[k]);
+      L(`${who} annulla «${h.txt}»`, 'sys');
+      break;
+    }
+    case 'refund': {
+      if (s.phase === 'lobby') fail('Non c\'è una mano in corso');
+      sameHand();
+      for (const p of s.players) { p.stack += s.phase === 'showdown' ? p.rem : p.put; p.put = p.rem = 0; }
+      L(`${who} annulla la mano: puntate restituite`, 'sys');
+      startHand(s, L, true);
+      break;
+    }
+    case 'rebuy': {
+      const p = need(s, a.target), x = s.cfg.start;
+      p.stack += x; s.issued += x;
+      L(`${p.name} ricompra ${fmt(x)} fiches`, 'sys');
+      break;
+    }
+    case 'setstack': {
+      const p = need(s, a.target), v = a.value;
+      if (!isInt(v) || v < 0) fail('Scrivi un numero intero');
+      if (v === p.stack) fail('È già così');
+      L(`${who} corregge ${p.name}: ${fmt(p.stack)} → ${fmt(v)}`, 'sys');
+      s.issued += v - p.stack; p.stack = v;
+      break;
+    }
+    case 'remove': {
+      const p = need(s, a.target);
+      if (p.put > 0 || p.rem > 0) fail(`${p.name} ha fiches nel piatto: toglilo a fine mano`);
+      const i = s.players.indexOf(p), n = s.players.length;
+      if (s.dealer === p.id) s.dealer = n > 1 ? s.players[(i - 1 + n) % n].id : null;
+      s.players.splice(i, 1); s.issued -= p.stack;
+      L(`${p.name} lascia il tavolo con ${fmt(p.stack)}`, 'sys');
+      lastStanding(s, L);
+      break;
+    }
+    case 'move': {
+      const p = need(s, a.target), i = s.players.indexOf(p), j = i + (a.dir < 0 ? -1 : 1);
+      if (j < 0 || j >= s.players.length) fail('Non si può spostare oltre');
+      [s.players[i], s.players[j]] = [s.players[j], s.players[i]];
+      L(`${who} sposta ${p.name} ${a.dir < 0 ? 'su' : 'giù'}`, 'sys');
+      break;
+    }
+    case 'dealer': {
+      const p = need(s, a.target);
+      if (s.dealer === p.id) fail('È già il mazziere');
+      s.dealer = p.id;
+      L(`Mazziere: ${p.name}`, 'sys');
+      break;
+    }
+    case 'blinds': {
+      const { sb, bb } = a;
+      if (!isInt(sb) || !isInt(bb) || sb < 0 || bb < 0) fail('Scrivi numeri interi');
+      if (sb > bb) fail('Lo small blind non può superare il big blind');
+      s.cfg.sb = sb; s.cfg.bb = bb;
+      L(bb > 0 ? `Bui ${fmt(sb)}/${fmt(bb)} dalla prossima mano` : 'Bui disattivati', 'sys');
+      break;
+    }
+    case 'reset': {
+      const st = a.start;
+      if (!isInt(st) || st < 1) fail('Scrivi un numero intero');
+      s.cfg.start = st;
+      for (const p of s.players) Object.assign(p, { stack: st, put: 0, rem: 0, folded: false, inHand: false });
+      s.issued = st * s.players.length; s.phase = 'lobby'; s.dealer = null; s.sbId = s.bbId = null; s.lastW = [];
+      L(`${who} ricomincia la partita: ${fmt(st)} fiches a testa`, 'sys');
+      break;
+    }
+    default: fail('Azione sconosciuta');
+  }
+}
+
+function applyAction(s0, a) {
+  if (!s0) fail('Il tavolo non è ancora pronto');
+  const s = clone(s0), lines = [];
+  const L = (txt, k = 'act') => lines.push({ t: a.t || 0, k, txt });
+  const snap = {}; for (const k of SNAP) snap[k] = clone(s0[k]);
+  reduceInto(s, a, L);
+  if (a.type !== 'undo') {
+    s.hist.push({ aid: a.aid, txt: lines.length ? lines[0].txt : a.type, snap });
+    if (s.hist.length > HMAX) s.hist.splice(0, s.hist.length - HMAX);
+  }
+  s.log.push(...lines); if (s.log.length > LMAX) s.log.splice(0, s.log.length - LMAX);
+  s.aids.push(a.aid); if (s.aids.length > AMAX) s.aids.splice(0, s.aids.length - AMAX);
+  return s;
+}
+
+/* Total order on states: (created, gid) for different games, then (ver, writer). */
+function better(a, b) {
+  if (!b) return !!a; if (!a) return false;
+  if (a.gid !== b.gid) return a.created > b.created || (a.created === b.created && a.gid > b.gid);
+  return a.ver > b.ver || (a.ver === b.ver && a.w > b.w);
+}
+function same(a, b) { return !!a && !!b && a.gid === b.gid && a.ver === b.ver && a.w === b.w; }
+function validState(x, code) { return !!x && x.app === 'fiches' && x.code === code && Array.isArray(x.players) && isInt(x.ver) && Array.isArray(x.aids) && Array.isArray(x.hist); }
+
+/* Optimistic replication over several unreliable "links" (MQTT brokers, retained topic).
+   Every device may write; conflicts resolve by the total order above; actions of this device
+   that are missing from the adopted state are re-applied on top of it (rebase). */
+class Sync {
+  constructor({ code, wid, initial = null, onChange = () => {}, onReject = () => {}, now = () => Date.now(), timers = globalThis }) {
+    Object.assign(this, { code, wid, cur: initial, onChange, onReject, now, timers });
+    this.mine = []; this.links = [];
+  }
+  addLink(link) {
+    const L = { link, seen: null, timer: null, sent: null, sentAt: 0 };
+    this.links.push(L);
+    link.onMessage = str => this.incoming(L, str);
+    link.onConnect = () => { L.seen = null; L.sent = null; this.healLater(L, 1200, 900); };
+    return L;
+  }
+  incoming(L, str) {
+    let x; try { x = JSON.parse(str); } catch { return; }
+    if (!validState(x, this.code)) return;
+    L.seen = x;                                     // brokers deliver in order: last message = what the broker holds now
+    if (L.sent && same(x, L.sent)) L.sent = null;  // our own publish came back: nothing of ours in flight
+    if (better(x, this.cur)) { this.cur = x; this.rebase(); this.onChange(this.cur); }
+    else if (!same(x, this.cur)) this.healLater(L, 250, 900);   // this broker is behind: push ours
+  }
+  healLater(L, base, jitter) {
+    if (L.timer) return;
+    L.timer = this.timers.setTimeout(() => {
+      L.timer = null;
+      if (!this.cur || !L.link.connected || (L.seen && !better(this.cur, L.seen))) return;
+      if (L.sent && same(L.sent, this.cur) && this.now() - L.sentAt < 5000) return;   // ours is still on its way
+      this.send(L, JSON.stringify(this.cur));
+    }, base + Math.random() * jitter);
+  }
+  send(L, str) { L.sent = this.cur; L.sentAt = this.now(); L.link.publish(str); }
+  publishAll() { const str = JSON.stringify(this.cur); for (const L of this.links) if (L.link.connected) this.send(L, str); }
+  stamp(s) { s.ver = this.cur.ver + 1; s.w = this.wid; s.t = this.now(); return s; }
+  dispatch(act) {                                   // throws GameError if invalid now
+    act.aid = act.aid || rid(10); act.t = this.now();
+    const s = applyAction(this.cur, act);
+    this.mine.push({ act, at: this.now() });
+    this.cur = this.stamp(s); this.publishAll(); this.onChange(this.cur);
+    return this.cur;
+  }
+  rebase() {
+    const now = this.now();
+    this.mine = this.mine.filter(m => now - m.at < TTL);
+    let s = this.cur, changed = false;
+    for (const m of this.mine) {
+      if (s.aids.includes(m.act.aid)) continue;
+      try { s = applyAction(s, { ...m.act, replay: true }); changed = true; }
+      catch (e) { m.dead = true; if (e instanceof GameError) this.onReject(m.act, e.message, e); else throw e; }
+    }
+    this.mine = this.mine.filter(m => !m.dead);
+    if (changed) { this.cur = this.stamp(s); this.publishAll(); }
+  }
+}
+/* CORE-END */
+
+/* =====================================================================
+   Browser: transport, storage, UI
+   ===================================================================== */
+if (typeof document !== 'undefined') (function () {
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const params = new URLSearchParams(location.search);
+const BROKERS = (params.get('brokers') || '').split(',').filter(Boolean);
+if (!BROKERS.length) BROKERS.push('wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://test.mosquitto.org:8081/mqtt');
+const TOPIC = code => `fiches-tavolo/v1/${code}`;
+const WID = rid(12);                                    // writer id: one per page load
+let DEVICE = LS.get('fiches:device'); if (!DEVICE) { DEVICE = rid(12); LS.set('fiches:device', DEVICE); }
+
+let sync = null, code = null, me = null, S = null, links = [];
+let pendingName = null, waitTimer = null, lastPot = null, lastHandKey = '', amt = 0, wakeLock = null;
+
+/* ---------- transport ---------- */
+function waitMqtt() {
+  return new Promise((res, rej) => {
+    let n = 0; (function poll() { if (window.mqtt) return res(window.mqtt); if (++n > 120) return rej(new Error('mqtt')); setTimeout(poll, 100); })();
+  });
+}
+function mqttLink(url, topic) {
+  const link = { connected: false, url, onMessage: null, onConnect: null, client: null };
+  const make = () => {
+    const c = window.mqtt.connect(url, { clientId: 'fiches_' + rid(10), clean: true, keepalive: 25, reconnectPeriod: 3000, connectTimeout: 10000, protocolVersion: 4 });
+    c.on('connect', () => { link.connected = true; c.subscribe(topic, { qos: 1 }); link.onConnect && link.onConnect(); netUI(); });
+    c.on('close', () => { link.connected = false; netUI(); });
+    c.on('offline', () => { link.connected = false; netUI(); });
+    c.on('error', () => {});
+    c.on('message', (t, buf) => { if (t === topic && link.onMessage) link.onMessage(new TextDecoder().decode(buf)); });
+    link.client = c;
+  };
+  link.publish = str => { try { link.client.publish(topic, str, { qos: 1, retain: true }); } catch {} };
+  link.restart = () => { const old = link.client; link.connected = false; try { old.end(true); } catch {} make(); };
+  link.end = () => { try { link.client.end(true); } catch {} link.connected = false; };
+  make();
+  return link;
+}
+function netUI() {
+  const on = links.filter(l => l.connected).length;
+  const d = $('#dot'); d.classList.toggle('on', on > 0);
+  d.title = on ? `Connesso (${on}/${links.length} server)` : 'Offline: riprovo da solo';
+}
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (!links.length) return;
+  if (Date.now() - hiddenAt > 15000) links.forEach(l => l.restart());     // il telefono si è addormentato: socket probabilmente morti
+  else links.forEach(l => { if (!l.connected) l.restart(); });
+  reacquireWake();
+});
+
+/* ---------- room lifecycle ---------- */
+async function openRoom(c, { initial = null, pid, name = null } = {}) {
+  code = c; me = pid; pendingName = name;
+  LS.set('fiches:session', { code, pid }); LS.set('fiches:last', { code, pid });
+  const saved = LS.get('fiches:st:' + code);
+  const start = initial || (saved && validState(saved, code) ? saved : null);
+  sync = new Sync({ code, wid: WID, initial: start, onChange, onReject: (act, msg, e) => { if (!e || !e.quiet) toast(`Non registrato: ${msg}`, 'err'); } });
+  S = sync.cur;
+  show('table'); history.replaceState(null, '', location.pathname + location.search + '#' + code);
+  render();
+  try { await waitMqtt(); }
+  catch { $('#waiting').classList.remove('hidden'); $('#waitTxt').textContent = 'Non riesco a caricare il collegamento di rete. Controlla internet e ricarica la pagina.'; return; }
+  links = BROKERS.map(u => mqttLink(u, TOPIC(code)));
+  links.forEach(l => sync.addLink(l));
+  netUI();
+  if (!S) {
+    $('#waiting').classList.remove('hidden'); $('#waitTxt').textContent = `Cerco il tavolo ${code}…`;
+    waitTimer = setTimeout(() => { if (!S) $('#waitTxt').textContent = `Il tavolo ${code} non risponde. Controlla il codice: continuo a cercarlo.`; }, 7000);
+  }
+  if (S) maybeJoin();
+}
+function leaveRoom() {
+  links.forEach(l => l.end()); links = []; sync = null; S = null; code = null; lastPot = null;
+  clearTimeout(waitTimer); LS.del('fiches:session');
+  history.replaceState(null, '', location.pathname + location.search);
+  releaseWake(); show('home'); homeInit();
+}
+function onChange(s) {
+  const prev = S; S = s;
+  LS.set('fiches:st:' + code, s);
+  if (!prev) { clearTimeout(waitTimer); $('#waiting').classList.add('hidden'); maybeJoin(); }
+  if (prev) celebrate(prev, s);
+  render();
+}
+function maybeJoin() {
+  if (!S || !pendingName) return;
+  const name = pendingName; pendingName = null;
+  if (P(S, me)) return;
+  const twin = S.players.find(p => p.name.toLowerCase() === cleanName(name).toLowerCase());
+  if (twin) {
+    ask({ title: `C'è già ${twin.name} al tavolo`, text: 'Sei tu da un altro telefono? Puoi riprendere il tuo posto con le tue fiches.', ok: 'Sì, sono io', cancel: 'No, sono un altro' })
+      .then(yes => { if (yes) { me = twin.id; LS.set('fiches:session', { code, pid: me }); LS.set('fiches:last', { code, pid: me }); render(); } else sitDown(); });
+    return;
+  }
+  act({ type: 'join', name });
+}
+function act(a) {
+  if (!sync || !sync.cur) { toast('Aspetta: il tavolo si sta caricando', 'err'); return false; }
+  a.by = me;
+  try { sync.dispatch(a); return true; }
+  catch (e) { if (e instanceof GameError) { toast(e.message, 'err'); return false; } throw e; }
+}
+
+/* ---------- feedback ---------- */
+let toastT = null;
+function toast(msg, kind = '') {
+  let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.className = 'toast ' + kind; t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('hidden'), kind === 'err' ? 3800 : 3000);
+}
+function celebrate(prev, s) {
+  const a = P(prev, me), b = P(s, me);
+  if (!a || !b || b.stack <= a.stack) return;
+  const lastPrev = prev.log[prev.log.length - 1];
+  let i = lastPrev ? s.log.length - 1 : -1;
+  if (lastPrev) while (i >= 0 && !(s.log[i].t === lastPrev.t && s.log[i].txt === lastPrev.txt)) i--;
+  const fresh = s.log.slice(i + 1).filter(l => l.k === 'win');
+  const n = str => parseInt(str.replace(/\./g, ''), 10) || 0;
+  const re = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const nm = re(b.name);
+  let won = 0;
+  for (const l of fresh) {
+    let m = l.txt.match(new RegExp('^' + nm + ' (?:vince|ritira il resto del piatto:) ([0-9.]+)'));
+    if (m) won += n(m[1]);
+    m = l.txt.match(new RegExp('(?:: |, )' + nm + ' \\+([0-9.]+)'));
+    if (l.txt.startsWith('Piatto diviso') && m) won += n(m[1]);
+  }
+  if (won > 0) { toast(`Hai vinto ${fmt(won)} fiches`, 'win'); if (navigator.vibrate) navigator.vibrate([60, 40, 60]); }
+}
+/* ---------- sheets ---------- */
+function sheet(html, { onClose } = {}) {
+  const scrim = document.createElement('div'); scrim.className = 'scrim';
+  scrim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  const close = () => { scrim.remove(); onClose && onClose(); };
+  scrim.addEventListener('click', e => { if (e.target === scrim) close(); });
+  document.body.appendChild(scrim);
+  scrim.close = close; scrim.sheetEl = scrim.firstElementChild;
+  return scrim;
+}
+function ask({ title, text = '', ok = 'Conferma', cancel = 'Annulla', input = null, danger = false }) {
+  return new Promise(res => {
+    let done = false;
+    const sc = sheet(`<h3>${esc(title)}</h3>${text ? `<p>${esc(text)}</p>` : ''}
+      ${input ? `<input class="field ${input.num ? 'num' : ''}" id="askIn" ${input.num ? 'inputmode="numeric" pattern="[0-9]*"' : ''} maxlength="${input.max || 16}" value="${esc(input.value ?? '')}" placeholder="${esc(input.placeholder || '')}">` : ''}
+      <div class="btns"><button class="btn line" data-r="0">${esc(cancel)}</button><button class="btn ${danger ? 'red' : 'brass'}" data-r="1">${esc(ok)}</button></div>`,
+      { onClose: () => { if (!done) res(null); } });
+    const inp = sc.querySelector('#askIn');
+    const finish = r => { done = true; sc.remove(); if (!r) return res(input ? null : false); res(input ? inp.value : true); };
+    sc.querySelectorAll('[data-r]').forEach(b => b.onclick = () => finish(b.dataset.r === '1'));
+    if (inp) { setTimeout(() => { inp.focus(); inp.select(); }, 60); inp.onkeydown = e => { if (e.key === 'Enter') finish(true); }; }
+  });
+}
+const toInt = v => { const n = parseInt(String(v ?? '').replace(/\D/g, ''), 10); return Number.isFinite(n) ? n : NaN; };
+
+/* ---------- screens ---------- */
+function show(which) { $('#home').classList.toggle('hidden', which !== 'home'); $('#table').classList.toggle('hidden', which !== 'table'); }
+function homeInit() {
+  const nm = LS.get('fiches:name', '');
+  if (nm) { $('#cName').value = nm; $('#jName').value = nm; }
+  const h = (location.hash || '').replace('#', '').toUpperCase();
+  if (/^[A-Z2-9]{5}$/.test(h)) { $('#jCode').value = h; $('#fJoin').scrollIntoView({ block: 'center' }); if (!nm) setTimeout(() => $('#jName').focus(), 80); }
+  const last = LS.get('fiches:last');
+  const r = $('#resume');
+  if (last && last.code && (!h || h === last.code)) {
+    const st = LS.get('fiches:st:' + last.code); const p = st && st.players ? st.players.find(x => x.id === last.pid) : null;
+    r.innerHTML = `Torna al tavolo ${esc(last.code)}<small>${p ? esc(p.name) + ': ' + fmt(p.stack) + ' fiches' : ''}</small>`;
+    r.classList.remove('hidden'); r.onclick = () => openRoom(last.code, { pid: last.pid });
+  } else r.classList.add('hidden');
+}
+$('#fCreate').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = cleanName($('#cName').value), start = toInt($('#cStart').value);
+  const sb = toInt($('#cSb').value) || 0, bb = toInt($('#cBb').value) || 0;
+  if (!name) return toast('Scrivi il tuo nome', 'err');
+  if (!(start >= 1)) return toast('Scrivi quante fiches a testa', 'err');
+  if (sb > bb) return toast('Lo small blind non può superare il big blind', 'err');
+  LS.set('fiches:name', name);
+  const c = rid(5), pid = DEVICE + '-' + rid(4);
+  const s = newGame({ code: c, gid: rid(12), wid: WID, pid, name, start, sb, bb, t: Date.now() });
+  LS.set('fiches:st:' + c, s);
+  openRoom(c, { initial: s, pid });
+});
+$('#fJoin').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = $('#jCode').value.toUpperCase().replace(/[^A-Z0-9]/g, ''), name = cleanName($('#jName').value);
+  if (!/^[A-Z2-9]{5}$/.test(c)) return toast('Il codice ha 5 caratteri', 'err');
+  if (!name) return toast('Scrivi il tuo nome', 'err');
+  LS.set('fiches:name', name);
+  const last = LS.get('fiches:last');
+  const pid = last && last.code === c ? last.pid : DEVICE + '-' + rid(4);
+  openRoom(c, { pid, name });
+});
+$('#jCode').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); });
+
+/* ---------- table render ---------- */
+const shareUrl = () => location.origin + location.pathname + location.search + '#' + code;
+function niceUnit(x) { if (x <= 1) return 1; const p = Math.pow(10, Math.floor(Math.log10(x))); const m = x / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+
+function render() {
+  if (!code) return;
+  $('#codeBtn').textContent = code;
+  const dOther = $('#dOther'), dBet = $('#dBet');
+  if (!S) {
+    $('#phase').textContent = 'Collegamento…'; $('#players').innerHTML = ''; $('#log').innerHTML = ''; $('#pot').textContent = '0';
+    $('#underpot').innerHTML = ''; dBet.classList.add('hidden'); dOther.innerHTML = ''; setDockH(); return;
+  }
+  const mp = P(S, me);
+  const pot = potOf(S);
+  $('#phase').textContent = S.phase === 'lobby' ? (S.hand ? 'Partita in pausa' : 'Si aspettano i giocatori')
+    : S.phase === 'betting' ? `Mano ${S.hand}` : `Mano ${S.hand}: chi ha vinto?`;
+  $('#pot').textContent = fmt(pot);
+  if (lastPot !== null && lastPot !== pot) { const c = $('#chip'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  lastPot = pot;
+  $('#potzone').classList.toggle('hidden', S.phase === 'lobby' && pot === 0 && !S.hand);
+  $('#underpot').innerHTML = S.phase === 'betting' ? `<button class="endbtn" id="endBtn">Fine mano: chi ha vinto?</button>` : '';
+  const eb = $('#endBtn'); if (eb) eb.onclick = endHand;
+
+  // players
+  const single = S.phase === 'showdown' ? Object.fromEntries(eligible(S).map(p => [p.id, previewWin(S, [p.id]).get(p.id)])) : {};
+  $('#players').innerHTML = S.players.map(p => {
+    const badges = (S.dealer === p.id && S.phase !== 'lobby' ? '<span class="badge d" title="Mazziere">D</span>' : '')
+      + (S.phase === 'betting' && S.sbId === p.id ? '<span class="badge b" title="Small blind">SB</span>' : '')
+      + (S.phase === 'betting' && S.bbId === p.id ? '<span class="badge b" title="Big blind">BB</span>' : '');
+    let sub = '', out = false;
+    if (S.phase === 'lobby') sub = p.stack ? '' : 'senza fiches';
+    else if (!p.inHand) { sub = p.stack ? 'entra dalla prossima mano' : 'senza fiches'; out = true; }
+    else if (p.folded) { sub = 'ha lasciato' + (p.put ? `, aveva messo ${fmt(p.put)}` : ''); out = true; }
+    else if (S.phase === 'betting') sub = (p.put ? `in piatto <b>${fmt(p.put)}</b>` : 'niente in piatto') + (p.stack === 0 ? ', all-in' : '');
+    else sub = single[p.id] ? `se vince prende <b>${fmt(single[p.id])}</b>` : 'piatto già assegnato';
+    return `<li class="pl${p.id === me ? ' me' : ''}${out ? ' out' : ''}">
+      <div class="who">${badges}<span class="nm">${esc(p.name)}</span>${p.id === me ? '<span class="you">tu</span>' : ''}</div>
+      <div class="st">${fmt(p.stack)}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</li>`;
+  }).join('');
+
+  // log (newest first)
+  $('#log').innerHTML = S.log.slice(-6).reverse().map(l => `<li class="${l.k === 'win' ? 'win' : ''}">${esc(l.txt)}</li>`).join('');
+
+  // dock
+  dBet.classList.add('hidden'); dOther.innerHTML = '';
+  if (!mp) {
+    dOther.innerHTML = `<p class="say">Non sei seduto a questo tavolo. Siediti per avere ${fmt(S.cfg.start)} fiches.</p><button class="btn brass wide" id="sit2" style="margin-top:0">Siediti</button>`;
+    $('#sit2').onclick = sitDown;
+  } else if (S.phase === 'lobby') {
+    const ready = S.players.filter(p => p.stack > 0).length;
+    dOther.innerHTML = `<div class="lobbyshare"><div><small>Codice del tavolo</small><div class="bigcode">${esc(code)}</div></div>
+        <button class="btn line" id="shareBtn" style="min-height:46px">Invita</button></div>
+      <p class="say muted">${S.players.length} ${S.players.length === 1 ? 'giocatore' : 'giocatori'}, ${fmt(S.cfg.start)} fiches a testa${S.cfg.bb ? `, bui ${fmt(S.cfg.sb)}/${fmt(S.cfg.bb)}` : ''}.</p>
+      <button class="btn brass wide" id="startBtn" style="margin-top:0" ${ready < 2 ? 'disabled' : ''}>${S.hand ? 'Riprendi la partita' : 'Inizia la partita'}${ready < 2 ? '<small>servono almeno 2 giocatori</small>' : ''}</button>`;
+    $('#shareBtn').onclick = shareSheet;
+    $('#startBtn').onclick = () => act({ type: 'start' });
+  } else if (S.phase === 'betting' && mp.inHand && !mp.folded) {
+    dBet.classList.remove('hidden'); renderBet(mp, pot);
+  } else if (S.phase === 'betting') {
+    dOther.innerHTML = `<div class="mine"><div><small>Le tue fiches</small><div class="big">${fmt(mp.stack)}</div></div>
+      <div class="tc">${mp.folded ? 'Hai lasciato questa mano' : 'Giochi dalla prossima mano'}</div></div>`;
+  } else {
+    renderShowdown(mp, pot, single);
+  }
+  setDockH(); fillManage();
+}
+
+function renderBet(mp, pot) {
+  const tc = toCall(S, mp), st = mp.stack;
+  const key = `${S.gid}:${S.hand}:${maxPut(S)}:${mp.put}`;
+  if (key !== lastHandKey) { amt = Math.min(st, tc + stepUnit()); lastHandKey = key; }   // proposta: rilancio minimo
+  amt = Math.max(0, Math.min(amt, st));
+  $('#myStack').textContent = fmt(st);
+  $('#tcBox').innerHTML = tc > 0 ? `Da vedere<b>${fmt(Math.min(tc, st))}</b>` : (mp.put ? `In piatto<b>${fmt(mp.put)}</b>` : 'Nessuno ha puntato');
+  const inp = $('#amt'); if (document.activeElement !== inp) inp.value = amt ? fmt(amt) : '';
+  const u = S.cfg.bb > 0 ? S.cfg.bb : niceUnit(S.cfg.start / 100);
+  const q = [[`+${fmt(u)}`, () => amt + u], [`+${fmt(u * 5)}`, () => amt + u * 5], [`+${fmt(u * 25)}`, () => amt + u * 25]];
+  if (pot > 0) q.push(['½ piatto', () => tc + Math.round((pot + tc) / 2)], ['Piatto', () => tc + pot + tc]);
+  q.push(['Tutto', () => st]);
+  const qe = $('#quick'); qe.innerHTML = q.map((x, i) => `<button data-q="${i}">${x[0]}</button>`).join('') + `<button class="cl" data-q="c">Azzera</button>`;
+  qe.querySelectorAll('button').forEach(b => b.onclick = () => { amt = b.dataset.q === 'c' ? 0 : Math.min(st, q[+b.dataset.q][1]()); syncBetUI(mp); });
+  syncBetUI(mp);
+}
+function syncBetUI(mp) {
+  const tc = toCall(S, mp), st = mp.stack;
+  const inp = $('#amt'); if (document.activeElement !== inp) inp.value = amt ? fmt(amt) : '';
+  const call = $('#callBtn');
+  call.innerHTML = tc === 0 ? 'Check' : tc >= st ? `All-in<small>${fmt(st)}</small>` : `Vedo<small>${fmt(tc)}</small>`;
+  const bet = $('#betBtn');
+  let lab, ok = true;
+  if (amt <= 0) { lab = 'Punto'; ok = false; }
+  else if (amt < tc && amt < st) { lab = `Servono ${fmt(tc)}`; ok = false; }
+  else if (amt === st) lab = `All-in<small>${fmt(st)}</small>`;
+  else if (tc === 0) lab = `Punto<small>${fmt(amt)}</small>`;
+  else if (amt === tc) lab = `Vedo<small>${fmt(amt)}</small>`;
+  else lab = `Rilancio<small>${fmt(tc)} + ${fmt(amt - tc)}</small>`;
+  bet.innerHTML = lab; bet.disabled = !ok;
+}
+$('#amt').addEventListener('input', e => { amt = toInt(e.target.value) || 0; const mp = S && P(S, me); if (mp) { amt = Math.min(amt, mp.stack); syncBetUI(mp); } });
+$('#amt').addEventListener('blur', e => { e.target.value = amt ? fmt(amt) : ''; });
+$('#amt').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); $('#betBtn').click(); } });
+function stepUnit() { return S.cfg.bb > 0 ? S.cfg.bb : niceUnit(S.cfg.start / 100); }
+$('#plus').onclick = () => { const mp = P(S, me); if (!mp) return; amt = Math.min(mp.stack, amt + stepUnit()); syncBetUI(mp); };
+$('#minus').onclick = () => { const mp = P(S, me); if (!mp) return; amt = Math.max(0, amt - stepUnit()); syncBetUI(mp); };
+async function placeBet(x) {
+  const mp = P(S, me); if (!mp || x <= 0) return;
+  const hand = S.hand;
+  if (x >= mp.stack && !(await ask({ title: `All-in con ${fmt(mp.stack)}?`, text: 'Metti nel piatto tutte le tue fiches.', ok: 'All-in' }))) return;
+  if (act({ type: 'bet', amount: Math.min(x, mp.stack), hand })) amt = 0;
+}
+$('#callBtn').onclick = () => {
+  const mp = P(S, me); if (!mp) return; const tc = toCall(S, mp);
+  if (tc === 0) act({ type: 'check', hand: S.hand }); else placeBet(Math.min(tc, mp.stack));
+};
+$('#betBtn').onclick = () => placeBet(amt);
+$('#foldBtn').onclick = async () => {
+  const mp = P(S, me); if (!mp) return; const hand = S.hand;
+  if (toCall(S, mp) === 0 && !(await ask({ title: 'Lasci la mano?', text: 'Nessuno ha rilanciato: potresti fare check gratis.', ok: 'Lascio comunque', danger: true }))) return;
+  act({ type: 'fold', hand });
+};
+
+async function endHand() {
+  const hand = S.hand;
+  if (await ask({ title: 'Chiudere la mano?', text: 'Non si punta più. Poi chi ha vinto tocca «Ho vinto» sul suo telefono.', ok: 'Chiudi la mano' })) act({ type: 'end', hand });
+}
+
+function renderShowdown(mp, pot, single) {
+  const el = eligible(S);
+  const mine = single[me];
+  const others = el.filter(p => p.id !== me);
+  const dOther = $('#dOther');
+  dOther.innerHTML = `<h3>Chi ha vinto ${fmt(pot)}?</h3>
+    <p class="say muted">${el.some(p => single[p.id] < pot) ? 'C\'è un piatto laterale: tocca chi ha la mano migliore, il resto si assegna subito dopo.' : 'Tocca chi ha la mano migliore.'}</p>
+    ${mine ? `<button class="btn brass wide" id="iWon" style="margin-top:0">Ho vinto io<small>+${fmt(mine)} fiches</small></button>` : ''}
+    <div class="claims">${others.map(p => `<button class="btn line" data-w="${esc(p.id)}">${esc(p.name)}<small>+${fmt(single[p.id])}</small></button>`).join('')}</div>
+    ${el.length >= 2 ? `<button class="logmore" id="splitBtn">Pareggio? Dividi il piatto</button>` : ''}`;
+  const hand = S.hand;
+  const iw = $('#iWon'); if (iw) iw.onclick = async () => { if (await ask({ title: `Hai vinto ${fmt(mine)}?`, ok: 'Sì, ho vinto' })) act({ type: 'win', winners: [me], hand }); };
+  dOther.querySelectorAll('[data-w]').forEach(b => b.onclick = async () => {
+    const p = P(S, b.dataset.w); if (!p) return;
+    if (await ask({ title: `Ha vinto ${p.name}?`, text: `Gli vanno ${fmt(single[p.id])} fiches.`, ok: `Sì, ${p.name}` })) act({ type: 'win', winners: [p.id], hand });
+  });
+  const sp = $('#splitBtn'); if (sp) sp.onclick = splitSheet;
+}
+
+function splitSheet() {
+  const hand = S.hand, el = eligible(S);
+  const sc = sheet(`<h3>Dividi il piatto</h3><p>Seleziona chi ha la stessa mano vincente.</p>
+    <div id="picks">${el.map(p => `<label class="pick"><input type="checkbox" value="${esc(p.id)}"><span>${esc(p.name)}</span><span class="amtp" data-a="${esc(p.id)}"></span></label>`).join('')}</div>
+    <div class="btns"><button class="btn line" data-x>Annulla</button><button class="btn brass" id="doSplit" disabled>Dividi</button></div>`);
+  const upd = () => {
+    const ids = [...sc.querySelectorAll('input:checked')].map(i => i.value);
+    const pv = ids.length ? previewWin(S, ids) : new Map();
+    sc.querySelectorAll('[data-a]').forEach(s => { s.textContent = pv.has(s.dataset.a) ? '+' + fmt(pv.get(s.dataset.a)) : ''; });
+    sc.querySelector('#doSplit').disabled = ids.length < 2;
+  };
+  sc.querySelectorAll('input').forEach(i => i.onchange = upd);
+  sc.querySelector('[data-x]').onclick = sc.close;
+  sc.querySelector('#doSplit').onclick = () => { const ids = [...sc.querySelectorAll('input:checked')].map(i => i.value); sc.close(); act({ type: 'win', winners: ids, hand }); };
+}
+
+function setDockH() { requestAnimationFrame(() => document.documentElement.style.setProperty('--dock-h', $('#dock').offsetHeight + 'px')); }
+window.addEventListener('resize', setDockH);
+
+async function sitDown() {
+  const name = await ask({ title: 'Come ti chiami?', input: { value: LS.get('fiches:name', ''), placeholder: 'Il tuo nome' }, ok: 'Siediti' });
+  if (name == null) return;
+  if (!cleanName(name)) return toast('Scrivi un nome', 'err');
+  LS.set('fiches:name', cleanName(name));
+  act({ type: 'join', name });
+}
+
+/* ---------- share ---------- */
+function qrImg(text) {
+  try { if (!window.qrcode) return ''; const q = window.qrcode(0, 'M'); q.addData(text); q.make(); return `<img alt="Codice QR del tavolo" src="${q.createDataURL(6, 2)}">`; }
+  catch { return ''; }
+}
+function shareSheet() {
+  const url = shareUrl();
+  const sc = sheet(`<h3>Invita al tavolo ${esc(code)}</h3><p>Fate inquadrare il QR, oppure mandate il link. Chi entra riceve ${S ? fmt(S.cfg.start) : ''} fiches.</p>
+    <div class="qr">${qrImg(url) || '<p>QR non disponibile: usa il link.</p>'}</div>
+    <div class="btns"><button class="btn line" id="cpy">Copia link</button><button class="btn brass" id="shr">Condividi</button></div>`);
+  sc.querySelector('#cpy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Link copiato'); } catch { toast(url); } };
+  const shr = sc.querySelector('#shr');
+  if (!navigator.share) shr.classList.add('hidden');
+  shr.onclick = () => navigator.share({ title: 'Fiches', text: `Siediti al tavolo ${code}`, url }).catch(() => {});
+}
+$('#codeBtn').onclick = shareSheet;
+
+/* ---------- menu & management ---------- */
+let mgOpen = null;
+$('#menuBtn').onclick = () => {
+  const h = S && S.hist[S.hist.length - 1];
+  const sc = sheet(`<div class="menu">
+    <button class="item" data-m="undo" ${h ? '' : 'disabled'}>Annulla l'ultima azione<small>${h ? '«' + esc(h.txt) + '»' : 'niente da annullare'}</small></button>
+    <button class="item" data-m="mg" ${S ? '' : 'disabled'}>Gestione giocatori<small>ricompre, correzioni, ordine dei posti, mazziere</small></button>
+    <button class="item" data-m="blinds" ${S ? '' : 'disabled'}>Bui<small>${S && S.cfg.bb ? fmt(S.cfg.sb) + '/' + fmt(S.cfg.bb) : 'disattivati'}</small></button>
+    <button class="item" data-m="refund" ${S && S.phase !== 'lobby' ? '' : 'disabled'}>Annulla questa mano<small>restituisce le puntate e ridistribuisce</small></button>
+    <button class="item" data-m="share">Invita<small>QR e link del tavolo</small></button>
+    <button class="item" data-m="log">Tutto lo storico</button>
+    <button class="item" data-m="wake">${wakeLock ? 'Lascia spegnere lo schermo' : 'Tieni lo schermo acceso'}</button>
+    <button class="item" data-m="reset" ${S ? '' : 'disabled'}>Ricomincia la partita<small>tutti tornano alle fiches iniziali</small></button>
+    <button class="item" data-m="hub">Torna ai giochi<small>il tavolo resta aperto: riaprendo il poker ci rientri</small></button>
+    <button class="item" data-m="leave">Esci dal tavolo<small>le tue fiches restano; rientri con lo stesso codice</small></button>
+  </div>`);
+  sc.querySelectorAll('[data-m]').forEach(b => b.onclick = async () => {
+    const m = b.dataset.m; sc.close();
+    if (m === 'undo') { const top = S.hist[S.hist.length - 1]; if (top && await ask({ title: 'Annullare?', text: `«${top.txt}»`, ok: 'Annulla azione', cancel: 'Indietro' })) act({ type: 'undo', target: top.aid }); }
+    if (m === 'mg') manageSheet();
+    if (m === 'blinds') {
+      const v = await ask({ title: 'Bui', text: 'Scrivi small/big, es. 5/10. Scrivi 0 per disattivarli. Valgono dalla prossima mano.', input: { value: S.cfg.bb ? `${S.cfg.sb}/${S.cfg.bb}` : '', placeholder: '5/10', max: 15 }, ok: 'Salva' });
+      if (v == null) return; const [a, c] = v.split(/[^0-9]+/).filter(Boolean).map(Number);
+      if (!a) act({ type: 'blinds', sb: 0, bb: 0 }); else act({ type: 'blinds', sb: c == null ? Math.floor(a / 2) : a, bb: c == null ? a : c });
+    }
+    if (m === 'refund') { const hand = S.hand; if (await ask({ title: 'Annullare la mano?', text: 'Ognuno riprende quello che ha messo nel piatto e si rigioca con lo stesso mazziere.', ok: 'Annulla la mano', danger: true })) act({ type: 'refund', hand }); }
+    if (m === 'share') shareSheet();
+    if (m === 'hub') location.href = '../../';
+    if (m === 'log') logSheet();
+    if (m === 'wake') toggleWake();
+    if (m === 'reset') {
+      const v = await ask({ title: 'Ricominciare?', text: 'Tutti tornano a questo numero di fiches.', input: { value: String(S.cfg.start), num: true, max: 9 }, ok: 'Ricomincia', danger: true });
+      if (v != null) act({ type: 'reset', start: toInt(v) });
+    }
+    if (m === 'leave') { if (await ask({ title: 'Uscire dal tavolo?', text: 'Il tuo posto e le tue fiches restano. Per rientrare usa lo stesso codice.', ok: 'Esci' })) leaveRoom(); }
+  });
+};
+function logSheet() { sheet(`<h3>Storico</h3><ul class="log" style="margin-top:6px">${S.log.slice().reverse().map(l => `<li class="${l.k === 'win' ? 'win' : ''}">${esc(l.txt)}</li>`).join('')}</ul>`); }
+$('#logMore').onclick = () => S && logSheet();
+
+function manageSheet() {
+  mgOpen = sheet('<div id="mgBody"></div>', { onClose: () => { mgOpen = null; } });
+  fillManage();
+}
+function fillManage() {
+  if (!mgOpen || !S) return;
+  const body = mgOpen.querySelector('#mgBody');
+  body.innerHTML = `<h3>Gestione giocatori</h3><p>Usala per ricompre e per correggere errori. Ogni modifica finisce nello storico.</p>` +
+    S.players.map((p, i) => `<div class="mg"><div class="h"><b>${esc(p.name)}${p.id === me ? ' <span class="you">tu</span>' : ''}</b><span class="num" style="font-size:24px">${fmt(p.stack)}</span></div>
+      <div class="tools">
+        <button data-a="rebuy" data-id="${esc(p.id)}">Ricompra +${fmt(S.cfg.start)}</button>
+        <button data-a="set" data-id="${esc(p.id)}">Correggi</button>
+        <button data-a="dealer" data-id="${esc(p.id)}" ${S.dealer === p.id ? 'disabled' : ''}>Mazziere</button>
+        <button data-a="up" data-id="${esc(p.id)}" ${i === 0 ? 'disabled' : ''} aria-label="Sposta su">▲</button>
+        <button data-a="down" data-id="${esc(p.id)}" ${i === S.players.length - 1 ? 'disabled' : ''} aria-label="Sposta giù">▼</button>
+        <button data-a="rm" data-id="${esc(p.id)}" class="danger">Togli</button>
+      </div></div>`).join('') + `<p class="hint">L'ordine della lista è l'ordine dei posti al tavolo: serve per far girare mazziere e bui.</p>`;
+  body.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id, p = P(S, id); if (!p) return;
+    const a = b.dataset.a;
+    if (a === 'rebuy') { if (await ask({ title: `${p.name} ricompra?`, text: `Riceve ${fmt(S.cfg.start)} fiches.`, ok: 'Ricompra' })) act({ type: 'rebuy', target: id }); }
+    if (a === 'set') { const v = await ask({ title: `Fiches di ${p.name}`, text: 'Scrivi il numero giusto (solo quelle davanti a lui, non quelle nel piatto).', input: { value: String(p.stack), num: true, max: 9 }, ok: 'Salva' }); if (v != null) act({ type: 'setstack', target: id, value: toInt(v) }); }
+    if (a === 'dealer') act({ type: 'dealer', target: id });
+    if (a === 'up') act({ type: 'move', target: id, dir: -1 });
+    if (a === 'down') act({ type: 'move', target: id, dir: 1 });
+    if (a === 'rm') { if (await ask({ title: `Togliere ${p.name}?`, text: `Esce dal tavolo con ${fmt(p.stack)} fiches.`, ok: 'Togli', danger: true })) act({ type: 'remove', target: id }); }
+    fillManage();
+  });
+}
+
+/* ---------- wake lock ---------- */
+async function toggleWake() {
+  if (wakeLock) { releaseWake(); toast('Lo schermo può spegnersi'); return; }
+  try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => {}); toast('Schermo sempre acceso'); }
+  catch { toast('Questo browser non lo permette', 'err'); }
+}
+function releaseWake() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+async function reacquireWake() { if (wakeLock && wakeLock.released) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch { wakeLock = null; } } }
+
+/* ---------- boot ---------- */
+const sess = LS.get('fiches:session');
+const hcode = (location.hash || '').replace('#', '').toUpperCase();
+if (sess && sess.code && (!hcode || hcode === sess.code)) openRoom(sess.code, { pid: sess.pid });
+else { show('home'); homeInit(); }
+window.addEventListener('hashchange', () => { const h = location.hash.replace('#', '').toUpperCase(); if (!code && /^[A-Z2-9]{5}$/.test(h)) homeInit(); });
+window.__fiches = { get S() { return S; }, get me() { return me; }, act };   // per i test
+})();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>
