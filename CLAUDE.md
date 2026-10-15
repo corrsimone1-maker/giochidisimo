@@ -34,7 +34,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
-| `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide, dado). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
+| `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide a tre livelli sospesi, dado, stelle). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
 
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
