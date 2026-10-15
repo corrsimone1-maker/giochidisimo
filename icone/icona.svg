@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<!-- Icona di Giochi di Simo. Sorgente dei PNG in questa cartella:
+     dopo una modifica rigenerali con  node icone/genera.js
+     Il gruppo «disegno» viene rimpicciolito per l'icona maskable di Android. -->
+<defs>
+<radialGradient id="cielo" cx="50%" cy="34%" r="80%">
+<stop offset="0" stop-color="#2A3862"/>
+<stop offset=".55" stop-color="#18213A"/>
+<stop offset="1" stop-color="#10172A"/>
+</radialGradient>
+<filter id="ombra" x="-30%" y="-30%" width="160%" height="160%">
+<feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#05080F" flood-opacity=".5"/>
+</filter>
+<linearGradient id="oro" x1="0" x2="1">
+<stop offset=".5" stop-color="#EDC36A"/>
+<stop offset=".5" stop-color="#B98A34"/>
+</linearGradient>
+<path id="cuori" d="M0 46 C-8 34 -48 8 -48 -18 C-48 -36 -35 -46 -22 -46 C-11 -46 -3 -39 0 -30 C3 -39 11 -46 22 -46 C35 -46 48 -36 48 -18 C48 8 8 34 0 46 Z"/>
+<path id="esse" d="M0.5 50Q-9.6 50 -17.3 47.7Q-24.9 45.3 -30 41Q-35.1 36.6 -37.5 30.5Q-39.9 24.3 -39.6 16.7L-17.8 11.9Q-17.5 18.6 -15 22.7Q-12.4 26.9 -8.1 28.9Q-3.7 30.8 1.7 30.8Q6 30.8 9.4 29.7Q12.7 28.6 14.7 26.7Q16.7 24.7 16.7 22.1Q16.7 18.6 14 16.4Q11.4 14.1 6.8 12.5Q2.3 10.9 -3.5 9.3Q-9.8 7.6 -16 5.5Q-22.1 3.3 -27.2 0.1Q-32.3 -3.1 -35.4 -8.1Q-38.6 -13.2 -38.6 -20.8Q-38.6 -30.1 -33.9 -36.6Q-29.1 -43.2 -20.8 -46.6Q-12.4 -50 -1.7 -50Q9.7 -50 18.5 -46.1Q27.4 -42.3 32.2 -34.9Q37 -27.5 36 -16.7L14.5 -13.2Q14.6 -17.6 13.6 -20.9Q12.6 -24.3 10.5 -26.6Q8.4 -28.9 5.2 -30.2Q2 -31.4 -2.4 -31.4Q-6.9 -31.4 -9.9 -30.2Q-12.8 -29.1 -14.4 -27Q-15.9 -25 -15.9 -22.4Q-15.9 -19.3 -13.6 -17.3Q-11.2 -15.3 -6.9 -13.7Q-2.5 -12.2 3.4 -10.6Q9.7 -8.9 16 -6.8Q22.3 -4.7 27.7 -1.2Q33.1 2.2 36.4 7.6Q39.6 12.9 39.6 21.2Q39.6 30.8 34.6 37.2Q29.6 43.6 20.8 46.8Q12 50 0.5 50Z"/>
+<path id="stella" d="M0 -1Q.18 -.18 1 0Q.18 .18 0 1Q-.18 .18 -1 0Q-.18 -.18 0 -1Z"/>
+</defs>
+<rect width="512" height="512" fill="url(#cielo)"/>
+<g id="disegno">
+<!-- stelle -->
+<use href="#stella" fill="#D8A84A" opacity=".85" transform="translate(84 96) scale(13)"/>
+<use href="#stella" fill="#D8A84A" opacity=".85" transform="translate(430 88) scale(10)"/>
+<use href="#stella" fill="#D8A84A" opacity=".85" transform="translate(458 170) scale(6)"/>
+<!-- piramide (7 Wonders) -->
+<g filter="url(#ombra)">
+<path d="M256,92 L84,364 L296,394 Z" fill="#7FAEF0" stroke="#7FAEF0" stroke-width="4" stroke-linejoin="round"/>
+<path d="M256,92 L296,394 L432,356 Z" fill="#3A5BB8" stroke="#3A5BB8" stroke-width="4" stroke-linejoin="round"/>
+<path d="M221.6,146.4 L264,152.4 L291.2,144.8" fill="none" stroke="#10172A" stroke-opacity=".18" stroke-width="3"/>
+<path d="M187.2,200.8 L272,212.8 L326.4,197.6" fill="none" stroke="#10172A" stroke-opacity=".18" stroke-width="3"/>
+<path d="M152.8,255.2 L280,273.2 L361.6,250.4" fill="none" stroke="#10172A" stroke-opacity=".18" stroke-width="3"/>
+<path d="M118.4,309.6 L288,333.6 L396.8,303.2" fill="none" stroke="#10172A" stroke-opacity=".18" stroke-width="3"/>
+</g>
+<!-- asso di cuori con la S di Simo -->
+<g transform="rotate(-7 258 262)" filter="url(#ombra)">
+<rect x="178" y="150" width="160" height="224" rx="17.17" fill="#F1EADB"/>
+  <rect x="187.37" y="159.37" width="141.27" height="205.27" rx="9.37" fill="none" stroke="#D8A84A" stroke-width="2.73"/>
+  <use href="#cuori" fill="#7E5BD6" transform="translate(258 265.12) scale(0.87)"/>
+<use href="#esse" fill="#7E5BD6" transform="translate(203.76 182.78) scale(0.23)"/>
+<use href="#cuori" fill="#7E5BD6" transform="translate(203.76 206.2) scale(0.16)"/>
+</g>
+<!-- pedone degli scacchi -->
+<g transform="translate(150 446) scale(0.8)" filter="url(#ombra)">
+<path d="M-62 0 Q-70 0 -70 -8 L-70 -14 Q-70 -24 -58 -26 L-54 -27 Q-56 -36 -46 -38 C-34 -56 -24 -86 -21 -112 L-32 -114 Q-38 -116 -38 -122 Q-38 -129 -31 -131 L-24 -132 A33 33 0 1 1 24 -132 L31 -131 Q38 -129 38 -122 Q38 -116 32 -114 L21 -112 C24 -86 34 -56 46 -38 Q56 -36 54 -27 L58 -26 Q70 -24 70 -14 L70 -8 Q70 0 62 0 Z" fill="url(#oro)"/>
+<ellipse cx="-11" cy="-167" rx="8" ry="11" fill="#FFF3CF" opacity=".6"/>
+</g>
+<!-- dado -->
+<g filter="url(#ombra)">
+<path d="M374,306 L425.96,336 L374,366 L322.04,336 Z" fill="#EEE8FF" stroke="#EEE8FF" stroke-width="8.4" stroke-linejoin="round"/>
+<path d="M322.04,336 L374,366 L374,426 L322.04,396 Z" fill="#B9A6F4" stroke="#B9A6F4" stroke-width="8.4" stroke-linejoin="round"/>
+<path d="M374,366 L425.96,336 L425.96,396 L374,426 Z" fill="#8466DA" stroke="#8466DA" stroke-width="8.4" stroke-linejoin="round"/>
+  <ellipse cx="0.5" cy="0.5" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 -30 51.96 30 322.04 336)"/>
+<ellipse cx="0.25" cy="0.25" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 30 0 60 322.04 336)"/>
+<ellipse cx="0.75" cy="0.75" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 30 0 60 322.04 336)"/>
+<ellipse cx="0.25" cy="0.25" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 -30 0 60 374 366)"/>
+<ellipse cx="0.5" cy="0.5" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 -30 0 60 374 366)"/>
+<ellipse cx="0.75" cy="0.75" rx=".11" ry=".11" fill="#141C2F" transform="matrix(51.96 -30 0 60 374 366)"/>
+</g>
+</g>
+</svg>

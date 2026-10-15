@@ -12,7 +12,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 
 1. Aggiungi la repo alla sessione (con permesso di push), clonala e lavora su `main`.
 2. Fai la modifica.
-3. Prova in un browser vero. Playwright è in `/opt/npm-tools/node_modules/playwright`, con
+3. Prova in un browser vero. Playwright è in `/opt/node-tools/node_modules/playwright`, con
    `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`. Servi la repo con `python3 -m http.server`,
    blocca i Google Fonts (dalla sandbox non si raggiungono) e usa un viewport da iPhone
    (`390×844`, `hasTouch`, `isMobile`). Controlla gli errori della pagina e guarda gli screenshot.
@@ -34,6 +34,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
+| `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide, dado). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
 
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
