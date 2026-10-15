@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1424">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<title>Perudo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0E1424; --night-2:#1B2540; --night-3:#0B0F1C; --line:rgba(232,226,212,.12);
+  --text:#ECE7DC; --muted:#97A3BA; --gold:#D8A84A; --red:#D9483A;
+  --felt:#174036; --felt-2:#0C241F;
+  --dc:#B79CF0; --pip:#FFFFFF; --alpha:.74; --alpha2:.28; --glow:.55; --cup:#8B5A2B; --cup-dark:#5A3A1B;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) 16px 8px}
+.back{color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0;min-width:84px}
+.title{font-family:var(--display);font-weight:800;font-size:22px;margin:0}
+.gear{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:84px;padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:700}
+.gear svg{width:17px;height:17px}
+
+/* Il tavolo: panno verde, si tiene premuto per alzare il bicchiere */
+.table{position:relative;flex:1 1 auto;margin:0 10px;border-radius:24px;overflow:hidden;touch-action:none;cursor:pointer;
+  background:radial-gradient(120% 80% at 50% 38%,#215A4B 0%,var(--felt) 48%,var(--felt-2) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 12px 40px rgba(0,0,0,.45)}
+.table::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.2px);background-size:4px 4px}
+.hint{position:absolute;left:0;right:0;top:16px;text-align:center;color:rgba(236,231,220,.62);font-weight:700;font-size:14.5px;padding:0 16px;transition:opacity .2s}
+.table.peek .hint{opacity:0}
+.stage{position:absolute;left:0;right:0;bottom:11%;display:flex;justify-content:center}
+.dice{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-end;gap:12px;width:min(350px,88vw);min-height:120px;padding:6px;transition:opacity .12s}
+.table:not(.peek) .dice{opacity:0}
+.die{position:relative;isolation:isolate;width:var(--ds);height:var(--ds);transform:translate(var(--dx),var(--dy)) rotate(var(--r))}
+.die svg{position:relative;width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 5px 4px rgba(0,0,0,.4))}
+/* luce colorata che passa attraverso il dado traslucido */
+.die::after{content:'';position:absolute;left:4%;right:-6%;bottom:-18%;height:42%;border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side,var(--dc),transparent);opacity:var(--glow);filter:blur(3px)}
+
+.cup{position:absolute;left:50%;bottom:calc(11% - 26px);width:min(370px,94vw);transform:translateX(-50%);z-index:3;pointer-events:none;
+  transition:transform .38s cubic-bezier(.3,1.25,.5,1)}
+.cup svg{width:100%;display:block;filter:drop-shadow(0 22px 18px rgba(0,0,0,.55))}
+.table.peek .cup{transform:translate(-50%,-74%) rotate(-8deg)}
+.cup.shaking{animation:shake .55s ease-in-out}
+@keyframes shake{
+  0%,100%{transform:translateX(-50%) rotate(0)}
+  15%{transform:translateX(calc(-50% - 10px)) rotate(-5deg)}
+  35%{transform:translateX(calc(-50% + 10px)) rotate(5deg)}
+  55%{transform:translateX(calc(-50% - 7px)) rotate(-3deg)}
+  75%{transform:translateX(calc(-50% + 5px)) rotate(2deg)}
+}
+.out{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px}
+.out .big{font-family:var(--display);font-weight:800;font-size:clamp(38px,12vw,56px);line-height:1}
+.out .small{color:rgba(236,231,220,.7);font-weight:600;max-width:28ch;line-height:1.45}
+
+.bar{padding:10px 14px calc(12px + env(safe-area-inset-bottom))}
+.count{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:0 0 10px;font-weight:700;color:var(--muted)}
+.count b{font-family:var(--display);font-size:34px;line-height:1;color:var(--text)}
+.btns{display:grid;grid-template-columns:1fr 1.5fr;gap:10px}
+.btn{position:relative;overflow:hidden;padding:15px 12px;border-radius:14px;border:1px solid var(--line);background:var(--night-2);font-weight:800;font-size:16px;text-align:center}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#1A1F2B}
+.btn .fill{position:absolute;inset:0;background:rgba(255,255,255,.5);transform:scaleX(0);transform-origin:left}
+.btn.holding .fill{transition:transform .6s linear;transform:scaleX(1)}
+.btn .lbl{position:relative}
+.btn:disabled{opacity:.4}
+.plus{display:block;margin:10px auto 0;padding:4px 8px;border:0;background:none;color:var(--muted);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:12px;max-width:92vw;
+  padding:10px 12px 10px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.toast button{padding:6px 10px;border:0;border-radius:8px;background:#1A1F2B;color:#ECE7DC;font-weight:800;font-size:13.5px}
+
+/* Impostazioni */
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,12,.72)}
+.sheet{width:min(560px,100%);max-height:92dvh;overflow:auto;background:var(--night-2);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
+.sheet h2{margin:0 0 4px;font-family:var(--display);font-weight:800;font-size:24px}
+.sheet h3{margin:18px 0 10px;font-size:14px;color:var(--muted);font-weight:700}
+.sheet p{margin:6px 0 0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:44px;height:44px;border-radius:11px;border:1px solid var(--line);background:var(--night-3);font-size:22px;font-weight:700}
+.stepper .v{min-width:34px;text-align:center;font-family:var(--display);font-weight:800;font-size:26px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches button{display:flex;flex-direction:column;align-items:center;gap:4px;width:52px;padding:0;border:0;background:none;color:var(--muted);font-size:11.5px;font-weight:700}
+.swatches i{display:block;width:40px;height:40px;border-radius:12px;background:var(--c);border:2px solid rgba(255,255,255,.15)}
+.swatches.round i{border-radius:50% 50% 12px 12px}
+.swatches button[aria-pressed="true"] i{border-color:#fff;box-shadow:0 0 0 3px var(--gold)}
+.swatches button[aria-pressed="true"]{color:var(--text)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;font-weight:700}
+.switch input{width:24px;height:24px;accent-color:var(--gold)}
+.row{display:flex;gap:10px;margin-top:18px}
+.row .btn{flex:1;font-size:15px}
+.preview{display:flex;gap:10px;justify-content:center;padding:14px;margin-top:6px;border-radius:14px;background:radial-gradient(120% 90% at 50% 30%,#215A4B,var(--felt-2))}
+.preview .die{--ds:46px;--dx:0px;--dy:0px}
+@media (prefers-reduced-motion:reduce){.cup,.dice{transition:none}.cup.shaking{animation:none}.btn.holding .fill{transition:none}}
+</style>
+</head>
+<body>
+<!-- Sfumatura e lucentezza dei dadi, usate da tutti i dadi -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".62"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".26"/>
+    </linearGradient>
+    <linearGradient id="cupShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".18"/>
+      <stop offset=".35" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset=".75" stop-color="#000" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".38"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="app">
+  <div class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <h1 class="title">Perudo</h1>
+    <button class="gear" id="setBtn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Impostazioni</button>
+  </div>
+
+  <div class="table" id="table" aria-label="Tieni premuto per guardare i dadi">
+    <div class="hint" id="hint">Tieni premuto sul tavolo per alzare il bicchiere</div>
+    <div class="stage"><div class="dice" id="dice"></div></div>
+    <div class="cup" id="cup">
+      <svg viewBox="0 0 200 172" aria-hidden="true">
+        <path d="M44 12 L156 12 L184 146 L16 146 Z" style="fill:var(--cup)" stroke-linejoin="round"/>
+        <path d="M44 12 L156 12 L184 146 L16 146 Z" fill="url(#cupShade)"/>
+        <ellipse cx="100" cy="12" rx="56" ry="8" style="fill:var(--cup-dark)"/>
+        <ellipse cx="100" cy="11" rx="50" ry="5" fill="#fff" fill-opacity=".08"/>
+        <path d="M31 66 L169 66" style="stroke:var(--cup-dark)" stroke-width="3"/>
+        <path d="M32 72 L168 72" stroke="#fff" stroke-opacity=".28" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <path d="M24 106 L176 106" style="stroke:var(--cup-dark)" stroke-width="3"/>
+        <path d="M25 112 L175 112" stroke="#fff" stroke-opacity=".28" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <path d="M12 140 L188 140 L190 164 Q100 172 10 164 Z" style="fill:var(--cup-dark)"/>
+        <path d="M12 140 L188 140 L190 164 Q100 172 10 164 Z" fill="url(#cupShade)"/>
+        <path d="M14 145 L186 145" stroke="#fff" stroke-opacity=".22" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="out" id="out" hidden>
+      <div class="big">Sei fuori!</div>
+      <div class="small">Hai perso tutti i dadi. Ricomincia quando parte una nuova partita.</div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="count"><b id="nDice">5</b><span id="nLabel">dadi</span></div>
+    <div class="btns" id="btns">
+      <button class="btn" id="minusBtn">−1 dado</button>
+      <button class="btn primary" id="shakeBtn"><span class="fill"></span><span class="lbl">Tieni premuto: mescola</span></button>
+    </div>
+    <button class="btn primary" id="restartBtn" hidden style="width:100%">Ricomincia con 5 dadi</button>
+    <button class="plus" id="plusBtn">+1 dado (calza)</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toastText"></span><button id="undoBtn" hidden>Annulla</button></div>
+
+<div class="overlay" id="settings" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Impostazioni</h2>
+    <h3>Dadi a inizio partita</h3>
+    <div class="stepper"><button id="iniMinus" aria-label="Meno dadi">−</button><span class="v" id="iniN">5</span><button id="iniPlus" aria-label="Più dadi">+</button></div>
+    <p>Di solito sono 5. Vale da quando ricominci.</p>
+    <h3>Colore dei dadi</h3>
+    <div class="swatches" id="diceColors"></div>
+    <label class="switch"><span>Dadi traslucidi</span><input type="checkbox" id="trasl"></label>
+    <div class="preview" id="preview"></div>
+    <h3>Colore del bicchiere</h3>
+    <div class="swatches round" id="cupColors"></div>
+    <div class="row">
+      <button class="btn" id="newGame">Ricomincia la partita</button>
+      <button class="btn primary" id="setDone">Fatto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const KEY = 'gds-perudo';
+const DICE_COLORS = [['lilla', '#B79CF0'], ['viola', '#7A4BD1'], ['rosa', '#EC8FB8'], ['rosso', '#D33B3B'], ['ambra', '#E3A33B'],
+  ['verde', '#2E9E5B'], ['ciano', '#1FB5C9'], ['blu', '#2F6FDE'], ['nero', '#24262D'], ['bianco', '#F2EEE6']];
+const CUP_COLORS = [['cuoio', '#8B5A2B'], ['nero', '#202126'], ['rosso', '#8E2A2A'], ['blu', '#233F7A'], ['verde', '#24563A'], ['lilla', '#9C7BD4'], ['viola', '#55358F']];
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+let S = Object.assign({ iniziali: 5, valori: null, rot: null, dadi: '#B79CF0', bicchiere: '#8B5A2B', trasl: true }, load());
+
+/* Dadi equi: intero uniforme in [0, n) da casualità crittografica, scartando i valori che
+   distorcerebbero il modulo; ogni faccia ha probabilità esattamente 1/6. */
+function randInt(n) { const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1); do crypto.getRandomValues(a); while (a[0] >= lim); return a[0] % n; }
+function roll(n) {
+  S.valori = Array.from({ length: n }, () => 1 + randInt(6));
+  S.rot = S.valori.map(() => [randInt(25) - 12, randInt(9) - 4, randInt(9) - 4]);
+  save();
+}
+if (!Array.isArray(S.valori) || !Array.isArray(S.rot) || S.rot.length !== S.valori.length) roll(S.iniziali);
+
+/* ---------- Disegno ---------- */
+function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+function shade(hex, k) { const n = parseInt(hex.slice(1), 16); const f = c => Math.max(0, Math.min(255, Math.round(c * k))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(f).map(c => c.toString(16).padStart(2, '0')).join(''); }
+function applyColors() {
+  const r = document.documentElement.style, light = lum(S.dadi) > 0.62;
+  r.setProperty('--dc', S.dadi);
+  r.setProperty('--pip', light ? '#2A2433' : '#FFFFFF');
+  r.setProperty('--alpha', S.trasl ? (light ? '.72' : '.62') : '1');
+  r.setProperty('--alpha2', S.trasl ? '.3' : '0');
+  r.setProperty('--glow', S.trasl ? '.55' : '0');
+  r.setProperty('--cup', S.bicchiere);
+  r.setProperty('--cup-dark', shade(S.bicchiere, 0.68));
+}
+const PIPS = { 2: [[28, 28], [72, 72]], 3: [[28, 28], [50, 50], [72, 72]], 4: [[28, 28], [72, 28], [28, 72], [72, 72]],
+  5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]], 6: [[28, 26], [28, 50], [28, 74], [72, 26], [72, 50], [72, 74]] };
+/* L'1 è una medusa a linea continua */
+const MEDUSA = `<g fill="none" style="stroke:var(--pip)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M29 52 C29 27 71 27 71 52"/>
+  <path d="M29 52 Q34.25 57 39.5 52 Q44.75 57 50 52 Q55.25 57 60.5 52 Q65.75 57 71 52"/>
+  <path d="M37 41 C38.5 36 42 33 46 32"/>
+  <path d="M37 57 C34 64 40 69 36 78"/>
+  <path d="M46 58 C43 66 49 72 45 83"/>
+  <path d="M55 58 C58 66 52 72 56 83"/>
+  <path d="M64 57 C67 64 61 69 65 78"/>
+</g>`;
+function dieSVG(v) {
+  const face = v === 1 ? MEDUSA : PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8.6" style="fill:var(--pip)"/><circle cx="${x - 2.4}" cy="${y - 2.6}" r="2.4" fill="#fff" fill-opacity=".35"/>`).join('');
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${v === 1 ? 'medusa (uno)' : v}">
+    <rect x="5" y="5" width="90" height="90" rx="20" style="fill:var(--dc);fill-opacity:var(--alpha)"/>
+    <rect x="13" y="13" width="80" height="80" rx="17" style="fill:var(--dc);fill-opacity:var(--alpha2)"/>
+    <rect x="5" y="5" width="90" height="90" rx="20" fill="url(#gloss)"/>
+    <rect x="6.5" y="6.5" width="87" height="87" rx="18.5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6"/>
+    ${face}
+  </svg>`;
+}
+function dieHTML(v, rot, size) {
+  return `<div class="die" style="--ds:${size}px;--r:${rot[0]}deg;--dx:${rot[1]}px;--dy:${rot[2]}px">${dieSVG(v)}</div>`;
+}
+function render() {
+  const n = S.valori.length;
+  const size = n <= 5 ? 58 : n <= 8 ? 52 : 46;
+  $('dice').innerHTML = S.valori.map((v, i) => dieHTML(v, S.rot[i], size)).join('');
+  $('nDice').textContent = n;
+  $('nLabel').textContent = n === 1 ? 'dado' : 'dadi';
+  const out = n === 0;
+  $('out').hidden = !out; $('cup').hidden = out; $('hint').hidden = out;
+  $('btns').hidden = out; $('restartBtn').hidden = !out;
+  $('restartBtn').textContent = `Ricomincia con ${S.iniziali} dadi`;
+  $('plusBtn').hidden = out || n >= S.iniziali;
+}
+
+/* ---------- Guardare: tieni premuto sul tavolo e il bicchiere si alza ---------- */
+const table = $('table');
+table.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+table.addEventListener('contextmenu', e => e.preventDefault());
+let fingersOnTable = 0;
+table.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (!S.valori.length) return;
+  fingersOnTable++;
+  table.classList.add('peek');
+});
+function lower() { fingersOnTable = Math.max(0, fingersOnTable - 1); if (!fingersOnTable) table.classList.remove('peek'); }
+table.addEventListener('pointerup', lower);
+table.addEventListener('pointercancel', lower);
+table.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { fingersOnTable = 0; table.classList.remove('peek'); } });
+
+/* ---------- Mescolare: tieni premuto ---------- */
+const shakeBtn = $('shakeBtn');
+let holdT = null;
+function cancelHold() { clearTimeout(holdT); holdT = null; shakeBtn.classList.remove('holding'); }
+shakeBtn.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  shakeBtn.classList.add('holding');
+  holdT = setTimeout(() => { cancelHold(); shake(); }, 600);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach(t => shakeBtn.addEventListener(t, cancelHold));
+shakeBtn.addEventListener('contextmenu', e => e.preventDefault());
+shakeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); shake(); } });
+function shake() {
+  if (!S.valori.length) return;
+  table.classList.remove('peek'); fingersOnTable = 0;
+  const cup = $('cup');
+  cup.classList.remove('shaking'); void cup.offsetWidth; cup.classList.add('shaking');
+  roll(S.valori.length);                       // tutti i dadi insieme, sotto il bicchiere
+  setTimeout(render, 200);
+  if (navigator.vibrate) try { navigator.vibrate([25, 40, 25, 40, 25]); } catch (e) {}
+  toast('Dadi mescolati: tieni premuto sul tavolo per guardarli');
+}
+
+/* ---------- Togliere e riprendere dadi ---------- */
+let undo = null;
+$('minusBtn').onclick = () => {
+  if (!S.valori.length) return;
+  const v = S.valori.pop(), r = S.rot.pop(); save(); render();
+  undo = () => { S.valori.push(v); S.rot.push(r); save(); render(); };
+  toast(S.valori.length ? `Tolto un dado: ne hai ${S.valori.length}` : 'Hai perso l’ultimo dado', true);
+};
+$('plusBtn').onclick = () => {
+  if (S.valori.length >= S.iniziali) { toast(`Hai già ${S.iniziali} dadi, il massimo`); return; }
+  S.valori.push(1 + randInt(6)); S.rot.push([randInt(25) - 12, randInt(9) - 4, randInt(9) - 4]); save(); render();
+  toast(`Calza! Riprendi un dado: ne hai ${S.valori.length}`);
+};
+$('restartBtn').onclick = () => { roll(S.iniziali); render(); toast(`Nuova partita con ${S.iniziali} dadi`); };
+
+let toastT = null;
+function toast(msg, withUndo) {
+  $('toastText').textContent = msg; $('undoBtn').hidden = !withUndo; $('toast').hidden = false;
+  if (!withUndo) undo = null;
+  clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; undo = null; }, withUndo ? 4000 : 2200);
+}
+$('undoBtn').onclick = () => { if (undo) { undo(); undo = null; } $('toast').hidden = true; };
+
+/* ---------- Impostazioni ---------- */
+function renderSettings() {
+  $('iniN').textContent = S.iniziali;
+  $('diceColors').innerHTML = DICE_COLORS.map(([n, c]) => `<button data-dc="${c}" aria-pressed="${c === S.dadi}"><i style="--c:${c}"></i>${n}</button>`).join('');
+  $('cupColors').innerHTML = CUP_COLORS.map(([n, c]) => `<button data-cc="${c}" aria-pressed="${c === S.bicchiere}"><i style="--c:${c}"></i>${n}</button>`).join('');
+  $('trasl').checked = !!S.trasl;
+  $('preview').innerHTML = [1, 3, 5, 6].map(v => dieHTML(v, [0, 0, 0], 46)).join('');
+  $('newGame').textContent = `Ricomincia con ${S.iniziali} dadi`;
+}
+$('setBtn').onclick = () => { renderSettings(); $('settings').hidden = false; };
+$('setDone').onclick = () => { $('settings').hidden = true; };
+$('settings').addEventListener('click', e => { if (e.target === $('settings')) $('settings').hidden = true; });
+$('iniMinus').onclick = () => { S.iniziali = Math.max(1, S.iniziali - 1); save(); renderSettings(); render(); };
+$('iniPlus').onclick = () => { S.iniziali = Math.min(10, S.iniziali + 1); save(); renderSettings(); render(); };
+$('diceColors').addEventListener('click', e => { const b = e.target.closest('[data-dc]'); if (!b) return; S.dadi = b.dataset.dc; save(); applyColors(); renderSettings(); });
+$('cupColors').addEventListener('click', e => { const b = e.target.closest('[data-cc]'); if (!b) return; S.bicchiere = b.dataset.cc; save(); applyColors(); renderSettings(); });
+$('trasl').onchange = e => { S.trasl = e.target.checked; save(); applyColors(); };
+$('newGame').onclick = () => { roll(S.iniziali); render(); $('settings').hidden = true; toast(`Nuova partita con ${S.iniziali} dadi`); };
+
+applyColors(); render();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

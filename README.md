@@ -8,9 +8,11 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Categoria | Gioco | Pagina |
 |---|---|---|
 | Carte | Dichiarare, Pegno, Tresette | `giochi/segnapunti/` (una pagina, il gioco si sceglie con `#dichiarare`, `#pegno`, `#tresette`) |
+| Carte | Conta Monete (tre monete a testa per 31 e Saltacavallo: tocco = ne perdi una, tieni premuto = la riprendi) | `giochi/contamonete/` |
 | Contapunti | Schermo diviso in 2, 3 o 4 colori, un tocco = un punto, blocco anti-tocco, tempo di gioco; sempre in orizzontale | `giochi/contapunti/` (la carta della home lo apre direttamente) |
 | Giochi | Impostore (parola segreta, pacchetti di parole scelti dalle Impostazioni) | `giochi/impostore/` (parole in `parole.js`) |
 | Giochi | Lupus (30 ruoli tra cui scegliere, distribuzione segreta, scaletta della notte per il narratore) | `giochi/lupus/` (ruoli in `ruoli.js`) |
+| Giochi | Perudo (i propri dadi sotto il bicchiere: si guarda tenendo premuto, si mescola tenendo premuto, −1 dado, calza) | `giochi/perudo/` |
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
