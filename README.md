@@ -17,6 +17,9 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
 
+> Le istruzioni complete per Claude (dove mettere parole e ruoli, convenzioni, come provare e pubblicare)
+> sono in [`CLAUDE.md`](CLAUDE.md).
+
 ## Aggiungere un gioco
 
 1. Crea la cartella `giochi/<nome>/` con dentro `index.html`.
