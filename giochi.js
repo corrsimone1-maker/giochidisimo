@@ -29,7 +29,7 @@ self.GIOCHI = {
     { categoria: 'carte', nome: 'Tresette', descrizione: '11 punti a mano, con o senza buongiochi', link: 'giochi/segnapunti/#tresette', colore: '#D8A84A' },
     { categoria: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', link: 'giochi/contapunti/', colore: '#1E63B5' },
     { categoria: 'giochi', nome: 'Impostore', descrizione: 'Tutti hanno la parola segreta, tranne uno', link: 'giochi/impostore/', colore: '#D9483A', extra: ['giochi/impostore/parole.js'] },
-    { categoria: 'giochi', nome: 'Lupus', descrizione: 'Ruoli segreti e scaletta della notte per il narratore', link: 'giochi/lupus/', colore: '#3BA56A' },
+    { categoria: 'giochi', nome: 'Lupus', descrizione: 'Ruoli segreti e scaletta della notte per il narratore', link: 'giochi/lupus/', colore: '#3BA56A', extra: ['giochi/lupus/ruoli.js'] },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#C9402F' },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#3F7A57' },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#F2B705' }

@@ -53,10 +53,6 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 .stepper button{width:44px;height:44px;border-radius:11px;border:1px solid var(--line);background:var(--night-3);font-size:22px;font-weight:700}
 .stepper .v{min-width:36px;text-align:center;font-family:var(--display);font-weight:800;font-size:26px}
 .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:var(--night-3);font-weight:600;font-size:14.5px;color:var(--muted)}
-.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#08201D}
-.chip small{opacity:.75;font-weight:700}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600}
 .switch input{width:22px;height:22px;accent-color:var(--gold)}
 .warn{margin:10px 0 0;color:#F0A493;font-size:14px;font-weight:600}
@@ -82,23 +78,24 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 .confirmBox p{margin:0 0 10px;font-weight:600}
 .result{font-family:var(--display);font-weight:800;font-size:clamp(34px,10vw,52px);line-height:1.05;color:#F0A493}
 
-/* Gestione parole */
-details.cat{background:var(--night-2);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
-details.cat summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 16px;font-weight:700;font-size:17px;cursor:pointer}
-details.cat summary::-webkit-details-marker{display:none}
-details.cat summary .n{margin-left:auto;color:var(--muted);font-size:14px;font-weight:600}
-details.cat summary::after{content:'›';color:var(--muted);font-size:22px;transition:transform .15s}
-details.cat[open] summary::after{transform:rotate(90deg)}
-details.cat .inner{padding:0 16px 16px}
-.wlist{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
-.wlist span{display:inline-flex;align-items:center;gap:2px;padding:4px 4px 4px 10px;border-radius:999px;background:var(--night-3);border:1px solid var(--line);font-size:14.5px}
-.wlist .x{width:24px;height:24px;font-size:14px}
+/* Riepilogo e pacchetti */
+.recap{margin:12px 0 0;display:grid;gap:8px}
+.recap div{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:baseline}
+.recap dt{color:var(--muted);font-weight:700;font-size:14px}
+.recap dd{margin:0;font-weight:600}
+.recap small{color:var(--muted);font-weight:600;margin-left:4px}
+.pack{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.pack:first-child{border-top:0;padding-top:2px}
+.pack b{display:block;font-size:17px}
+.pack small{display:block;color:var(--muted);font-size:13.5px;line-height:1.4;margin-top:2px}
+.pack input{flex:0 0 auto;width:24px;height:24px;accent-color:var(--teal)}
+.switch small{display:block;color:var(--muted);font-size:13px;font-weight:500;margin-top:3px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;padding:11px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
 
-<!-- Impostazioni -->
+<!-- Inizio -->
 <main class="wrap" id="setup">
   <a class="back" href="../../">‹ Giochi</a>
   <h1>Impostore</h1>
@@ -115,53 +112,34 @@ details.cat .inner{padding:0 16px 16px}
   </section>
 
   <section class="panel">
-    <div class="between">
-      <div><h2 style="margin:0">Impostori</h2></div>
-      <div class="stepper"><button id="impMinus" aria-label="Meno impostori">−</button><span class="v" id="impN">1</span><button id="impPlus" aria-label="Più impostori">+</button></div>
-    </div>
-    <label class="switch" style="margin-top:14px"><span>L’impostore vede la categoria</span><input type="checkbox" id="hint"></label>
-  </section>
-
-  <section class="panel">
-    <div class="between" style="margin-bottom:10px"><h2 style="margin:0">Categorie</h2><button class="linkbtn" id="allCats">Tutte</button></div>
-    <div class="chips" id="cats"></div>
-    <p class="sub" style="margin:12px 0 0" id="poolInfo"></p>
+    <div class="between"><h2 style="margin:0">Partita</h2><button class="linkbtn" id="settingsBtn">Impostazioni</button></div>
+    <dl class="recap" id="recap"></dl>
   </section>
 
   <p class="warn" id="setupWarn" hidden></p>
-  <div class="stack">
-    <button class="btn" id="playBtn">Gioca</button>
-    <button class="btn ghost" id="wordsBtn">Le tue parole</button>
-  </div>
+  <button class="btn" id="playBtn">Gioca</button>
 </main>
 
-<!-- Gestione parole -->
-<main class="wrap" id="words" hidden>
-  <button class="back" id="wordsBack">‹ Impostore</button>
-  <h1>Le parole</h1>
-  <p class="lede">Aggiungi o togli parole e categorie: restano su questo telefono. Con «Esporta» le salvi come testo, per copiarle altrove o mandarle a chi vuoi.</p>
+<!-- Impostazioni -->
+<main class="wrap" id="settings" hidden>
+  <button class="back" id="settingsBack">‹ Impostore</button>
+  <h1>Impostazioni</h1>
   <section class="panel">
-    <h2>Nuova categoria</h2>
-    <form class="row" id="newCat" autocomplete="off">
-      <input class="in" id="newCatName" placeholder="Es. Film, Amici, Serie TV" maxlength="30">
-      <button class="btn small">Crea</button>
-    </form>
+    <h2>Pacchetti di parole</h2>
+    <p class="sub">Si pesca a caso tra le parole dei pacchetti accesi.</p>
+    <div id="packs"></div>
   </section>
-  <div id="catList"></div>
   <section class="panel">
-    <h2>Esporta e importa</h2>
-    <p class="sub">Una riga per categoria, nel formato «Categoria: parola, parola, parola». Importando, le parole si aggiungono a quelle che hai già.</p>
-    <textarea class="in" id="ioText" placeholder="Cibo: pizza, supplì&#10;Amici: la Vespa di Marco, il divano di Giulia"></textarea>
-    <div class="row" style="margin-top:10px">
-      <button class="btn ghost small" id="exportBtn" style="flex:1">Esporta</button>
-      <button class="btn small" id="importBtn" style="flex:1">Importa</button>
+    <div class="between">
+      <h2 style="margin:0">Impostori</h2>
+      <div class="stepper"><button id="impMinus" aria-label="Meno impostori">−</button><span class="v" id="impN">1</span><button id="impPlus" aria-label="Più impostori">+</button></div>
     </div>
+    <p class="sub" style="margin:10px 0 0" id="impInfo"></p>
   </section>
-  <button class="linkbtn" id="resetWords">Ripristina le parole di base</button>
-  <div class="confirmBox" id="resetConfirm" hidden style="margin-top:10px">
-    <p>Cancello tutte le tue modifiche e torno alla lista di base?</p>
-    <div class="row"><button class="btn ghost small" id="resetNo" style="flex:1">Annulla</button><button class="btn danger small" id="resetYes" style="flex:1">Ripristina</button></div>
-  </div>
+  <section class="panel">
+    <label class="switch"><span>L’impostore vede la categoria<small>Es. «Cibo» o «Cantanti italiani»: gli rende la vita più facile.</small></span><input type="checkbox" id="hint"></label>
+  </section>
+  <button class="btn" id="settingsDone">Fatto</button>
 </main>
 
 <!-- Passa il telefono -->
@@ -211,7 +189,7 @@ details.cat .inner{padding:0 16px 16px}
   </div>
   <div class="bottomActions">
     <button class="btn" id="againBtn">Nuovo round</button>
-    <button class="btn ghost" id="toSetup">Cambia giocatori o categorie</button>
+    <button class="btn ghost" id="toSetup">Cambia giocatori o impostazioni</button>
   </div>
 </section>
 
@@ -222,89 +200,56 @@ details.cat .inner{padding:0 16px 16px}
 'use strict';
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const BASE = self.PAROLE_BASE || {};
-const K_PL = 'gds-giocatori', K_CFG = 'gds-impostore', K_DB = 'gds-impostore-parole';
+const PACCHETTI = self.PACCHETTI || [];
+const K_PL = 'gds-giocatori', K_CFG = 'gds-impostore-v2';
 function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+/* Le parole ora stanno solo in parole.js: via i dati della versione con l'editor */
+try { localStorage.removeItem('gds-impostore'); localStorage.removeItem('gds-impostore-parole'); } catch (e) {}
 
 let players = loadJSON(K_PL, []);
 if (!Array.isArray(players)) players = [];
-let cfg = Object.assign({ imp: 1, cats: [], indizio: true, usate: [] }, loadJSON(K_CFG, {}));
-let db = Object.assign({ agg: {}, rim: {}, nascoste: [] }, loadJSON(K_DB, {}));
-const saveCfg = () => saveJSON(K_CFG, cfg), saveDb = () => saveJSON(K_DB, db), savePl = () => saveJSON(K_PL, players);
+let cfg = Object.assign({ pacchetti: {}, imp: 1, indizio: false, usate: [] }, loadJSON(K_CFG, {}));
+const saveCfg = () => saveJSON(K_CFG, cfg), savePl = () => saveJSON(K_PL, players);
 
 /* Casualità uniforme (crittografica) */
 function randInt(n) { const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1); do crypto.getRandomValues(a); while (a[0] >= lim); return a[0] % n; }
 function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-
-/* ---------------- Database delle parole ----------------
-   parole in gioco = parole di base − tolte + aggiunte (per categoria),
-   categorie nascoste escluse. Così gli aggiornamenti della lista di base
-   arrivano comunque, e le tue modifiche restano. */
 const norm = s => String(s).trim().replace(/\s+/g, ' ');
 const key = s => norm(s).toLocaleLowerCase('it');
-const allCatNames = () => { const out = [], seen = new Set(); for (const n of [...Object.keys(BASE), ...Object.keys(db.agg)]) { const k = key(n); if (!seen.has(k)) { seen.add(k); out.push(n); } } return out; };
-const canonCat = name => allCatNames().find(n => key(n) === key(name)) || norm(name);
-const isHidden = n => db.nascoste.some(h => key(h) === key(n));
-function merged() {
-  return allCatNames().filter(n => !isHidden(n)).map(n => {
-    const rim = new Set((db.rim[n] || []).map(key)), seen = new Set(), parole = [];
-    for (const w of [...(BASE[n] || []), ...(db.agg[n] || [])]) { const k = key(w); if (!k || rim.has(k) || seen.has(k)) continue; seen.add(k); parole.push(norm(w)); }
-    return { nome: n, parole, base: !!BASE[n] };
-  });
-}
-function unhide(cat) { db.nascoste = db.nascoste.filter(h => key(h) !== key(cat)); }
-function addWords(catIn, words) {
-  const cat = canonCat(catIn); if (!cat) return 0;
-  unhide(cat);
-  if (!db.agg[cat]) db.agg[cat] = [];
-  let added = 0;
-  for (const w0 of words) {
-    const w = norm(w0), k = key(w); if (!k) continue;
-    const rim = db.rim[cat] || [];
-    if (rim.some(x => key(x) === k)) { db.rim[cat] = rim.filter(x => key(x) !== k); added++; continue; }
-    if ((BASE[cat] || []).some(x => key(x) === k) || db.agg[cat].some(x => key(x) === k)) continue;
-    db.agg[cat].push(w); added++;
-  }
-  saveDb(); return added;
-}
-function removeWord(cat, w) {
-  const k = key(w);
-  if (db.agg[cat]) db.agg[cat] = db.agg[cat].filter(x => key(x) !== k);
-  if ((BASE[cat] || []).some(x => key(x) === k)) { db.rim[cat] = db.rim[cat] || []; if (!db.rim[cat].some(x => key(x) === k)) db.rim[cat].push(w); }
-  saveDb();
-}
-function deleteCat(cat) {
-  delete db.agg[cat]; delete db.rim[cat];
-  if (BASE[cat] && !isHidden(cat)) db.nascoste.push(cat);
-  cfg.cats = cfg.cats.filter(c => key(c) !== key(cat)); saveCfg(); saveDb();
-}
 
-/* ---------------- Impostazioni ---------------- */
-const maxImp = () => Math.max(1, Math.floor((players.length - 1) / 2));
-function selectedCats() {
-  const all = merged().filter(c => c.parole.length);
-  const sel = all.filter(c => cfg.cats.some(s => key(s) === key(c.nome)));
-  return sel.length ? sel : all;
+/* ---------------- Pacchetti ---------------- */
+const isOn = p => (p.id in cfg.pacchetti) ? !!cfg.pacchetti[p.id] : !!p.attivo;
+const countOf = p => Object.values(p.categorie).reduce((s, l) => s + l.length, 0);
+function pool() {
+  const out = [], seen = new Set();
+  PACCHETTI.filter(isOn).forEach(p => Object.entries(p.categorie).forEach(([cat, words]) => words.forEach(w0 => {
+    const w = norm(w0), k = key(w);
+    if (k && !seen.has(k)) { seen.add(k); out.push({ w, cat }); }
+  })));
+  return out;
 }
+const maxImp = () => Math.max(1, Math.floor((players.length - 1) / 2));
+
 function renderSetup() {
   $('players').innerHTML = players.map((p, i) => `<li>${esc(p)}<button class="x" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
-  cfg.imp = Math.min(Math.max(1, cfg.imp), maxImp());
-  $('impN').textContent = cfg.imp;
-  $('hint').checked = !!cfg.indizio;
-  const cats = merged().filter(c => c.parole.length);
-  const none = !cats.some(c => cfg.cats.some(s => key(s) === key(c.nome)));
-  $('cats').innerHTML = cats.map(c => {
-    const on = !none && cfg.cats.some(s => key(s) === key(c.nome));
-    return `<button class="chip" data-cat="${esc(c.nome)}" aria-pressed="${on}">${esc(c.nome)} <small>${c.parole.length}</small></button>`;
-  }).join('');
-  $('allCats').setAttribute('aria-pressed', none);
-  $('allCats').textContent = none ? 'Tutte (attivo)' : 'Tutte';
-  const pool = selectedCats().reduce((s, c) => s + c.parole.length, 0);
-  $('poolInfo').textContent = none ? `Si pesca tra tutte le ${pool} parole.` : `Si pesca tra ${pool} parole delle categorie scelte.`;
-  const warn = players.length < 3 ? 'Servono almeno 3 giocatori.' : (pool === 0 ? 'Non ci sono parole: aggiungine qualcuna.' : '');
+  const on = PACCHETTI.filter(isOn), n = pool().length, k = Math.min(cfg.imp, maxImp());
+  $('recap').innerHTML = `
+    <div><dt>Pacchetti</dt><dd>${on.length ? on.map(p => esc(p.nome)).join(', ') : 'nessuno'} <small>${n} parole</small></dd></div>
+    <div><dt>Impostori</dt><dd>${k}</dd></div>
+    <div><dt>Indizio</dt><dd>${cfg.indizio ? 'l’impostore vede la categoria' : 'nessuno'}</dd></div>`;
+  const warn = players.length < 3 ? 'Servono almeno 3 giocatori.' : (!n ? 'Accendi almeno un pacchetto di parole nelle Impostazioni.' : '');
   $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn;
   $('playBtn').disabled = !!warn;
+}
+function renderSettings() {
+  $('packs').innerHTML = PACCHETTI.map(p => `
+    <label class="pack"><span><b>${esc(p.nome)}</b><small>${esc(p.descrizione || '')} · ${countOf(p)} parole</small></span>
+      <input type="checkbox" data-pack="${esc(p.id)}" ${isOn(p) ? 'checked' : ''}></label>`).join('') || '<p class="sub">Nessun pacchetto in parole.js.</p>';
+  cfg.imp = Math.min(Math.max(1, cfg.imp), maxImp());
+  $('impN').textContent = cfg.imp;
+  $('impInfo').textContent = players.length >= 3 ? `Con ${players.length} giocatori al massimo ${maxImp()}.` : 'Il massimo dipende da quanti giocatori siete.';
+  $('hint').checked = !!cfg.indizio;
 }
 $('addPlayer').addEventListener('submit', e => {
   e.preventDefault();
@@ -313,27 +258,23 @@ $('addPlayer').addEventListener('submit', e => {
   players.push(n); savePl(); $('playerName').value = ''; renderSetup();
 });
 $('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderSetup(); });
-$('impMinus').onclick = () => { cfg.imp = Math.max(1, cfg.imp - 1); saveCfg(); renderSetup(); };
-$('impPlus').onclick = () => { if (cfg.imp >= maxImp()) { toast(players.length < 3 ? 'Prima aggiungi i giocatori' : `Con ${players.length} giocatori al massimo ${maxImp()}`); return; } cfg.imp++; saveCfg(); renderSetup(); };
+$('packs').addEventListener('change', e => { const c = e.target.closest('[data-pack]'); if (!c) return; cfg.pacchetti[c.dataset.pack] = c.checked; saveCfg(); });
+$('impMinus').onclick = () => { cfg.imp = Math.max(1, cfg.imp - 1); saveCfg(); renderSettings(); };
+$('impPlus').onclick = () => { if (cfg.imp >= maxImp()) { toast(players.length < 3 ? 'Prima aggiungi i giocatori' : `Con ${players.length} giocatori al massimo ${maxImp()}`); return; } cfg.imp++; saveCfg(); renderSettings(); };
 $('hint').onchange = e => { cfg.indizio = e.target.checked; saveCfg(); };
-$('cats').addEventListener('click', e => {
-  const b = e.target.closest('[data-cat]'); if (!b) return;
-  const c = b.dataset.cat, on = cfg.cats.some(s => key(s) === key(c));
-  cfg.cats = on ? cfg.cats.filter(s => key(s) !== key(c)) : cfg.cats.concat(c);
-  saveCfg(); renderSetup();
-});
-$('allCats').onclick = () => { cfg.cats = []; saveCfg(); renderSetup(); };
+$('settingsBtn').onclick = () => { renderSettings(); show('settings'); };
+$('settingsBack').onclick = $('settingsDone').onclick = () => { show('setup'); renderSetup(); };
 
 /* ---------------- Round ---------------- */
 let R = null;   // { parola, cat, imp:Set, idx, primo }
 function newRound() {
-  const pool = []; selectedCats().forEach(c => c.parole.forEach(w => pool.push({ w, cat: c.nome })));
-  if (players.length < 3 || !pool.length) { show('setup'); renderSetup(); return; }
-  let cand = pool.filter(x => !cfg.usate.includes(key(x.w)));
-  if (!cand.length) { cfg.usate = []; cand = pool; }
+  const P = pool();
+  if (players.length < 3 || !P.length) { show('setup'); renderSetup(); return; }
+  let cand = P.filter(x => !cfg.usate.includes(key(x.w)));
+  if (!cand.length) { cfg.usate = []; cand = P; }
   const pick = cand[randInt(cand.length)];
   cfg.usate.push(key(pick.w));
-  const keep = Math.min(120, Math.floor(pool.length * 0.7));
+  const keep = Math.min(300, Math.floor(P.length * 0.7));   // niente ripetizioni a breve
   cfg.usate = keep > 0 ? cfg.usate.slice(-keep) : [];
   saveCfg();
   const k = Math.min(cfg.imp, maxImp());
@@ -379,75 +320,9 @@ function quit() {
 }
 $('quit1').onclick = quit; $('quit2').onclick = quit;
 
-/* ---------------- Gestione parole ---------------- */
-function renderWords(openCat) {
-  const cats = merged();
-  $('catList').innerHTML = cats.map(c => `
-    <details class="cat" data-c="${esc(c.nome)}" ${key(c.nome) === key(openCat || '') ? 'open' : ''}>
-      <summary><span>${esc(c.nome)}</span><span class="n">${c.parole.length} ${c.parole.length === 1 ? 'parola' : 'parole'}</span></summary>
-      <div class="inner">
-        <div class="wlist">${c.parole.map(w => `<span>${esc(w)}<button class="x" data-rm="${esc(w)}" aria-label="Togli ${esc(w)}">×</button></span>`).join('') || '<span style="padding:6px 10px;color:var(--muted)">Ancora vuota</span>'}</div>
-        <form class="row addw" autocomplete="off">
-          <input class="in" placeholder="Nuove parole, separate da virgola" aria-label="Nuove parole per ${esc(c.nome)}">
-          <button class="btn small">Aggiungi</button>
-        </form>
-        <button class="linkbtn" data-delcat style="color:#F0A493;margin-top:8px">Elimina la categoria</button>
-      </div>
-    </details>`).join('');
-}
-$('catList').addEventListener('submit', e => {
-  e.preventDefault();
-  const d = e.target.closest('details'), inp = e.target.querySelector('input');
-  const words = inp.value.split(/[,;\n]/).map(norm).filter(Boolean);
-  if (!words.length) return;
-  const n = addWords(d.dataset.c, words);
-  toast(n ? (n === 1 ? 'Aggiunta 1 parola' : `Aggiunte ${n} parole`) : 'Erano già tutte nella lista');
-  renderWords(d.dataset.c);
-  const again = [...$('catList').querySelectorAll('details')].find(x => key(x.dataset.c) === key(d.dataset.c));
-  if (again) again.querySelector('input').focus();
-});
-$('catList').addEventListener('click', e => {
-  const d = e.target.closest('details'); if (!d) return;
-  const rm = e.target.closest('[data-rm]');
-  if (rm) { removeWord(d.dataset.c, rm.dataset.rm); renderWords(d.dataset.c); return; }
-  const del = e.target.closest('[data-delcat]');
-  if (del) {
-    if (del.dataset.armed) { deleteCat(d.dataset.c); toast('Categoria eliminata'); renderWords(); }
-    else { del.dataset.armed = '1'; del.textContent = 'Tocca ancora per eliminare'; }
-  }
-});
-$('newCat').addEventListener('submit', e => {
-  e.preventDefault();
-  const n = norm($('newCatName').value); if (!n) return;
-  const cat = canonCat(n); unhide(cat); if (!db.agg[cat]) db.agg[cat] = []; saveDb();
-  $('newCatName').value = ''; renderWords(cat);
-});
-function exportText() { return merged().filter(c => c.parole.length).map(c => `${c.nome}: ${c.parole.join(', ')}`).join('\n'); }
-$('exportBtn').onclick = async () => {
-  const t = exportText(); $('ioText').value = t;
-  try { await navigator.clipboard.writeText(t); toast('Copiate negli appunti'); }
-  catch (e) { $('ioText').select(); toast('Testo pronto qui sotto: selezionalo e copialo'); }
-};
-$('importBtn').onclick = () => {
-  const lines = $('ioText').value.split('\n').map(l => l.trim()).filter(Boolean);
-  let tot = 0;
-  for (const l of lines) {
-    const i = l.indexOf(':');
-    const cat = i > 0 ? l.slice(0, i) : 'Mie parole', rest = i > 0 ? l.slice(i + 1) : l;
-    tot += addWords(cat, rest.split(/[,;]/));
-  }
-  toast(tot ? (tot === 1 ? 'Importata 1 parola' : `Importate ${tot} parole`) : 'Niente di nuovo da importare');
-  $('ioText').value = ''; renderWords();
-};
-$('resetWords').onclick = () => { $('resetConfirm').hidden = false; };
-$('resetNo').onclick = () => { $('resetConfirm').hidden = true; };
-$('resetYes').onclick = () => { db = { agg: {}, rim: {}, nascoste: [] }; saveDb(); cfg.cats = []; saveCfg(); $('resetConfirm').hidden = true; renderWords(); toast('Lista di base ripristinata'); };
-$('wordsBtn').onclick = () => { renderWords(); show('words'); };
-$('wordsBack').onclick = () => { show('setup'); renderSetup(); };
-
 /* ---------------- Utilità ---------------- */
 function show(id) {
-  ['setup', 'words', 'pass', 'show', 'talk', 'end'].forEach(s => { $(s).hidden = s !== id; });
+  ['setup', 'settings', 'pass', 'show', 'talk', 'end'].forEach(s => { $(s).hidden = s !== id; });
   window.scrollTo(0, 0);
 }
 let toastT = null;
