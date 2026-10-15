@@ -2,7 +2,7 @@
   "name": "Giochi di Simo",
   "short_name": "Giochi",
   "lang": "it",
-  "description": "Segnapunti e strumenti per le serate di giochi: carte, poker, 7 Wonders",
+  "description": "Segnapunti, giochi di gruppo e strumenti per le serate: carte, contapunti, Impostore, Lupus, poker, 7 Wonders",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

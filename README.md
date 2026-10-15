@@ -8,8 +8,12 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Categoria | Gioco | Pagina |
 |---|---|---|
 | Carte | Dichiarare, Pegno, Tresette | `giochi/segnapunti/` (una pagina, il gioco si sceglie con `#dichiarare`, `#pegno`, `#tresette`) |
+| Contapunti | Schermo diviso in 2, 3 o 4 colori, un tocco = un punto, blocco anti-tocco, tempo di gioco; sempre in orizzontale | `giochi/contapunti/` (la carta della home lo apre direttamente) |
+| Giochi | Impostore (parola segreta, parole e categorie modificabili, esporta/importa) | `giochi/impostore/` (lista di base in `parole.js`) |
+| Giochi | Lupus (ruoli personalizzabili, distribuzione segreta, scaletta della notte per il narratore) | `giochi/lupus/` |
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
+| Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
 
 ## Aggiungere un gioco
 
@@ -24,7 +28,10 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
    ```js
    { categoria: 'carte', nome: 'Scopa', descrizione: 'Primiera, settebello, scope', link: 'giochi/scopa/', colore: '#3A6A98' },
    ```
-   Per una nuova categoria aggiungi una voce anche in `categorie`.
+   Per una nuova categoria aggiungi una voce anche in `categorie`
+   (con `diretto: true` la carta della home apre subito il primo gioco della categoria).
+   Se la pagina usa altri file (come `parole.js` di Impostore), elencali in `extra`
+   così funzionano anche senza connessione.
 
 Fatto il push su `main`, GitHub Pages pubblica in circa un minuto e tutti vedono la novità
 alla prossima apertura: il service worker (`sw.js`) chiede sempre prima la versione nuova alla
@@ -32,7 +39,9 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti e 7 Wonders:** sul telefono che li usa (localStorage). Le partite in corso
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia:** sul telefono che li usa (localStorage).
+  I nomi dei giocatori sono in comune tra Impostore e Lupus. Le parole aggiunte a Impostore restano sul telefono:
+  per renderle di base per tutti vanno aggiunte in `giochi/impostore/parole.js`. Le partite in corso
   di Dichiarare, Pegno e Tresette sono le stesse della vecchia app `segnapunti`, perché il sito è lo stesso.
 - **Poker:** il tavolo passa da broker MQTT pubblici (EMQX, HiveMQ, Mosquitto) e ogni telefono ne tiene una copia.
   Chi conosce il codice del tavolo può vedere nomi e fiches.

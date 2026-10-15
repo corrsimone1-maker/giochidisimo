@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1424">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<title>Chi inizia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0E1424; --night-2:#1B2540; --line:rgba(232,226,212,.12);
+  --text:#ECE7DC; --muted:#97A3BA; --gold:#D8A84A;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left))}
+.back{color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
+.title{font-family:var(--display);font-weight:800;font-size:20px;margin:0}
+.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--night-2);border:1px solid var(--line)}
+.seg button{flex:1;padding:9px 10px;border:0;border-radius:10px;background:none;font-weight:700;font-size:15px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1A1F2B}
+.kseg button{padding:7px 12px}
+.bottom{padding:8px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+
+.area{position:relative;flex:1 1 auto;margin:0 10px;border-radius:22px;background:radial-gradient(120% 90% at 50% 40%,#18213A 0%,#0E1424 70%);border:1px solid var(--line);
+  overflow:hidden;touch-action:none}
+.hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;pointer-events:none}
+.hint .big{font-family:var(--display);font-weight:800;font-size:clamp(28px,8vw,44px);line-height:1.02;letter-spacing:-.01em;max-width:13ch}
+.hint .small{color:var(--muted);font-size:15px;line-height:1.45;max-width:30ch}
+.hand{width:64px;height:64px;opacity:.85}
+.status{position:absolute;top:12px;left:12px;right:12px;margin:0 auto;width:fit-content;z-index:3;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;
+  padding:8px 14px;border-radius:999px;background:rgba(14,20,36,.88);border:1px solid var(--line);font-weight:700;font-size:15px;pointer-events:none;text-align:center}
+.status .chip{display:inline-flex;align-items:center;gap:6px}
+.status .chip i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+
+/* Un cerchio per dito */
+.f{position:absolute;left:0;top:0;width:0;height:0;z-index:2;pointer-events:none}
+.dot{position:absolute;left:-50px;top:-50px;width:100px;height:100px;border-radius:50%;background:var(--c);display:grid;place-items:center;
+  box-shadow:0 0 0 10px rgba(255,255,255,.08),0 10px 30px rgba(0,0,0,.45);transition:transform .35s cubic-bezier(.2,1.4,.4,1),opacity .35s ease,background .3s ease;animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.06)}}
+.ring{position:absolute;left:-62px;top:-62px;width:124px;height:124px;transform:rotate(-90deg);pointer-events:none}
+.ring circle{fill:none;stroke:var(--c);stroke-width:5;stroke-linecap:round;stroke-dasharray:364.4;stroke-dashoffset:364.4;opacity:0}
+.f.charging .ring circle{opacity:1;animation:charge var(--wait) linear forwards}
+@keyframes charge{to{stroke-dashoffset:0}}
+.lb{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;color:var(--fg,#fff);text-align:center}
+.lb small{display:block;font-family:var(--ui);font-size:13px;font-weight:700;margin-top:2px}
+.f.win .dot{transform:scale(1.55);animation:none;box-shadow:0 0 0 14px rgba(255,255,255,.18)}
+.f.win::before{content:'';position:absolute;left:-170px;top:-170px;width:340px;height:340px;border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent);opacity:.5}
+.f.win .lb{font-size:24px}
+.f.out .dot{opacity:.16;transform:scale(.7);animation:none}
+.f.done .dot{animation:none}
+.f.lifted .dot{box-shadow:0 0 0 6px rgba(255,255,255,.08)}
+.ripple{position:absolute;left:0;top:0;width:0;height:0;z-index:1;pointer-events:none}
+.ripple::before{content:'';position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:var(--c);opacity:.35;animation:ripple .9s ease-out forwards}
+@keyframes ripple{to{transform:scale(14);opacity:0}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none;transition:none}.ripple{display:none}.f.charging .ring circle{animation:none;stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <h1 class="title" id="title">Chi inizia</h1>
+    <div class="seg kseg" id="kseg" role="group" aria-label="Numero di squadre"></div>
+  </div>
+  <div class="area" id="area" aria-label="Appoggiate un dito a testa qui">
+    <div class="hint" id="hint">
+      <svg class="hand" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="none" stroke="#D8A84A" stroke-width="3" stroke-dasharray="6 7"/><circle cx="32" cy="32" r="11" fill="#D8A84A"/></svg>
+      <div class="big" id="hintBig">Un dito a testa sullo schermo</div>
+      <div class="small" id="hintSmall"></div>
+    </div>
+    <div class="status" id="status" hidden></div>
+  </div>
+  <div class="bottom">
+    <div class="seg" id="modes" role="group" aria-label="Cosa scegliere">
+      <button data-m="chi">Chi inizia</button>
+      <button data-m="squadre">Squadre</button>
+      <button data-m="ordine">Ordine</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const KEY = 'gds-chiinizia';
+const WAIT = 2000;          // millisecondi con le dita ferme prima della scelta
+const FINGER = ['#F2B705', '#22B5C4', '#E84A8A', '#2E9E5B', '#F26B1D', '#8FA8FF', '#D7263D', '#13C29E', '#C77DFF', '#FFB38A'];
+const TEAMS = [['#D7263D', 'Rossi'], ['#1E63B5', 'Blu'], ['#2E9E5B', 'Verdi'], ['#F2B705', 'Gialli']];
+
+let cfg = { modo: 'chi', k: 2 };
+try { Object.assign(cfg, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+const saveCfg = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} };
+
+/* Numero intero uniforme in [0, n): casualità crittografica, senza distorsione del modulo */
+function randInt(n) {
+  const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1);
+  do crypto.getRandomValues(a); while (a[0] >= lim);
+  return a[0] % n;
+}
+function shuffle(arr) {   // Fisher–Yates
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const fgFor = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) > 160 ? '#161A22' : '#FFFFFF'; };
+
+/* ---------- Modalità ---------- */
+const minFingers = () => cfg.modo === 'squadre' ? Math.max(2, cfg.k) : 2;
+function renderControls() {
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === cfg.modo));
+  $('kseg').hidden = cfg.modo !== 'squadre';
+  $('kseg').innerHTML = [2, 3, 4].map(k => `<button data-k="${k}" aria-pressed="${cfg.k === k}" aria-label="${k} squadre">${k}</button>`).join('');
+  $('title').hidden = cfg.modo === 'squadre';
+  $('title').textContent = { chi: 'Chi inizia', ordine: 'Ordine di gioco', squadre: '' }[cfg.modo];
+  $('hintSmall').textContent = {
+    chi: 'Restate fermi due secondi: uno di voi viene scelto per iniziare.',
+    squadre: `Restate fermi due secondi: vi divido in ${cfg.k} squadre il più possibile pari.`,
+    ordine: 'Restate fermi due secondi: ognuno riceve il suo turno, da 1 in su.'
+  }[cfg.modo];
+}
+$('modes').addEventListener('click', e => {
+  const b = e.target.closest('button[data-m]'); if (!b) return;
+  cfg.modo = b.dataset.m; saveCfg(); clearAll(); renderControls();
+});
+$('kseg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  cfg.k = +b.dataset.k; saveCfg(); clearAll(); renderControls();
+});
+
+/* ---------- Dita ---------- */
+const area = $('area');
+const fingers = new Map();     // pointerId -> { el, x, y, down }
+let state = 'idle';            // idle | waiting | result
+let timer = null, colorIdx = 0;
+
+function status(html) { const s = $('status'); s.innerHTML = html || ''; s.hidden = !html; }
+function place(f) { f.el.style.transform = `translate(${f.x}px,${f.y}px)`; }
+function pos(e) { const r = area.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+const downCount = () => [...fingers.values()].filter(f => f.down).length;
+
+function makeFinger(x, y) {
+  const c = FINGER[colorIdx++ % FINGER.length];
+  const el = document.createElement('div');
+  el.className = 'f';
+  el.style.setProperty('--c', c); el.style.setProperty('--fg', fgFor(c)); el.style.setProperty('--wait', WAIT + 'ms');
+  el.innerHTML = '<svg class="ring" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="58"/></svg><div class="dot"><span class="lb"></span></div>';
+  area.appendChild(el);
+  return el;
+}
+function clearAll() {
+  clearTimeout(timer); timer = null;
+  fingers.forEach(f => f.el.remove()); fingers.clear();
+  area.querySelectorAll('.ripple').forEach(r => r.remove());
+  colorIdx = 0; state = 'idle';
+  $('hint').hidden = false; status('');
+}
+function restartCountdown() {
+  clearTimeout(timer); timer = null;
+  const n = fingers.size;
+  $('hint').hidden = n > 0;
+  fingers.forEach(f => { f.el.classList.remove('charging'); void f.el.offsetWidth; });
+  if (n === 0) { state = 'idle'; status(''); return; }
+  if (n < minFingers()) { status(`Servono almeno ${minFingers()} dita`); return; }
+  status(`${n} giocatori · fermi…`);
+  fingers.forEach(f => f.el.classList.add('charging'));
+  timer = setTimeout(choose, WAIT);
+}
+
+area.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+area.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+area.addEventListener('contextmenu', e => e.preventDefault());
+area.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (state === 'result') {
+    if (downCount() > 0) return;     // qualcuno tiene ancora il dito: si ignora
+    clearAll();
+  }
+  const [x, y] = pos(e);
+  const f = { el: makeFinger(x, y), x, y, down: true };
+  fingers.set(e.pointerId, f); place(f);
+  state = 'waiting';
+  restartCountdown();
+});
+area.addEventListener('pointermove', e => {
+  const f = fingers.get(e.pointerId); if (!f || !f.down) return;
+  [f.x, f.y] = pos(e); place(f);
+});
+function lift(e) {
+  const f = fingers.get(e.pointerId); if (!f || !f.down) return;
+  if (state === 'result') {
+    f.down = false; f.el.classList.add('lifted');      // il risultato resta sullo schermo
+    if (downCount() === 0) setTimeout(() => { if (state === 'result' && downCount() === 0) appendStatus('Tocca per rifare'); }, 400);
+    return;
+  }
+  f.el.remove(); fingers.delete(e.pointerId);
+  restartCountdown();
+}
+area.addEventListener('pointerup', lift);
+area.addEventListener('pointercancel', lift);
+
+let lastStatus = '';
+function appendStatus(extra) { status(lastStatus ? `${lastStatus}<span style="color:var(--muted)">· ${extra}</span>` : extra); }
+
+/* ---------- Scelta ---------- */
+function choose() {
+  timer = null;
+  const ids = [...fingers.keys()];
+  if (ids.length < minFingers()) return;
+  state = 'result';
+  fingers.forEach(f => f.el.classList.remove('charging'));
+  if (cfg.modo === 'chi') {
+    const w = fingers.get(ids[randInt(ids.length)]);
+    fingers.forEach(f => f.el.classList.add(f === w ? 'win' : 'out'));
+    w.el.querySelector('.lb').textContent = 'Inizia!';
+    const rp = document.createElement('div');
+    rp.className = 'ripple'; rp.style.setProperty('--c', w.el.style.getPropertyValue('--c'));
+    rp.style.transform = `translate(${w.x}px,${w.y}px)`;
+    area.appendChild(rp);
+    setTimeout(() => rp.remove(), 1000);
+    lastStatus = 'Inizia il cerchio grande';
+  } else if (cfg.modo === 'squadre') {
+    const k = cfg.k, count = new Array(k).fill(0);
+    shuffle(ids).forEach((id, i) => {
+      const t = i % k, el = fingers.get(id).el;
+      count[t]++;
+      el.style.setProperty('--c', TEAMS[t][0]); el.style.setProperty('--fg', fgFor(TEAMS[t][0]));
+      el.classList.add('done');
+      el.querySelector('.lb').innerHTML = `<small>${TEAMS[t][1]}</small>`;
+    });
+    lastStatus = count.map((c, t) => `<span class="chip" style="--c:${TEAMS[t][0]}"><i></i>${TEAMS[t][1]} ${c}</span>`).join('');
+  } else {
+    shuffle(ids).forEach((id, i) => {
+      const el = fingers.get(id).el;
+      el.classList.add('done');
+      el.querySelector('.lb').innerHTML = i === 0 ? '1<small>inizia</small>' : String(i + 1);
+    });
+    lastStatus = 'Si gioca dall’1 in su';
+  }
+  status(lastStatus);
+  if (navigator.vibrate) try { navigator.vibrate([30, 40, 60]); } catch (e) {}
+}
+
+renderControls();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

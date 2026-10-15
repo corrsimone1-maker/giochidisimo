@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png">
+<title>Lupus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#10131F; --night-2:#1A1F33; --night-3:#0B0E18; --line:rgba(232,226,212,.12);
+  --text:#ECE7DC; --muted:#98A0B8; --gold:#D8A84A; --moon:#E9E1C8;
+  --villaggio:#3BA56A; --lupi:#D9483A; --solo:#9B5FD0;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--night);color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(90% 50% at 85% -5%,rgba(233,225,200,.10),transparent 60%),var(--night);min-height:100dvh}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.back{display:inline-block;padding:8px 0;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,52px);line-height:.95;letter-spacing:-.02em;margin:6px 0 8px}
+h2{font-family:var(--display);font-weight:800;font-size:22px;margin:0 0 10px}
+.lede{margin:0 0 22px;color:var(--muted);font-size:15.5px;line-height:1.45;max-width:40ch}
+.panel{background:var(--night-2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.panel .sub{margin:-4px 0 12px;color:var(--muted);font-size:13.5px;line-height:1.4}
+.row{display:flex;gap:8px}
+.in{flex:1;min-width:0;width:100%;height:44px;padding:0 12px;border-radius:11px;border:1px solid var(--line);background:var(--night-3);font-size:16px}
+.in::placeholder{color:#6F7A90}
+.in:focus{outline:none;border-color:var(--gold)}
+textarea.in{height:auto;min-height:96px;padding:10px 12px;line-height:1.45;resize:vertical}
+select.in{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 19px,calc(100% - 13px) 19px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+.btn{display:block;width:100%;padding:15px 18px;border-radius:14px;border:0;background:var(--gold);color:#1A1F2B;font-weight:700;font-size:16px;text-align:center;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.small{width:auto;padding:0 16px;height:44px;border-radius:11px;font-size:15px}
+.btn.danger{background:var(--lupi);color:#fff}
+.btn:disabled{opacity:.4}
+.stack{display:grid;gap:10px}
+.players{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.players li{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 12px;border-radius:999px;background:var(--night-3);border:1px solid var(--line);font-weight:600}
+.x{width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--muted);font-size:16px;line-height:1}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--tc);flex:0 0 auto}
+.rrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rrow .nm{flex:1;min-width:0;font-weight:700}
+.rrow .nm small{display:block;color:var(--muted);font-weight:600;font-size:12.5px;margin-top:1px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--night-3);font-size:20px;font-weight:700}
+.stepper .v{min-width:26px;text-align:center;font-family:var(--display);font-weight:800;font-size:21px}
+.stepper .v.zero{color:#5B6480}
+.summary{margin:12px 0 0;padding:12px;border-radius:12px;background:var(--night-3);font-size:14.5px;line-height:1.5}
+.summary b{font-weight:700}
+.warn{margin:8px 0 0;color:#F0A493;font-size:14px;font-weight:600}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600;margin-top:12px}
+.switch input{width:22px;height:22px;accent-color:var(--gold)}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--gold);font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.label{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin:12px 0 5px}
+
+/* Elenco ruoli modificabile */
+.rcard{background:var(--night-2);border:1px solid var(--line);border-left:5px solid var(--tc);border-radius:14px;padding:14px 14px 12px;margin-bottom:10px}
+.rcard .h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.rcard .t{font-family:var(--display);font-weight:800;font-size:21px}
+.rcard .meta{color:var(--muted);font-size:13px;font-weight:700;margin:2px 0 6px}
+.rcard p{margin:0;color:#C9CEDC;font-size:14.5px;line-height:1.45}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--tc);color:#fff;font-size:12px;font-weight:700}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,12,.72)}
+.sheet{width:min(560px,100%);max-height:92dvh;overflow:auto;background:var(--night-2);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+
+/* Fasi a schermo pieno */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-weight:700;font-size:14px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:20px 0}
+.kicker{color:var(--muted);font-weight:700;font-size:15px}
+.who{font-family:var(--display);font-weight:800;font-size:clamp(44px,14vw,72px);line-height:1;letter-spacing:-.02em;word-break:break-word}
+.moon{width:74px;height:74px;margin-bottom:6px}
+.card{width:100%;border-radius:22px;padding:30px 22px;background:linear-gradient(160deg,var(--tc),var(--tc2));color:#fff;box-shadow:0 20px 40px rgba(0,0,0,.45);text-align:center}
+.card .lab{font-weight:700;font-size:14px;opacity:.85;margin-bottom:6px}
+.card .role{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,58px);line-height:1;letter-spacing:-.02em;word-break:break-word}
+.card .team{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.22);font-weight:700;font-size:14px}
+.card .desc{margin:16px 0 0;font-size:16px;line-height:1.5;opacity:.95}
+.prog{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:6px;max-width:260px}
+.prog i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18)}
+.prog i.on{background:var(--gold)}
+.bottomActions{display:grid;gap:10px}
+
+/* Narratore */
+.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--night-3);border:1px solid var(--line);margin-bottom:12px}
+.seg button{flex:1;padding:9px 8px;border:0;border-radius:10px;background:none;font-weight:700;font-size:14.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--moon);color:#1A1F2B}
+ol.script{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.script li{position:relative;padding:10px 0 10px 40px;border-top:1px solid var(--line);line-height:1.4}
+ol.script li:first-child{border-top:0}
+ol.script li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--night-3);border:1px solid var(--line);font-weight:700;font-size:13px;color:var(--muted)}
+ol.script b{font-weight:700}
+ol.script .who2{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+ol.script .dead{text-decoration:line-through;opacity:.55}
+ol.script li.off{opacity:.45}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{border-top:1px solid var(--line)}
+.plist li:first-child{border-top:0}
+.plist button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 2px;border:0;background:none;text-align:left}
+.plist .pn{flex:1;min-width:0;font-weight:700;font-size:16.5px}
+.plist .pr{color:var(--muted);font-weight:600;font-size:14.5px}
+.plist .st{font-size:12.5px;font-weight:700;color:var(--muted);padding:3px 8px;border-radius:999px;border:1px solid var(--line)}
+.plist li.dead .pn,.plist li.dead .pr{text-decoration:line-through;opacity:.5}
+.plist li.dead .st{color:#F0A493;border-color:rgba(240,164,147,.4)}
+.counts{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 4px;font-weight:700;font-size:14.5px}
+.counts span{display:inline-flex;align-items:center;gap:6px}
+.confirmBox{padding:14px;border:1px solid var(--lupi);border-radius:14px;background:var(--night-2);margin-top:10px}
+.confirmBox p{margin:0 0 10px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;padding:11px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+
+<!-- Impostazioni -->
+<main class="wrap" id="setup">
+  <a class="back" href="../../">‹ Giochi</a>
+  <h1>Lupus</h1>
+  <p class="lede">Il telefono gira e ognuno scopre il suo ruolo in segreto. Poi passa al narratore, che ha l’elenco dei ruoli e la scaletta della notte.</p>
+
+  <section class="panel">
+    <h2>Giocatori</h2>
+    <p class="sub">Senza il narratore, nell’ordine in cui passerà il telefono.</p>
+    <form class="row" id="addPlayer" autocomplete="off">
+      <input class="in" id="playerName" placeholder="Nome" maxlength="20" enterkeyhint="done">
+      <button class="btn small">Aggiungi</button>
+    </form>
+    <ul class="players" id="players"></ul>
+  </section>
+
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2>Ruoli in gioco</h2><button class="linkbtn" id="suggestBtn">Suggerisci</button></div>
+    <div id="roleCounts"></div>
+    <label class="label" for="filler">I posti che restano vanno a</label>
+    <select class="in" id="filler"></select>
+    <div class="summary" id="summary"></div>
+    <p class="warn" id="setupWarn" hidden></p>
+    <label class="switch"><span>Sulla carta si vede anche la squadra</span><input type="checkbox" id="showTeam"></label>
+  </section>
+
+  <div class="stack">
+    <button class="btn" id="dealBtn">Distribuisci i ruoli</button>
+    <button class="btn ghost" id="rolesBtn">Crea e modifica i ruoli</button>
+    <button class="btn ghost" id="resumeBtn" hidden>Torna alla partita in corso</button>
+  </div>
+</main>
+
+<!-- Ruoli -->
+<main class="wrap" id="roles" hidden>
+  <button class="back" id="rolesBack">‹ Lupus</button>
+  <h1>I ruoli</h1>
+  <p class="lede">Inventa i ruoli che vuoi: nome, squadra, cosa fa e se si sveglia di notte. Restano su questo telefono.</p>
+  <button class="btn" id="newRole" style="margin-bottom:16px">+ Nuovo ruolo</button>
+  <div id="roleList"></div>
+  <button class="linkbtn" id="resetRoles">Ripristina i ruoli di base</button>
+  <div class="confirmBox" id="resetConfirm" hidden>
+    <p>Cancello i ruoli che hai creato o modificato e torno a quelli di base?</p>
+    <div class="row"><button class="btn ghost small" id="resetNo" style="flex:1">Annulla</button><button class="btn danger small" id="resetYes" style="flex:1">Ripristina</button></div>
+  </div>
+</main>
+
+<div class="overlay" id="editor" hidden>
+  <form class="sheet" id="editForm" autocomplete="off">
+    <h2 id="editTitle">Ruolo</h2>
+    <label class="label" for="eName" style="margin-top:0">Nome</label>
+    <input class="in" id="eName" maxlength="28" required placeholder="Es. Strega">
+    <label class="label" for="eTeam">Squadra</label>
+    <select class="in" id="eTeam">
+      <option value="villaggio">Villaggio</option>
+      <option value="lupi">Lupi</option>
+      <option value="solo">Da solo</option>
+    </select>
+    <label class="label" for="eDesc">Cosa fa (lo legge chi riceve il ruolo)</label>
+    <textarea class="in" id="eDesc" maxlength="400" placeholder="Es. Una volta per partita può salvare la vittima dei lupi."></textarea>
+    <label class="label" for="eNight">Di notte</label>
+    <select class="in" id="eNight">
+      <option value="">Non si sveglia</option>
+      <option value="ogni">Si sveglia ogni notte</option>
+      <option value="prima">Si sveglia solo la prima notte</option>
+    </select>
+    <div id="eOrderWrap">
+      <label class="label" for="eOrder">Ordine di risveglio (1 = per primo)</label>
+      <input class="in" id="eOrder" type="number" inputmode="numeric" min="1" max="99">
+    </div>
+    <div class="stack" style="margin-top:18px">
+      <button class="btn" type="submit">Salva</button>
+      <button class="btn ghost" type="button" id="eCancel">Annulla</button>
+      <button class="btn ghost" type="button" id="eDelete" style="color:#F0A493">Elimina il ruolo</button>
+    </div>
+  </form>
+</div>
+
+<!-- Passa il telefono -->
+<section class="stage" id="pass" hidden>
+  <div class="top"><span id="passCount"></span><button class="back" id="quit1" style="color:var(--muted)">Esci</button></div>
+  <div class="mid">
+    <div class="kicker">Passa il telefono a</div>
+    <div class="who" id="passName"></div>
+    <div class="prog" id="passProg"></div>
+  </div>
+  <div class="bottomActions"><button class="btn" id="showBtn">Sono io: mostra il ruolo</button></div>
+</section>
+
+<!-- Carta del ruolo -->
+<section class="stage" id="show" hidden>
+  <div class="top"><span id="showWho"></span><span></span></div>
+  <div class="mid"><div class="card" id="card"></div></div>
+  <div class="bottomActions"><button class="btn" id="hideBtn">Fatto, nascondi</button></div>
+</section>
+
+<!-- Al narratore -->
+<section class="stage" id="toNarr" hidden>
+  <div class="top"><span>Tutti hanno il ruolo</span><span></span></div>
+  <div class="mid">
+    <svg class="moon" viewBox="0 0 64 64" aria-hidden="true"><path d="M44 50A22 22 0 1 1 30 10a18 18 0 0 0 14 40Z" fill="#E9E1C8"/></svg>
+    <div class="kicker">Passa il telefono al</div>
+    <div class="who">narratore</div>
+  </div>
+  <div class="bottomActions"><button class="btn" id="narrBtn">Sono il narratore</button></div>
+</section>
+
+<!-- Narratore -->
+<main class="wrap" id="narr" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center"><span class="kicker">Solo per il narratore</span><button class="back" id="narrMenu">Opzioni</button></div>
+  <h1 style="font-size:clamp(32px,9vw,42px)">Narratore</h1>
+
+  <section class="panel">
+    <h2>La notte</h2>
+    <div class="seg" role="group" aria-label="Quale notte">
+      <button data-night="prima" id="nPrima">Prima notte</button>
+      <button data-night="altre" id="nAltre">Notti successive</button>
+    </div>
+    <ol class="script" id="script"></ol>
+  </section>
+
+  <section class="panel">
+    <h2>Giocatori</h2>
+    <p class="sub">Tocca un nome per segnarlo come eliminato (e di nuovo per annullare).</p>
+    <div class="counts" id="counts"></div>
+    <ul class="plist" id="plist"></ul>
+  </section>
+
+  <div class="stack" id="narrActions" hidden>
+    <button class="btn" id="againBtn">Nuova partita con gli stessi ruoli</button>
+    <button class="btn ghost" id="toSetup">Cambia giocatori o ruoli</button>
+    <button class="btn ghost" id="closeMenu">Chiudi</button>
+  </div>
+  <div class="confirmBox" id="againConfirm" hidden>
+    <p id="againText">Ridistribuisco i ruoli? La partita in corso si chiude.</p>
+    <div class="row"><button class="btn ghost small" id="againNo" style="flex:1">Annulla</button><button class="btn danger small" id="againYes" style="flex:1">Conferma</button></div>
+  </div>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_PL = 'gds-giocatori', K_ROLES = 'gds-lupus-ruoli', K_CFG = 'gds-lupus', K_GAME = 'gds-lupus-partita';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function randInt(n) { const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1); do crypto.getRandomValues(a); while (a[0] >= lim); return a[0] % n; }
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const norm = s => String(s).trim().replace(/\s+/g, ' ');
+const key = s => norm(s).toLocaleLowerCase('it');
+
+const TEAM = {
+  villaggio: { nome: 'Villaggio', c: '#3BA56A', c2: '#1E5E3B' },
+  lupi: { nome: 'Lupi', c: '#D9483A', c2: '#6E1C17' },
+  solo: { nome: 'Da solo', c: '#9B5FD0', c2: '#45226A' }
+};
+/* Ruoli di partenza: si possono cambiare tutti dall'app */
+const ROLES_BASE = [
+  { id: 'lupo', nome: 'Lupo mannaro', squadra: 'lupi', notte: 'ogni', ordine: 3, descrizione: 'Ogni notte, d’accordo con gli altri lupi, sceglie chi eliminare. Di giorno finge di essere un abitante qualunque.' },
+  { id: 'contadino', nome: 'Contadino', squadra: 'villaggio', notte: '', ordine: 0, descrizione: 'Nessun potere: ragiona, accusa e vota per scovare i lupi.' },
+  { id: 'veggente', nome: 'Veggente', squadra: 'villaggio', notte: 'ogni', ordine: 4, descrizione: 'Ogni notte indica un giocatore e il narratore le fa capire se è un lupo.' },
+  { id: 'guardia', nome: 'Guardia del corpo', squadra: 'villaggio', notte: 'ogni', ordine: 2, descrizione: 'Ogni notte sceglie un giocatore da proteggere: se i lupi attaccano proprio lui, non muore.' },
+  { id: 'medium', nome: 'Medium', squadra: 'villaggio', notte: 'ogni', ordine: 5, descrizione: 'Ogni notte scopre se il giocatore eliminato quel giorno era un lupo.' },
+  { id: 'massone', nome: 'Massone', squadra: 'villaggio', notte: 'prima', ordine: 1, descrizione: 'La prima notte i massoni si svegliano e si riconoscono: sono del villaggio e possono fidarsi l’uno dell’altro.' },
+  { id: 'indemoniato', nome: 'Indemoniato', squadra: 'lupi', notte: '', ordine: 0, descrizione: 'Tifa per i lupi ma non sa chi sono, e non è un lupo: per la veggente risulta un abitante.' },
+  { id: 'criceto', nome: 'Criceto mannaro', squadra: 'solo', notte: '', ordine: 0, descrizione: 'Vince da solo se arriva vivo alla fine. I lupi non possono ucciderlo, ma muore se la veggente lo indica.' }
+];
+
+let players = loadJSON(K_PL, []); if (!Array.isArray(players)) players = [];
+let roles = loadJSON(K_ROLES, null); if (!Array.isArray(roles) || !roles.length) roles = ROLES_BASE.map(r => ({ ...r }));
+let cfg = Object.assign({ conteggi: { lupo: 2, veggente: 1 }, riempitivo: 'contadino', mostraSquadra: true }, loadJSON(K_CFG, {}));
+let G = loadJSON(K_GAME, null);   // partita: { carte:[{nome, ruolo}], idx, fase, morti:[], notte }
+const savePl = () => saveJSON(K_PL, players), saveRoles = () => saveJSON(K_ROLES, roles), saveCfg = () => saveJSON(K_CFG, cfg);
+const saveGame = () => { if (G) saveJSON(K_GAME, G); else try { localStorage.removeItem(K_GAME); } catch (e) {} };
+const roleById = id => roles.find(r => r.id === id);
+const teamOf = r => TEAM[r && r.squadra] || TEAM.villaggio;
+
+/* ---------------- Impostazioni ---------------- */
+function fillerRole() { return roleById(cfg.riempitivo) || roles.find(r => r.squadra === 'villaggio' && !r.notte) || roles[0]; }
+function plan() {
+  const n = players.length, f = fillerRole();
+  const list = [];
+  roles.forEach(r => { const c = Math.max(0, cfg.conteggi[r.id] | 0); for (let i = 0; i < c; i++) list.push(r.id); });
+  const extra = n - list.length;
+  return { n, chosen: list.length, extra, filler: f, deck: extra >= 0 && f ? list.concat(new Array(extra).fill(f.id)) : list };
+}
+function renderSetup() {
+  $('players').innerHTML = players.map((p, i) => `<li>${esc(p)}<button class="x" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
+  const f = fillerRole();
+  $('roleCounts').innerHTML = roles.map(r => {
+    const c = cfg.conteggi[r.id] | 0, t = teamOf(r);
+    return `<div class="rrow"><span class="dot" style="--tc:${t.c}"></span><span class="nm">${esc(r.nome)}<small>${t.nome}${r.notte ? (r.notte === 'prima' ? ' · prima notte' : ' · di notte') : ''}</small></span>
+      <span class="stepper"><button data-r="${r.id}" data-d="-1" aria-label="Meno ${esc(r.nome)}">−</button><span class="v ${c ? '' : 'zero'}">${c}</span><button data-r="${r.id}" data-d="1" aria-label="Più ${esc(r.nome)}">+</button></span></div>`;
+  }).join('');
+  $('filler').innerHTML = roles.map(r => `<option value="${r.id}" ${f && r.id === f.id ? 'selected' : ''}>${esc(r.nome)}</option>`).join('');
+  $('showTeam').checked = !!cfg.mostraSquadra;
+
+  const P = plan();
+  const counts = {}; P.deck.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+  const parts = roles.filter(r => counts[r.id]).map(r => `<b>${counts[r.id]}</b> ${esc(r.nome)}`);
+  let warn = '';
+  if (P.n < 3) warn = 'Servono almeno 3 giocatori.';
+  else if (P.extra < 0) warn = `Hai scelto ${P.chosen} ruoli ma i giocatori sono ${P.n}: togline ${-P.extra}.`;
+  $('summary').innerHTML = P.n
+    ? `${P.n} giocatori${P.extra > 0 && P.filler ? ` (di cui ${P.extra} ${esc(P.filler.nome)} di riempimento)` : ''}:<br>${parts.join(' · ') || '—'}`
+    : 'Aggiungi i giocatori per vedere la distribuzione.';
+  const lupiInGioco = P.deck.some(id => (roleById(id) || {}).squadra === 'lupi');
+  const soft = !warn && P.n >= 3 && !lupiInGioco ? 'Attenzione: nessun ruolo della squadra dei lupi.' : '';
+  $('setupWarn').textContent = warn || soft; $('setupWarn').hidden = !(warn || soft);
+  $('dealBtn').disabled = !!warn;
+  $('resumeBtn').hidden = !G;
+}
+$('addPlayer').addEventListener('submit', e => {
+  e.preventDefault();
+  const n = norm($('playerName').value); if (!n) return;
+  if (players.some(p => key(p) === key(n))) { toast(`${n} c’è già`); return; }
+  players.push(n); savePl(); $('playerName').value = ''; renderSetup();
+});
+$('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderSetup(); });
+$('roleCounts').addEventListener('click', e => {
+  const b = e.target.closest('button[data-r]'); if (!b) return;
+  const id = b.dataset.r; cfg.conteggi[id] = Math.max(0, (cfg.conteggi[id] | 0) + (+b.dataset.d)); saveCfg(); renderSetup();
+});
+$('filler').onchange = e => { cfg.riempitivo = e.target.value; saveCfg(); renderSetup(); };
+$('showTeam').onchange = e => { cfg.mostraSquadra = e.target.checked; saveCfg(); };
+$('suggestBtn').onclick = () => {
+  const n = players.length;
+  if (n < 3) { toast('Prima aggiungi i giocatori'); return; }
+  cfg.conteggi = {};
+  if (roleById('lupo')) cfg.conteggi.lupo = Math.max(1, Math.floor(n / 4));
+  if (roleById('veggente')) cfg.conteggi.veggente = 1;
+  if (n >= 8 && roleById('guardia')) cfg.conteggi.guardia = 1;
+  if (n >= 10 && roleById('medium')) cfg.conteggi.medium = 1;
+  if (roleById('contadino')) cfg.riempitivo = 'contadino';
+  saveCfg(); renderSetup(); toast('Circa un lupo ogni quattro giocatori');
+};
+
+/* ---------------- Distribuzione ---------------- */
+function deal() {
+  const P = plan(); if (P.n < 3 || P.extra < 0) return;
+  const deck = shuffle(P.deck);
+  G = { carte: players.map((nome, i) => ({ nome, ruolo: { ...roleById(deck[i]) } })), idx: 0, fase: 'passa', morti: [], notte: 'prima', squadra: !!cfg.mostraSquadra };
+  saveGame(); showPass();
+}
+function showPass() {
+  $('passName').textContent = G.carte[G.idx].nome;
+  $('passCount').textContent = `${G.idx + 1} di ${G.carte.length}`;
+  $('passProg').innerHTML = G.carte.map((_, i) => `<i class="${i <= G.idx ? 'on' : ''}"></i>`).join('');
+  show('pass');
+}
+$('showBtn').onclick = () => {
+  const c = G.carte[G.idx], r = c.ruolo, t = teamOf(r);
+  const card = $('card');
+  card.style.setProperty('--tc', t.c); card.style.setProperty('--tc2', t.c2);
+  if (!G.squadra) { card.style.setProperty('--tc', '#3A4366'); card.style.setProperty('--tc2', '#1B2035'); }
+  card.innerHTML = `<div class="lab">${esc(c.nome)}, sei</div><div class="role">${esc(r.nome)}</div>
+    ${G.squadra ? `<div class="team">Squadra: ${t.nome}</div>` : ''}
+    ${r.descrizione ? `<p class="desc">${esc(r.descrizione)}</p>` : ''}`;
+  $('showWho').textContent = c.nome;
+  show('show');
+};
+$('hideBtn').onclick = () => {
+  G.idx++;
+  if (G.idx < G.carte.length) { saveGame(); showPass(); }
+  else { G.fase = 'narratore-attesa'; saveGame(); show('toNarr'); }
+};
+$('narrBtn').onclick = () => { G.fase = 'narratore'; saveGame(); showNarr(); };
+let quitArmed = 0;
+$('quit1').onclick = () => {
+  if (Date.now() - quitArmed > 2500) { quitArmed = Date.now(); toast('Tocca di nuovo «Esci» per annullare la distribuzione'); return; }
+  quitArmed = 0; G = null; saveGame(); show('setup'); renderSetup();
+};
+
+/* ---------------- Narratore ---------------- */
+function showNarr() {
+  $('narrActions').hidden = true; $('againConfirm').hidden = true;
+  renderNarr(); show('narr');
+}
+function renderNarr() {
+  const morti = new Set(G.morti);
+  $('nPrima').setAttribute('aria-pressed', G.notte === 'prima');
+  $('nAltre').setAttribute('aria-pressed', G.notte === 'altre');
+  /* Ruoli presenti in partita (dalle carte distribuite), raggruppati */
+  const groups = new Map();
+  G.carte.forEach((c, i) => {
+    const k = key(c.ruolo.nome);
+    if (!groups.has(k)) groups.set(k, { r: c.ruolo, chi: [] });
+    groups.get(k).chi.push(i);
+  });
+  const svegli = [...groups.values()].filter(g => g.r.notte === 'ogni' || (g.r.notte === 'prima' && G.notte === 'prima'))
+    .sort((a, b) => (a.r.ordine || 99) - (b.r.ordine || 99));
+  const name = i => `<span class="${morti.has(i) ? 'dead' : ''}">${esc(G.carte[i].nome)}</span>`;
+  const steps = ['<li><b>Tutti chiudono gli occhi.</b></li>'];
+  svegli.forEach(g => {
+    const vivi = g.chi.filter(i => !morti.has(i));
+    steps.push(`<li class="${vivi.length ? '' : 'off'}"><b>${g.chi.length > 1 ? 'Si svegliano' : 'Si sveglia'}: ${esc(g.r.nome)}</b>${vivi.length ? '' : ' (nessuno vivo: chiamalo lo stesso per non far capire)'}<span class="who2">${g.chi.map(name).join(', ')}</span>${g.r.descrizione ? `<span class="who2">${esc(g.r.descrizione)}</span>` : ''}<span class="who2">Poi: «${esc(g.r.nome)}, ${g.chi.length > 1 ? 'chiudete' : 'chiudi'} gli occhi».</span></li>`);
+  });
+  if (!svegli.length) steps.push('<li>Nessun ruolo si sveglia in questa notte.</li>');
+  steps.push('<li><b>Tutti aprono gli occhi</b><span class="who2">Racconta chi è stato colpito e apri la discussione del giorno.</span></li>');
+  $('script').innerHTML = steps.join('');
+
+  const alive = { villaggio: 0, lupi: 0, solo: 0 };
+  G.carte.forEach((c, i) => { if (!morti.has(i)) alive[c.ruolo.squadra in alive ? c.ruolo.squadra : 'villaggio']++; });
+  $('counts').innerHTML = `<span>Vivi ${G.carte.length - morti.size} di ${G.carte.length}</span>` +
+    Object.keys(alive).filter(k => alive[k] || k !== 'solo').map(k => `<span><span class="dot" style="--tc:${TEAM[k].c}"></span>${TEAM[k].nome} ${alive[k]}</span>`).join('');
+  $('plist').innerHTML = G.carte.map((c, i) => {
+    const t = teamOf(c.ruolo), d = morti.has(i);
+    return `<li class="${d ? 'dead' : ''}"><button data-p="${i}" aria-pressed="${d}"><span class="dot" style="--tc:${t.c}"></span><span class="pn">${esc(c.nome)}</span><span class="pr">${esc(c.ruolo.nome)}</span><span class="st">${d ? 'eliminato' : 'vivo'}</span></button></li>`;
+  }).join('');
+}
+document.querySelector('#narr .seg').addEventListener('click', e => {
+  const b = e.target.closest('[data-night]'); if (!b) return;
+  G.notte = b.dataset.night; saveGame(); renderNarr();
+});
+$('plist').addEventListener('click', e => {
+  const b = e.target.closest('[data-p]'); if (!b) return;
+  const i = +b.dataset.p;
+  G.morti = G.morti.includes(i) ? G.morti.filter(x => x !== i) : G.morti.concat(i);
+  if (G.morti.length && G.notte === 'prima') G.notte = 'altre';
+  saveGame(); renderNarr();
+});
+$('narrMenu').onclick = () => { $('narrActions').hidden = !$('narrActions').hidden; $('againConfirm').hidden = true; if (!$('narrActions').hidden) $('narrActions').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+$('closeMenu').onclick = () => { $('narrActions').hidden = true; };
+let afterConfirm = null;
+function askConfirm(text, fn) { $('againText').textContent = text; afterConfirm = fn; $('narrActions').hidden = true; $('againConfirm').hidden = false; $('againConfirm').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+$('againBtn').onclick = () => askConfirm('Ridistribuisco gli stessi ruoli agli stessi giocatori? La partita in corso si chiude.', () => { G = null; saveGame(); deal(); });
+$('toSetup').onclick = () => askConfirm('Torno alle impostazioni? La partita in corso resta salvata finché non ne distribuisci un’altra.', () => { show('setup'); renderSetup(); });
+$('againNo').onclick = () => { $('againConfirm').hidden = true; };
+$('againYes').onclick = () => { $('againConfirm').hidden = true; if (afterConfirm) afterConfirm(); };
+$('resumeBtn').onclick = () => resume();
+$('dealBtn').onclick = () => {
+  if (G && G.fase === 'narratore' && !$('dealBtn').dataset.armed) { $('dealBtn').dataset.armed = '1'; $('dealBtn').textContent = 'C’è una partita in corso: tocca ancora per chiuderla'; return; }
+  delete $('dealBtn').dataset.armed; $('dealBtn').textContent = 'Distribuisci i ruoli';
+  deal();
+};
+
+/* ---------------- Editor dei ruoli ---------------- */
+function renderRoles() {
+  $('roleList').innerHTML = roles.map(r => {
+    const t = teamOf(r);
+    const night = r.notte === 'ogni' ? `si sveglia ogni notte (${r.ordine || '?'}°)` : r.notte === 'prima' ? `si sveglia la prima notte (${r.ordine || '?'}°)` : 'non si sveglia';
+    return `<div class="rcard" style="--tc:${t.c}"><div class="h"><span class="t">${esc(r.nome)}</span><button class="linkbtn" data-edit="${r.id}">Modifica</button></div>
+      <div class="meta"><span class="badge" style="--tc:${t.c}">${t.nome}</span> · ${night}</div>
+      ${r.descrizione ? `<p>${esc(r.descrizione)}</p>` : ''}</div>`;
+  }).join('');
+}
+let editing = null;
+function openEditor(id) {
+  editing = id ? roleById(id) : null;
+  const r = editing || { nome: '', squadra: 'villaggio', descrizione: '', notte: '', ordine: Math.max(0, ...roles.map(x => x.ordine || 0)) + 1 };
+  $('editTitle').textContent = editing ? 'Modifica ruolo' : 'Nuovo ruolo';
+  $('eName').value = r.nome; $('eTeam').value = r.squadra; $('eDesc').value = r.descrizione || '';
+  $('eNight').value = r.notte || ''; $('eOrder').value = r.ordine || 1;
+  $('eOrderWrap').hidden = !$('eNight').value;
+  $('eDelete').hidden = !editing; delete $('eDelete').dataset.armed; $('eDelete').textContent = 'Elimina il ruolo';
+  $('editor').hidden = false;
+  setTimeout(() => { if (!editing) $('eName').focus(); }, 50);
+}
+$('eNight').onchange = () => { $('eOrderWrap').hidden = !$('eNight').value; };
+$('editForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const nome = norm($('eName').value); if (!nome) return;
+  if (roles.some(r => r !== editing && key(r.nome) === key(nome))) { toast('Esiste già un ruolo con questo nome'); return; }
+  const data = { nome, squadra: $('eTeam').value, descrizione: norm($('eDesc').value), notte: $('eNight').value, ordine: $('eNight').value ? Math.max(1, parseInt($('eOrder').value, 10) || 1) : 0 };
+  if (editing) Object.assign(editing, data);
+  else roles.push({ id: 'r' + Date.now().toString(36) + randInt(1000), ...data });
+  saveRoles(); $('editor').hidden = true; renderRoles(); toast('Ruolo salvato');
+});
+$('eCancel').onclick = () => { $('editor').hidden = true; };
+$('editor').addEventListener('click', e => { if (e.target === $('editor')) $('editor').hidden = true; });
+$('eDelete').onclick = () => {
+  const b = $('eDelete');
+  if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Tocca ancora per eliminare'; return; }
+  if (roles.length <= 1) { toast('Serve almeno un ruolo'); return; }
+  roles = roles.filter(r => r !== editing); delete cfg.conteggi[editing.id];
+  if (cfg.riempitivo === editing.id) cfg.riempitivo = (roles.find(r => r.squadra === 'villaggio' && !r.notte) || roles[0]).id;
+  saveRoles(); saveCfg(); $('editor').hidden = true; renderRoles(); toast('Ruolo eliminato');
+};
+$('roleList').addEventListener('click', e => { const b = e.target.closest('[data-edit]'); if (b) openEditor(b.dataset.edit); });
+$('newRole').onclick = () => openEditor(null);
+$('rolesBtn').onclick = () => { renderRoles(); $('resetConfirm').hidden = true; show('roles'); };
+$('rolesBack').onclick = () => { show('setup'); renderSetup(); };
+$('resetRoles').onclick = () => { $('resetConfirm').hidden = false; };
+$('resetNo').onclick = () => { $('resetConfirm').hidden = true; };
+$('resetYes').onclick = () => {
+  roles = ROLES_BASE.map(r => ({ ...r })); saveRoles();
+  cfg.conteggi = Object.fromEntries(Object.entries(cfg.conteggi).filter(([id]) => roleById(id)));
+  if (!roleById(cfg.riempitivo)) cfg.riempitivo = 'contadino';
+  saveCfg(); $('resetConfirm').hidden = true; renderRoles(); toast('Ruoli di base ripristinati');
+};
+
+/* ---------------- Utilità ---------------- */
+function show(id) {
+  ['setup', 'roles', 'pass', 'show', 'toNarr', 'narr'].forEach(s => { $(s).hidden = s !== id; });
+  window.scrollTo(0, 0);
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200); }
+function resume() {
+  if (!G) { show('setup'); renderSetup(); return; }
+  if (G.fase === 'passa') showPass();
+  else if (G.fase === 'narratore-attesa') show('toNarr');
+  else showNarr();
+}
+
+/* Se la pagina si ricarica a metà partita, si riprende da dove si era */
+if (G && G.fase === 'passa') { toast('Ripresa la distribuzione dei ruoli'); resume(); }
+else if (G) resume();
+else { show('setup'); renderSetup(); }
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

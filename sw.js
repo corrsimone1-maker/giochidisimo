@@ -6,7 +6,7 @@ importScripts('giochi.js');
 const CACHE = 'giochidisimo';
 const BASE = new URL('./', self.location).href;
 const PAGINE = ['', 'giochi.js', 'manifest.webmanifest', 'comune/app.js', 'icone/icon-192.png', 'icone/apple-touch-icon.png']
-  .concat((self.GIOCHI ? self.GIOCHI.giochi : []).map(g => g.link.split('#')[0]))
+  .concat((self.GIOCHI ? self.GIOCHI.giochi : []).flatMap(g => [g.link.split('#')[0]].concat(g.extra || [])))
   .map(p => BASE + p);
 
 self.addEventListener('install', e => {

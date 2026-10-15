@@ -39,8 +39,10 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,14vw,64px);li
 .pcard{position:relative;display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:5/7;padding:16px 14px;border-radius:16px;text-decoration:none;
   background:var(--face);color:var(--ink);border:1px solid var(--face-edge);
   box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 34px rgba(0,0,0,.42);transition:transform .18s ease}
-.pcard:nth-child(1){transform:rotate(-2.5deg)}
-.pcard:nth-child(2){transform:rotate(2deg);margin-top:18px}
+.pcard:nth-child(odd){transform:rotate(-2.5deg)}
+.pcard:nth-child(even){transform:rotate(2deg);margin-top:18px}
+.pcard:nth-child(3){transform:rotate(1.5deg)}
+.pcard:nth-child(4){transform:rotate(-1.8deg)}
 .pcard:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){.pcard{transition:none}}
 .idx{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--display);font-weight:800;font-size:22px;line-height:1;color:var(--red)}
@@ -50,6 +52,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,14vw,64px);li
 .pcard .art{position:absolute;inset:16% 18% 34%;display:grid;place-items:center}
 .pcard .art svg{width:100%;height:100%}
 .pcard .nm{font-family:var(--display);font-weight:800;font-size:32px;line-height:1;margin:0 0 4px}
+.pcard .nm.long{font-size:clamp(18px,5.4vw,24px);margin-right:16px}
 .pcard .ct{font-size:14px;color:#5D5A50;font-weight:600;margin-right:22px}
 
 .hint{margin:34px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
@@ -109,16 +112,35 @@ const ART = {
     </g>
   </svg>`
 };
-const LETTER = { carte: 'C', dado: 'A' };
+ART.punti = `<svg viewBox="0 0 120 120" aria-hidden="true">
+    <g transform="rotate(-8 60 60)">
+      <rect x="16" y="30" width="88" height="60" rx="9" fill="#1A1F2B"/>
+      <rect x="21" y="35" width="38" height="50" rx="5" fill="#B8322A"/>
+      <rect x="61" y="35" width="38" height="50" rx="5" fill="#2F5FA8"/>
+      <text x="40" y="70" text-anchor="middle" font-family="Bricolage Grotesque,Arial Narrow,sans-serif" font-weight="800" font-size="28" fill="#FBF7EE">7</text>
+      <text x="80" y="70" text-anchor="middle" font-family="Bricolage Grotesque,Arial Narrow,sans-serif" font-weight="800" font-size="28" fill="#FBF7EE">5</text>
+    </g>
+  </svg>`;
+ART.maschera = `<svg viewBox="0 0 120 120" aria-hidden="true">
+    <g transform="rotate(-10 60 60)">
+      <path d="M14 46c10-8 30-9 46-2 16-7 36-6 46 2 0 22-12 36-27 36-9 0-15-6-19-12-4 6-10 12-19 12-15 0-27-14-27-36Z" fill="#1A1F2B"/>
+      <ellipse cx="38" cy="58" rx="11" ry="7" fill="#FBF7EE"/>
+      <ellipse cx="82" cy="58" rx="11" ry="7" fill="#FBF7EE"/>
+      <path d="M104 44c8-6 12-16 10-26" stroke="#B8322A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+const LETTER = { carte: 'C', dado: 'A', punti: 'P', maschera: 'G' };
 
 function renderHome() {
   $('deck').innerHTML = G.categorie.map(c => {
-    const n = G.giochi.filter(g => g.categoria === c.id).length;
+    const list = G.giochi.filter(g => g.categoria === c.id), n = list.length;
     const L = LETTER[c.simbolo] || c.nome[0];
-    return `<a class="pcard" href="#${esc(c.id)}">
+    const href = c.diretto && list[0] ? list[0].link : '#' + c.id;
+    const ct = c.etichetta || `${n} ${n === 1 ? 'gioco' : 'giochi'}`;
+    return `<a class="pcard" href="${esc(href)}">
       <span class="idx tl">${esc(L)}${SUIT}</span><span class="idx br">${esc(L)}${SUIT}</span>
       <span class="art">${ART[c.simbolo] || ART.dado}</span>
-      <span class="nm">${esc(c.nome)}</span><span class="ct">${n} ${n === 1 ? 'gioco' : 'giochi'}</span></a>`;
+      <span class="nm${c.nome.length > 7 ? ' long' : ''}">${esc(c.nome)}</span><span class="ct">${esc(ct)}</span></a>`;
   }).join('');
 }
 function renderCat(id) {
