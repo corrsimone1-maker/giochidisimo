@@ -149,7 +149,8 @@ function renderHome() {
     const list = G.giochi.filter(g => g.categoria === c.id), n = list.length;
     const L = LETTER[c.simbolo] || c.nome[0];
     const href = c.diretto && list[0] ? list[0].link : '#' + c.id;
-    const ct = c.etichetta || `${n} ${n === 1 ? 'gioco' : 'giochi'}`;
+    const un = c.unita || ['gioco', 'giochi'];   // es. ['app/gioco', 'app/giochi'] per Altro
+    const ct = c.etichetta || `${n} ${n === 1 ? un[0] : un[1]}`;
     return `<a class="pcard" href="${esc(href)}">
       <span class="idx tl">${esc(L)}${SUIT}</span><span class="idx br">${esc(L)}${SUIT}</span>
       <span class="art">${ART[c.simbolo] || ART.dado}</span>

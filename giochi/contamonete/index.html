@@ -37,7 +37,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:max(6px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 6px max(14px,env(safe-area-inset-left))}
 .back{justify-self:start;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
 .title{font-family:var(--display);font-weight:800;font-size:20px;margin:0;white-space:nowrap}
-.right{justify-self:end;display:flex;align-items:center;gap:14px}
+.right{justify-self:end;display:flex;align-items:center;gap:10px}
 .reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 .reset.armed{color:#F0A493}
 
@@ -71,12 +71,22 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .lock.on{background:var(--gold);border-color:var(--gold);color:#1A1F2B}
 .lock .fill{position:absolute;inset:0;background:rgba(255,255,255,.55);transform:scaleX(0);transform-origin:left}
 .lock.holding .fill{transition:transform .7s linear;transform:scaleX(1)}
+.face{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 6px;border-radius:10px;border:1px solid var(--line);background:var(--night-2);font-weight:700;font-size:13px;color:var(--muted);white-space:nowrap}
+.face .mini{display:block;width:24px;height:24px}
+.face .mini svg,.facelist .pv svg{width:100%;height:100%;display:block}
+.faces{position:absolute;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:rgba(6,9,18,.78)}
+.facesheet{max-width:100%;padding:16px 18px;border-radius:18px;background:var(--night-2);border:1px solid var(--line)}
+.facetitle{font-family:var(--display);font-weight:800;font-size:20px;margin:0 0 12px;text-align:center}
+.facelist{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.facelist button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;border-radius:14px;border:2px solid transparent;background:none;font-weight:700;font-size:13px;color:var(--muted)}
+.facelist .pv{display:block;width:64px;height:64px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+.facelist button[aria-pressed="true"]{border-color:var(--gold);color:var(--text)}
 .toast{position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:30;max-width:90%;padding:10px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.45);pointer-events:none}
 @media (prefers-reduced-motion:reduce){.coin{transition:none}.slot.back .coin{animation:none}.area.holding .ring circle,.lock.holding .fill{transition:none}}
 </style>
 </head>
 <body>
-<!-- La moneta: disegno originale dorato da 50 -->
+<!-- Le monete: disegni originali (oro per i centesimi, bimetalliche per gli euro) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <radialGradient id="oro" cx="36%" cy="30%" r="75%">
@@ -89,21 +99,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
       <stop offset="0" stop-color="#fff" stop-opacity=".45"/>
       <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
-    <symbol id="moneta" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="url(#oro)"/>
-      <circle cx="50" cy="50" r="47" fill="none" stroke="#6E5212" stroke-width="2"/>
-      <circle cx="50" cy="50" r="44.5" fill="none" stroke="#8A6A1C" stroke-opacity=".75" stroke-width="3.2" stroke-dasharray=".9 1.5"/>
-      <circle cx="50" cy="50" r="39.5" fill="none" stroke="#7A5C17" stroke-width="1.6"/>
-      <circle cx="50" cy="50" r="38.2" fill="none" stroke="#FFF3BF" stroke-opacity=".6" stroke-width="1"/>
-      <g fill="#7A5C17" fill-opacity=".85">
-        <circle cx="50" cy="16" r="1.6"/><circle cx="50" cy="84" r="1.6"/><circle cx="16" cy="50" r="1.6"/><circle cx="84" cy="50" r="1.6"/>
-        <circle cx="26" cy="26" r="1.2"/><circle cx="74" cy="26" r="1.2"/><circle cx="26" cy="74" r="1.2"/><circle cx="74" cy="74" r="1.2"/>
-      </g>
-      <text x="50" y="58.5" text-anchor="middle" font-family="'Bricolage Grotesque','Arial Narrow',sans-serif" font-weight="800" font-size="31" fill="#FFF3BF" fill-opacity=".55">50</text>
-      <text x="50" y="57.5" text-anchor="middle" font-family="'Bricolage Grotesque','Arial Narrow',sans-serif" font-weight="800" font-size="31" fill="#6B4F10">50</text>
-      <text x="50" y="70" text-anchor="middle" font-family="'Figtree',system-ui,sans-serif" font-weight="800" font-size="7.5" letter-spacing="2" fill="#6B4F10">CENT</text>
-      <circle cx="50" cy="50" r="48" fill="url(#riflesso)"/>
-    </symbol>
+    <radialGradient id="argento" cx="36%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset=".4" stop-color="#D8DCE2"/>
+      <stop offset=".8" stop-color="#A3A9B2"/>
+      <stop offset="1" stop-color="#6E747D"/>
+    </radialGradient>
   </defs>
 </svg>
 
@@ -112,6 +113,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
     <a class="back" href="../../">‹ Giochi</a>
     <h1 class="title">Conta Monete</h1>
     <div class="right">
+      <button class="face" id="faceBtn" aria-label="Cambia moneta"></button>
       <button class="lock" id="lockBtn"><span class="fill"></span><span class="lbl" id="lockLbl"></span></button>
       <button class="reset" id="resetBtn">Reset</button>
     </div>
@@ -124,6 +126,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   </div>
 
   <div class="toast" id="toast" hidden></div>
+  <div class="faces" id="faces" hidden>
+    <div class="facesheet" role="dialog" aria-modal="true" aria-label="Scegli la moneta">
+      <div class="facetitle">Che moneta usiamo?</div>
+      <div class="facelist" id="faceList"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -135,7 +143,60 @@ try { Object.assign(S, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e)
 S.perse = Math.max(0, Math.min(TOT, S.perse | 0));
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
-$('coins').innerHTML = Array.from({ length: TOT }, (_, i) => `<div class="slot" id="slot${i}"><div class="coin"><svg viewBox="0 0 100 100"><use href="#moneta"/></svg></div></div>`).join('');
+/* Facce: si cambiano dal tasto in alto; di base 50 centesimi */
+const FACES = {
+  '10c': { n: '10', u: 'CENT', t: 'oro', lab: '10 cent' }, '20c': { n: '20', u: 'CENT', t: 'oro', lab: '20 cent' },
+  '50c': { n: '50', u: 'CENT', t: 'oro', lab: '50 cent' }, '1e': { n: '1', u: 'EURO', t: 'bi1', lab: '1 euro' },
+  '2e': { n: '2', u: 'EURO', t: 'bi2', lab: '2 euro' }
+};
+const ORDER = ['10c', '20c', '50c', '1e', '2e'];
+if (!FACES[S.faccia]) S.faccia = '50c';
+const METAL = { oro: { fill: 'url(#oro)', line: '#6E5212', mill: '#8A6A1C', ink: '#6B4F10', hi: '#FFF3BF' },
+  argento: { fill: 'url(#argento)', line: '#5D636B', mill: '#6E747D', ink: '#3F444C', hi: '#FFFFFF' } };
+function coinSVG(k) {
+  const f = FACES[k], font = "'Bricolage Grotesque','Arial Narrow',sans-serif";
+  if (f.t === 'oro') {
+    const m = METAL.oro;
+    return `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="48" fill="${m.fill}"/>
+      <circle cx="50" cy="50" r="47" fill="none" stroke="${m.line}" stroke-width="2"/>
+      <circle cx="50" cy="50" r="44.5" fill="none" stroke="${m.mill}" stroke-opacity=".75" stroke-width="3.2" stroke-dasharray=".9 1.5"/>
+      <circle cx="50" cy="50" r="39.5" fill="none" stroke="#7A5C17" stroke-width="1.6"/>
+      <circle cx="50" cy="50" r="38.2" fill="none" stroke="${m.hi}" stroke-opacity=".6" stroke-width="1"/>
+      <g fill="#7A5C17" fill-opacity=".85"><circle cx="50" cy="16" r="1.6"/><circle cx="50" cy="84" r="1.6"/><circle cx="16" cy="50" r="1.6"/><circle cx="84" cy="50" r="1.6"/>
+        <circle cx="26" cy="26" r="1.2"/><circle cx="74" cy="26" r="1.2"/><circle cx="26" cy="74" r="1.2"/><circle cx="74" cy="74" r="1.2"/></g>
+      <text x="50" y="58.5" text-anchor="middle" font-family="${font}" font-weight="800" font-size="31" fill="${m.hi}" fill-opacity=".55">${f.n}</text>
+      <text x="50" y="57.5" text-anchor="middle" font-family="${font}" font-weight="800" font-size="31" fill="${m.ink}">${f.n}</text>
+      <text x="50" y="70" text-anchor="middle" font-family="'Figtree',system-ui,sans-serif" font-weight="800" font-size="7.5" letter-spacing="2" fill="${m.ink}">${f.u}</text>
+      <circle cx="50" cy="50" r="48" fill="url(#riflesso)"/></svg>`;
+  }
+  /* Bimetalliche: 1 euro con anello argento e centro oro, 2 euro al contrario */
+  const out = f.t === 'bi1' ? METAL.argento : METAL.oro, inn = f.t === 'bi1' ? METAL.oro : METAL.argento;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="48" fill="${out.fill}"/>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="${out.line}" stroke-width="2"/>
+    <circle cx="50" cy="50" r="44.5" fill="none" stroke="${out.mill}" stroke-opacity=".75" stroke-width="3.2" stroke-dasharray=".9 1.5"/>
+    <g fill="${out.ink}" fill-opacity=".7"><circle cx="50" cy="10.5" r="1.5"/><circle cx="36.5" cy="13" r="1.2"/><circle cx="63.5" cy="13" r="1.2"/><circle cx="24.5" cy="20" r="1"/><circle cx="75.5" cy="20" r="1"/></g>
+    <text x="50" y="90.5" text-anchor="middle" font-family="'Figtree',system-ui,sans-serif" font-weight="800" font-size="7" letter-spacing="2.4" fill="${out.ink}">${f.u}</text>
+    <circle cx="50" cy="50" r="31.5" fill="${inn.fill}" stroke="${out.line}" stroke-width="1.8"/>
+    <circle cx="50" cy="50" r="29.3" fill="none" stroke="${inn.hi}" stroke-opacity=".55" stroke-width="1"/>
+    <text x="50" y="62" text-anchor="middle" font-family="${font}" font-weight="800" font-size="34" fill="${inn.hi}" fill-opacity=".55">${f.n}</text>
+    <text x="50" y="61" text-anchor="middle" font-family="${font}" font-weight="800" font-size="34" fill="${inn.ink}">${f.n}</text>
+    <circle cx="50" cy="50" r="48" fill="url(#riflesso)"/></svg>`;
+}
+$('coins').innerHTML = Array.from({ length: TOT }, (_, i) => `<div class="slot" id="slot${i}"><div class="coin"></div></div>`).join('');
+function renderFace() {
+  document.querySelectorAll('#coins .coin').forEach(c => { c.innerHTML = coinSVG(S.faccia); });
+  $('faceBtn').innerHTML = `<span class="mini">${coinSVG(S.faccia)}</span>${FACES[S.faccia].n}${FACES[S.faccia].u === 'CENT' ? '¢' : '€'}`;
+  $('faceBtn').setAttribute('aria-label', `Moneta: ${FACES[S.faccia].lab}. Tocca per cambiarla`);
+}
+$('faceBtn').onclick = () => {
+  $('faceList').innerHTML = ORDER.map(k => `<button data-face="${k}" aria-pressed="${k === S.faccia}"><span class="pv">${coinSVG(k)}</span>${FACES[k].lab}</button>`).join('');
+  $('faces').hidden = false;
+};
+$('faceList').addEventListener('click', e => { const b = e.target.closest('[data-face]'); if (!b) return; S.faccia = b.dataset.face; save(); renderFace(); $('faces').hidden = true; });
+$('faces').addEventListener('click', e => { if (e.target === $('faces')) $('faces').hidden = true; });
+renderFace();
 function render() {
   const left = TOT - S.perse;
   for (let i = 0; i < TOT; i++) $('slot' + i).classList.toggle('lost', i >= left);

@@ -15,13 +15,15 @@
 
    Una categoria con  diretto: true  apre subito il suo primo gioco
    invece dell'elenco (serve per il Contapunti).
+   Con  unita: ['app/gioco', 'app/giochi']  la carta della home conta
+   «app/giochi» invece di «giochi».
    ===================================================================== */
 self.GIOCHI = {
   categorie: [
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
     { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus e i dadi del Perudo', simbolo: 'maschera' },
-    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado' }
+    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] }
   ],
   giochi: [
     { categoria: 'carte', nome: 'Dichiarare', descrizione: 'Prese dichiarate e rispettate: n² + 10', link: 'giochi/segnapunti/#dichiarare', colore: '#B39DF0' },
