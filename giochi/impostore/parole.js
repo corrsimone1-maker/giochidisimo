@@ -27,14 +27,17 @@ self.PACCHETTI = [
         'cavallo', 'mucca', 'pecora', 'maiale', 'tartaruga', 'riccio', 'scoiattolo', 'pappagallo', 'cammello', 'leone'],
       'Luoghi': ['spiaggia', 'ospedale', 'aeroporto', 'biblioteca', 'discoteca', 'palestra', 'cinema', 'museo', 'stazione', 'supermercato',
         'chiesa', 'stadio', 'montagna', 'campeggio', 'ristorante', 'scuola', 'università', 'prigione', 'zoo', 'circo',
-        'farmacia', 'banca', 'parrucchiere', 'metropolitana', 'castello', 'deserto', 'isola', 'bosco', 'piscina', 'luna park'],
+        'farmacia', 'banca', 'parrucchiere', 'metropolitana', 'castello', 'deserto', 'isola', 'bosco', 'piscina', 'luna park',
+        'autogrill', 'oratorio', 'Vaticano', 'dogana', "McDonald's", 'IKEA'],
       'Casa': ['divano', 'letto', 'frigorifero', 'lavatrice', 'forno', 'doccia', 'vasca da bagno', 'specchio', 'armadio', 'tappeto',
-        'balcone', 'ascensore', 'scale', 'finestra', 'campanello', 'lampadario', 'termosifone', 'televisore', 'comodino', 'cuscino'],
+        'balcone', 'ascensore', 'scale', 'finestra', 'campanello', 'lampadario', 'termosifone', 'televisore', 'comodino', 'cuscino',
+        'bidet', 'friggitrice ad aria'],
       'Oggetti': ['ombrello', 'forbici', 'orologio', 'candela', 'chiave', 'zaino', 'occhiali', 'telecomando', 'pentola', 'valigia',
         'martello', 'lampada', 'sedia', 'tazza', 'spazzolino', 'caricabatterie', 'portafoglio', 'accendino', 'bussola', 'aspirapolvere',
-        'termometro', 'cerotto', 'matita', 'colla', 'calcolatrice'],
+        'termometro', 'cerotto', 'matita', 'colla', 'calcolatrice', 'Tupperware', 'dentiera', 'scontrino'],
       'Vestiti e accessori': ['cappello', 'calzino', 'sciarpa', 'guanti', 'cravatta', 'felpa', 'jeans', 'gonna', 'pigiama', 'costume da bagno',
-        'ciabatte', 'stivali', 'scarpe da ginnastica', 'giacca', 'cintura', 'orecchini', 'collana', 'anello', 'borsa', 'papillon'],
+        'ciabatte', 'stivali', 'scarpe da ginnastica', 'giacca', 'cintura', 'orecchini', 'collana', 'anello', 'borsa', 'papillon',
+        'Crocs', 'parrucchino'],
       'Mestieri': ['medico', 'pompiere', 'cuoco', 'pilota', 'idraulico', 'maestro', 'poliziotto', 'astronauta', 'giardiniere', 'barista',
         'dentista', 'avvocato', 'fotografo', 'pescatore', 'sarto', 'muratore', 'postino', 'cassiere', 'veterinario', 'architetto',
         'giornalista', 'attore', 'cantante', 'farmacista', 'elettricista', 'panettiere', 'tassista', 'infermiere', 'ingegnere', 'bibliotecario'],
@@ -42,21 +45,32 @@ self.PACCHETTI = [
         'surf', 'judo', 'scherma', 'pattinaggio', 'arrampicata', 'maratona', 'padel', 'equitazione', 'canottaggio', 'karate',
         'Formula 1', 'pallanuoto', 'atletica', 'yoga', 'snowboard'],
       'Giochi e svaghi': ['scacchi', 'poker', 'briscola', 'tresette', 'scopa', 'ping pong', 'bowling', 'biliardo', 'freccette', 'monopoli',
-        'nascondino', 'puzzle', 'cruciverba', 'karaoke', 'videogiochi', 'tombola', 'Uno', 'sudoku', 'Risiko', 'calcio balilla'],
+        'nascondino', 'puzzle', 'cruciverba', 'karaoke', 'videogiochi', 'tombola', 'Uno', 'sudoku', 'Risiko', 'calcio balilla',
+        'escape room'],
       'Mezzi di trasporto': ['bicicletta', 'monopattino', 'motorino', 'autobus', 'tram', 'treno', 'aereo', 'elicottero', 'nave', 'gommone',
         'sottomarino', 'razzo', 'taxi', 'ambulanza', 'camion', 'trattore', 'funivia', 'mongolfiera'],
       'Natura e meteo': ['arcobaleno', 'temporale', 'fulmine', 'neve', 'nebbia', 'vulcano', 'terremoto', 'tsunami', 'cascata', 'ghiacciaio',
         'tramonto', 'luna', 'sole', 'stella cadente', 'eclissi', 'tornado', 'grandine', 'onda', 'sabbia', 'cactus'],
       'Feste ed eventi': ['matrimonio', 'compleanno', 'Natale', 'Capodanno', 'Carnevale', 'Pasqua', 'Halloween', 'laurea', 'funerale', 'battesimo',
-        'addio al celibato', 'festa a sorpresa', 'Ferragosto', 'sagra', 'concerto', 'picnic', 'gita scolastica', 'trasloco'],
+        'addio al celibato', 'festa a sorpresa', 'Ferragosto', 'sagra', 'concerto', 'picnic', 'gita scolastica', 'trasloco',
+        'rimpatriata', 'pigiama party', 'crociera'],
       'Strumenti musicali': ['chitarra', 'pianoforte', 'batteria', 'violino', 'tromba', 'sassofono', 'flauto', 'arpa', 'fisarmonica', 'contrabbasso',
         'tamburello', 'xilofono', 'armonica', 'ukulele', 'organo'],
-      'Corpo': ['naso', 'orecchio', 'gomito', 'ginocchio', 'unghia', 'sopracciglio', 'ombelico', 'mento', 'caviglia', 'polso',
-        'lingua', 'dente', 'capelli', 'barba', 'lentiggini'],
+      'Corpo e salute': ['naso', 'orecchio', 'gomito', 'ginocchio', 'unghia', 'sopracciglio', 'ombelico', 'mento', 'caviglia', 'polso',
+        'lingua', 'dente', 'capelli', 'barba', 'lentiggini', 'clistere', 'circoncisione', 'amnesia', 'schizofrenia'],
       'Città nel mondo': ['Parigi', 'Londra', 'New York', 'Tokyo', 'Venezia', 'Napoli', 'Milano', 'Firenze', 'Barcellona', 'Amsterdam',
         'Berlino', 'Las Vegas', 'Dubai', 'Rio de Janeiro', 'Il Cairo', 'Atene', 'Istanbul', 'Sydney', 'Pechino', 'Los Angeles'],
       'Tecnologia': ['smartphone', 'computer', 'WhatsApp', 'Instagram', 'TikTok', 'Netflix', 'YouTube', 'Wi-Fi', 'password', 'selfie',
-        'emoji', 'cuffie', 'drone', 'robot', 'intelligenza artificiale']
+        'emoji', 'cuffie', 'drone', 'robot', 'intelligenza artificiale'],
+      'Religione e misteri': ['conclave', 'purgatorio', 'setta', 'testimone di Geova', 'esorcismo', 'cartomante', 'Nostradamus', 'Atlantide', 'Area 51', 'superstizione',
+        'karma', 'apocalisse', 'complottismo', 'terrapiattista'],
+      'Idee e concetti': ['nostalgia', 'paradosso', 'déjà-vu', 'utopia', 'ipocrisia', 'tabù', 'propaganda', 'dittatura', 'invidia', 'destino',
+        'censura', 'identità', 'ossessione', 'manipolazione', 'multiverso'],
+      'Effetti e sindromi': ['effetto Mandela', 'effetto farfalla', 'sindrome di Stoccolma', 'complesso di Edipo', 'schema Ponzi', "catena di Sant'Antonio", 'scatole cinesi'],
+      'Situazioni': ['divorzio', 'figuraccia', 'primo appuntamento', 'colloquio di lavoro', 'matrimonio combinato', 'crisi di mezza età', 'amore a distanza', 'post-sbornia', 'friendzone'],
+      'Vita all’italiana': ['fisco', 'Equitalia', 'mafia', 'Ponte sullo Stretto', 'televendita', 'suocera', 'sciopero', 'multa'],
+      'Scuola e università': ['Erasmus', 'CFU', 'fuoricorso', 'debito formativo', 'interrogazione'],
+      'Arte e storia': ['Gioconda', 'Ultima cena', 'Titanic']
     }
   },
   {
@@ -102,23 +116,28 @@ self.PACCHETTI = [
     }
   },
   {
-    id: 'personaggi', nome: 'Personaggi', descrizione: 'Persone famose e personaggi di fantasia', attivo: false,
+    id: 'personaggi', nome: 'Personaggi', descrizione: 'Persone famose, personaggi di fantasia, film e TV', attivo: false,
     categorie: {
       'Persone famose': ['Totti', 'Totò', 'Alberto Sordi', 'Carlo Verdone', 'Anna Magnani', 'Sophia Loren', 'Federico Fellini', 'Roberto Benigni', 'Checco Zalone', 'Leonardo da Vinci',
         'Michelangelo', 'Dante', 'Giulio Cesare', 'Nerone', 'Cleopatra', 'Napoleone', 'Garibaldi', 'Cristoforo Colombo', 'Galileo', 'Einstein',
         'Marilyn Monroe', 'Charlie Chaplin', 'Steve Jobs', 'Elon Musk', 'Maradona', 'Messi', 'Cristiano Ronaldo', 'Valentino Rossi', 'Jannik Sinner', 'Usain Bolt',
-        'Michael Schumacher', 'Mike Bongiorno', 'Pippo Baudo', 'Fiorello', 'Maria De Filippi', 'Gerry Scotti', 'Piero Angela', 'Alberto Angela'],
+        'Michael Schumacher', 'Mike Bongiorno', 'Pippo Baudo', 'Fiorello', 'Maria De Filippi', 'Gerry Scotti', 'Piero Angela', 'Alberto Angela',
+        'Amadeus', 'Berlusconi'],
       'Personaggi di fantasia': ['Pinocchio', 'Fantozzi', 'Harry Potter', 'Topolino', 'Paperino', 'Super Mario', 'Batman', 'Spider-Man', 'Sherlock Holmes', 'Dracula',
         'Babbo Natale', 'Befana', 'Biancaneve', 'Cenerentola', 'Peter Pan', 'Shrek', 'Homer Simpson', 'Pikachu', 'Darth Vader', 'Gandalf',
-        'James Bond', 'Zorro', 'Frankenstein', 'Tarzan', 'Godzilla', 'Winnie the Pooh', 'Lupin', 'Goku', 'Barbie', 'Gollum']
+        'James Bond', 'Zorro', 'Frankenstein', 'Tarzan', 'Godzilla', 'Winnie the Pooh', 'Lupin', 'Goku', 'Barbie', 'Gollum',
+        'Walter White', 'Joker', 'Spongebob'],
+      'Film, serie e TV': ['Hunger Games', 'Temptation Island', 'Pokémon']
     }
   },
   {
-    id: 'meme', nome: 'Meme', descrizione: 'Meme di internet e meme nostri', attivo: false,
+    id: 'meme', nome: 'Meme', descrizione: 'Meme, slang di internet e meme nostri', attivo: false,
     categorie: {
-      'Meme': ['aura', 'caracalla', 'sigma', 'skibidi', 'rizz', 'brainrot', 'NPC', 'Tralalero Tralala', 'Tung Tung Tung Sahur', 'Bombardiro Crocodilo',
-        'Ballerina Cappuccina', 'six seven', 'Ohio', 'delulu', 'cringe', 'ok boomer', 'Rickroll', 'Nyan Cat', 'Doge', 'Stonks',
-        'Gigachad', 'Grumpy Cat', 'Harambe', 'This is fine', 'fidanzato distratto', 'Hide the Pain Harold', 'mewing', 'slay']
+      'Meme': ['aura', 'caracalla', 'sigma', 'skibidi', 'brainrot', 'Tralalero Tralalà', 'Tung Tung Tung Sahur', 'Bombardiro Crocodilo', 'Ballerina Cappuccina', 'six seven',
+        'Ohio', 'Rickroll', 'Nyan Cat', 'Doge', 'Stonks', 'Gigachad', 'Grumpy Cat', 'Harambe', 'This is fine', 'fidanzato distratto',
+        'Hide the Pain Harold'],
+      'Slang di internet': ['rizz', 'cringe', 'NPC', 'delulu', 'slay', 'mewing', 'ok boomer', 'ghosting', 'catfish', 'main character',
+        'goblin', 'maranza', 'furry', 'OnlyFans']
     }
   }
 ];
