@@ -144,6 +144,14 @@ ul.players{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--
 .sheet .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .menu button.item{display:block;width:100%;text-align:left;padding:14px 4px;border-bottom:1px solid var(--line);font-size:17px;font-weight:600}
 .menu button.item small{display:block;font-weight:400;font-size:13px;margin-top:2px}
+.menu button.item.danger{color:#F0A99E;border-bottom:0}
+.sheet .btns.one{grid-template-columns:1fr}
+.final{list-style:none;margin:12px 0 4px;padding:0;border-top:1px solid var(--line)}
+.final li{display:grid;grid-template-columns:26px 1fr auto;align-items:baseline;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.final .pos{color:var(--muted);font-weight:700}
+.final .nm{font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.final b{font-family:var(--num);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.final li.me .nm{color:var(--brass)}
 .mg{border-bottom:1px solid var(--line);padding:12px 0}
 .mg .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .mg .h b{font-size:18px}
@@ -200,7 +208,7 @@ ul.players{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--
       <input class="field" id="jName" maxlength="16" required placeholder="es. Luca">
       <button class="btn ivory wide" type="submit">Siediti</button>
     </form>
-    <p class="hint">Niente account: chi ha il codice entra. Le fiches restano salvate anche se chiudi la pagina.</p>
+    <p class="hint">Niente account: chi ha il codice entra. Le fiches restano salvate anche se chiudi la pagina. A fine partita, «Chiudi il tavolo» nel menu lo cancella per tutti.</p>
   </div>
 </main>
 
@@ -369,6 +377,7 @@ function reduceInto(s, a, L) {
     if (p.folded) fail('Hai già lasciato questa mano');
     return p;
   };
+  if (s.phase === 'closed') fail('Il tavolo è stato chiuso', true);
   switch (a.type) {
     case 'join': {
       const name = cleanName(a.name); if (!name) fail('Scrivi un nome');
@@ -504,6 +513,17 @@ function reduceInto(s, a, L) {
       L(`${who} ricomincia la partita: ${fmt(st)} fiches a testa`, 'sys');
       break;
     }
+    case 'close': {                              // fine serata: vale per tutti e non si annulla
+      if (!by) fail('Solo chi è seduto può chiudere il tavolo');
+      for (const p of s.players) {                // le puntate della mano in corso tornano a chi le ha messe
+        p.stack += s.phase === 'showdown' ? p.rem : p.put;
+        Object.assign(p, { put: 0, rem: 0, folded: false, inHand: false });
+      }
+      s.phase = 'closed'; s.closed = { t: a.t || 0, by: by.name, byId: by.id };
+      s.dealer = null; s.sbId = s.bbId = null; s.lastW = [];
+      L(`${who} chiude il tavolo`, 'sys');
+      break;
+    }
     default: fail('Azione sconosciuta');
   }
 }
@@ -520,13 +540,18 @@ function applyAction(s0, a) {
   }
   s.log.push(...lines); if (s.log.length > LMAX) s.log.splice(0, s.log.length - LMAX);
   s.aids.push(a.aid); if (s.aids.length > AMAX) s.aids.splice(0, s.aids.length - AMAX);
+  if (s.phase === 'closed') { s.log = lines.slice(-1); s.hist = []; s.aids = [a.aid]; }   // del tavolo chiuso resta solo la classifica: pochi byte
   return s;
 }
 
-/* Total order on states: (created, gid) for different games, then (ver, writer). */
+/* Total order on states: (created, gid) for different games, then (closed, ver, writer).
+   Un tavolo chiuso vince su ogni stato aperto della stessa partita, qualunque sia la versione:
+   così una mossa arrivata in ritardo, o un telefono che si risveglia, non lo riaprono. */
 function better(a, b) {
   if (!b) return !!a; if (!a) return false;
   if (a.gid !== b.gid) return a.created > b.created || (a.created === b.created && a.gid > b.gid);
+  const ca = a.phase === 'closed', cb = b.phase === 'closed';
+  if (ca !== cb) return ca;
   return a.ver > b.ver || (a.ver === b.ver && a.w > b.w);
 }
 function same(a, b) { return !!a && !!b && a.gid === b.gid && a.ver === b.ver && a.w === b.w; }
@@ -552,7 +577,11 @@ class Sync {
     if (!validState(x, this.code)) return;
     L.seen = x;                                     // brokers deliver in order: last message = what the broker holds now
     if (L.sent && same(x, L.sent)) L.sent = null;  // our own publish came back: nothing of ours in flight
-    if (better(x, this.cur)) { this.cur = x; this.rebase(); this.onChange(this.cur); }
+    if (better(x, this.cur)) {
+      this.cur = x; this.rebase(); this.onChange(this.cur);
+      // la chiusura non ha mosse dopo di sé: va portata subito anche ai server rimasti indietro
+      if (x.phase === 'closed') for (const M of this.links) if (M !== L) this.healLater(M, 250, 900);
+    }
     else if (!same(x, this.cur)) this.healLater(L, 250, 900);   // this broker is behind: push ours
   }
   healLater(L, base, jitter) {
@@ -653,13 +682,20 @@ async function openRoom(c, { initial = null, pid, name = null } = {}) {
   LS.set('fiches:session', { code, pid }); LS.set('fiches:last', { code, pid });
   const saved = LS.get('fiches:st:' + code);
   const start = initial || (saved && validState(saved, code) ? saved : null);
-  sync = new Sync({ code, wid: WID, initial: start, onChange, onReject: (act, msg, e) => { if (!e || !e.quiet) toast(`Non registrato: ${msg}`, 'err'); } });
+  const mio = sync = new Sync({ code, wid: WID, initial: start,
+    onChange: s => { if (sync === mio) onChange(s); },          // un tavolo appena chiuso resta in ascolto qualche secondo: non deve toccare quello nuovo
+    onReject: (act, msg, e) => { if (sync === mio && (!e || !e.quiet)) toast(`Non registrato: ${msg}`, 'err'); } });
   S = sync.cur;
+  if (S && S.phase === 'closed') { tableClosed(S); return; }
   show('table'); history.replaceState(null, '', location.pathname + location.search + '#' + code);
   render();
   try { await waitMqtt(); }
-  catch { $('#waiting').classList.remove('hidden'); $('#waitTxt').textContent = 'Non riesco a caricare il collegamento di rete. Controlla internet e ricarica la pagina.'; return; }
-  links = BROKERS.map(u => mqttLink(u, TOPIC(code)));
+  catch { if (sync === mio) { $('#waiting').classList.remove('hidden'); $('#waitTxt').textContent = 'Non riesco a caricare il collegamento di rete. Controlla internet e ricarica la pagina.'; } return; }
+  if (sync !== mio) {                                   // nel frattempo si è usciti, o il tavolo è stato chiuso
+    if (mio.cur && mio.cur.phase === 'closed') lingerLinks(mio, BROKERS.map(u => mqttLink(u, TOPIC(c))));
+    return;
+  }
+  links = BROKERS.map(u => mqttLink(u, TOPIC(c)));
   links.forEach(l => sync.addLink(l));
   netUI();
   if (!S) {
@@ -674,7 +710,37 @@ function leaveRoom() {
   history.replaceState(null, '', location.pathname + location.search);
   releaseWake(); show('home'); homeInit();
 }
+/* Dopo la chiusura i collegamenti restano aperti ancora qualche secondo, perché Sync porti la chiusura
+   ai server che non l'hanno ancora; poi si spengono. */
+function lingerLinks(sy, ls) {
+  for (const l of ls) if (!sy.links.some(x => x.link === l)) sy.addLink(l);
+  setTimeout(() => ls.forEach(l => l.end()), 10000);
+}
+function tableClosed(s) {
+  const c = code, io = me;
+  LS.del('fiches:st:' + c); LS.del('fiches:session');                // il tavolo sparisce da questo telefono
+  const last = LS.get('fiches:last'); if (last && last.code === c) LS.del('fiches:last');
+  if (sync) lingerLinks(sync, links);
+  links = []; sync = null; S = null; code = null; me = null; lastPot = null; pendingName = null; mgOpen = null;
+  clearTimeout(waitTimer); $('#waiting').classList.add('hidden');
+  document.querySelectorAll('.scrim').forEach(x => x.remove());
+  history.replaceState(null, '', location.pathname + location.search);
+  releaseWake(); show('home'); homeInit();
+  finalSheet(s, c, io);
+}
+function finalSheet(s, c, io) {
+  const rows = s.players.slice().sort((a, b) => b.stack - a.stack);
+  const pos = p => 1 + rows.filter(q => q.stack > p.stack).length;     // a pari fiches, pari posizione
+  const cl = s.closed || {};
+  const chi = cl.byId && cl.byId === io ? 'Hai chiuso il tavolo.' : cl.by ? `${esc(cl.by)} ha chiuso il tavolo.` : 'Il tavolo è stato chiuso.';
+  const sc = sheet(`<h3>Tavolo ${esc(c)} chiuso</h3><p>${chi} Ecco come è finita:</p>
+    <ol class="final">${rows.map(p => `<li${p.id === io ? ' class="me"' : ''}><span class="pos">${pos(p)}</span><span class="nm">${esc(p.name)}</span><b>${fmt(p.stack)}</b></li>`).join('')}</ol>
+    <p class="hint">Il tavolo è stato cancellato: per giocare ancora aprite un tavolo nuovo.</p>
+    <div class="btns one"><button class="btn brass" data-x>Fatto</button></div>`);
+  sc.querySelector('[data-x]').onclick = sc.close;
+}
 function onChange(s) {
+  if (s.phase === 'closed') { tableClosed(s); return; }
   const prev = S; S = s;
   LS.set('fiches:st:' + code, s);
   if (!prev) { clearTimeout(waitTimer); $('#waiting').classList.add('hidden'); maybeJoin(); }
@@ -995,6 +1061,7 @@ $('#menuBtn').onclick = () => {
     <button class="item" data-m="reset" ${S ? '' : 'disabled'}>Ricomincia la partita<small>tutti tornano alle fiches iniziali</small></button>
     <button class="item" data-m="hub">Torna ai giochi<small>il tavolo resta aperto: riaprendo il poker ci rientri</small></button>
     <button class="item" data-m="leave">Esci dal tavolo<small>le tue fiches restano; rientri con lo stesso codice</small></button>
+    <button class="item danger" data-m="close" ${S && P(S, me) ? '' : 'disabled'}>Chiudi il tavolo<small>per tutti, a fine partita: classifica finale e il tavolo si cancella</small></button>
   </div>`);
   sc.querySelectorAll('[data-m]').forEach(b => b.onclick = async () => {
     const m = b.dataset.m; sc.close();
@@ -1015,6 +1082,10 @@ $('#menuBtn').onclick = () => {
       if (v != null) act({ type: 'reset', start: toInt(v) });
     }
     if (m === 'leave') { if (await ask({ title: 'Uscire dal tavolo?', text: 'Il tuo posto e le tue fiches restano. Per rientrare usa lo stesso codice.', ok: 'Esci' })) leaveRoom(); }
+    if (m === 'close') {
+      const ok = await ask({ title: 'Chiudere il tavolo per tutti?', text: 'Tutti vedono la classifica finale e il tavolo si cancella dai telefoni. Le puntate della mano in corso tornano a chi le ha messe. Non si può annullare.', ok: 'Chiudi il tavolo', danger: true });
+      if (ok && sync) act({ type: 'close' });
+    }
   });
 };
 function logSheet() { sheet(`<h3>Storico</h3><ul class="log" style="margin-top:6px">${S.log.slice().reverse().map(l => `<li class="${l.k === 'win' ? 'win' : ''}">${esc(l.txt)}</li>`).join('')}</ul>`); }
@@ -1058,6 +1129,24 @@ async function toggleWake() {
 }
 function releaseWake() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
 async function reacquireWake() { if (wakeLock && wakeLock.released) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch { wakeLock = null; } } }
+
+/* ---------- pulizia ----------
+   Ogni tavolo in cui si entra lascia una copia sul telefono (fiches:st:<codice>, fino a 20-30 KB).
+   Lo spazio del sito è di pochi MB e lo usano tutti i giochi: le copie dei tavoli fermi da più di
+   30 giorni (o chiusi) si cancellano. L'ultimo tavolo e quello aperto restano sempre. */
+const VECCHIO = 30 * 864e5;
+(function pulisci() {
+  try {
+    const tieni = new Set([LS.get('fiches:last'), LS.get('fiches:session')].map(x => x && x.code).filter(Boolean));
+    const chiavi = [];
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('fiches:st:')) chiavi.push(k); }
+    for (const k of chiavi) {
+      if (tieni.has(k.slice(10))) continue;
+      const st = LS.get(k);
+      if (!st || st.phase === 'closed' || !(Date.now() - st.t < VECCHIO)) LS.del(k);
+    }
+  } catch {}
+})();
 
 /* ---------- boot ---------- */
 const sess = LS.get('fiches:session');

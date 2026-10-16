@@ -154,7 +154,8 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
-  - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`.
+  - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
+  - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker).
 
   Non cambiare il formato di una chiave senza convertire i dati vecchi.
 - **Disegni:** solo disegni originali. Niente riproduzioni di disegni protetti: per esempio le facce vere delle monete in euro non si copiano, e infatti le monete di Conta Monete sono inventate.
@@ -189,7 +190,33 @@ da sola chi muove; dopo ogni pedina torna su «Chi ha vinto l'asta?».
 - **Verifica:** se tocchi la geometria, controlla che le adiacenze ricavate dai poligoni disegnati (due vertici in comune)
   coincidano con `vicini()` e che su scacchiere piene a caso ci sia sempre esattamente un vincitore.
 
+### Poker (Fiches) → `giochi/poker/index.html`
+
+Fiches sul telefono, multigiocatore senza server nostro. Ogni tavolo è un messaggio *retained* sul topic
+`fiches-tavolo/v1/<codice>` di tre broker MQTT pubblici (EMQX, HiveMQ, Mosquitto), sovrascritto a ogni mossa
+(al massimo 20-30 KB: log, storico e `aids` hanno un tetto). In più ogni telefono ne tiene una copia.
+- **Dati sul telefono:** `fiches:st:<codice>` (copia del tavolo), `fiches:session`, `fiches:last`, `fiches:name`, `fiches:device`.
+- **Replica:** `Sync` nel blocco `CORE-START`…`CORE-END`. Ordine totale tra stati in `better()`, rebase delle mosse proprie.
+- **Chiudi il tavolo** (ultimo tasto del menu), azione `close`:
+  - vale per tutti e non si annulla;
+  - le puntate in corso tornano a chi le ha messe;
+  - lo stato diventa `phase: 'closed'`, ridotto alla classifica (meno di 1 KB): è la «lapide» che resta sui broker;
+  - ogni telefono che la riceve mostra la classifica finale, cancella la sua copia e torna alla home;
+  - in `better()` uno stato chiuso vince su ogni stato aperto della stessa partita, così un telefono che si risveglia
+    con mosse fatte offline non riapre il tavolo;
+  - chi riceve la chiusura la ripubblica anche sui broker rimasti indietro.
+  
+  **Non** cancellare la lapide con un messaggio vuoto: un telefono rimasto offline ripubblicherebbe il tavolo aperto.
+- **Pulizia:** all'apertura del poker si cancellano le copie locali dei tavoli chiusi o fermi da più di 30 giorni,
+  tranne l'ultimo e quello aperto. Lo spazio del sito (pochi MB) è in comune con tutti i giochi.
+- **Prove:**
+  - `node prove/poker.test.js` prova il core: chiusura, telefono addormentato, broker rimasti indietro, chiusura e mossa
+    nello stesso istante. Se cambi `better()`, `Sync` o le azioni, rilancialo e aggiungi un caso.
+  - Nel browser i broker veri non si raggiungono dalla sandbox. Con `page.route` si sostituisce `mqtt.min.js` con un client
+    finto e si tiene un broker finto in node (`exposeBinding`), con un contesto separato per ogni telefono.
+
 ## Cose da sapere
 
 - Su iPhone lo schermo regge al massimo 5 dita insieme: al sesto tocco iOS li annulla tutti. Chi inizia ha la modalità nascosta «un tocco alla volta» proprio per questo.
-- Il poker usa broker MQTT pubblici. Dalla sandbox non si raggiungono, quindi negli errori di console dei test sono normali.
+- Il poker usa broker MQTT pubblici. Dalla sandbox non si raggiungono, quindi negli errori di console dei test sono normali (vedi la sezione Poker per provarlo con un broker finto).
+- Le vecchie repo separate (`segnapunti`, `pokercontachips`) Simo le cancella: è tutto qui.

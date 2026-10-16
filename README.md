@@ -52,6 +52,12 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 - **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
+- **Poker:**
+  - ogni tavolo sta su tre server MQTT pubblici e gratuiti (un messaggio per tavolo, sovrascritto a ogni mossa) e in
+    una copia su ogni telefono che ci è entrato;
+  - «Chiudi il tavolo» nel menu mostra a tutti la classifica finale e cancella il tavolo dai telefoni, mentre sui
+    server resta solo la classifica (meno di 1 KB);
+  - le copie dei tavoli fermi da più di 30 giorni si cancellano da sole.
 - **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue
     categorie. Per un pacchetto nuovo si copia un blocco e si cambia `id` e `nome`; `attivo: true` lo accende di base.
