@@ -30,7 +30,8 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `index.html` | Home: quattro carte da gioco (categorie) e l'elenco dei giochi di ogni categoria. |
 | `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. |
 | `sw.js` | Service worker: chiede prima alla rete, usa la cache solo offline. Salva le pagine di `giochi.js` e i file `extra`. |
-| `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, e registra il service worker. |
+| `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, registra il service worker e offre `gdsAppare(el)` per far entrare una schermata. |
+| `comune/app.css` | Incluso in **ogni** pagina: passaggi morbidi (circa 0,2 s) tra le pagine, tra home e categorie, per le schermate (`.appare`) e le finestre (`.velo`). |
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
@@ -126,6 +127,8 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - tema **scuro** (palette notte `#141C2F` / `#1B2540`, oro `#D8A84A`, font Bricolage Grotesque e Figtree);
   - il **lilla** gli piace;
   - in alto a sinistra il link `‹ Giochi` → `../../`;
+  - nell'`<head>` `<style>@view-transition{navigation:auto}</style>` e `<link rel="stylesheet" href="../../comune/app.css">`
+    (la prima riga va scritta nella pagina, non in `app.css`: da lì Chrome a volte la legge tardi e salta il passaggio);
   - in fondo `<script src="../../comune/app.js"></script>`;
   - viewport `width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover`.
 - **Reset:** dove si imposta una partita c'è un tasto **Reset** piccolo e sottolineato in alto a destra. Riporta tutto a com'era all'inizio e va toccato due volte entro 3 secondi.
@@ -136,6 +139,9 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Pagine sempre in orizzontale** (Contapunti, Conta Monete): Simo tiene il telefono in verticale con la rotazione bloccata. Quando è `orientation:portrait` la pagina si gira di 90° con
   `width:100dvh;height:100vw;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)`.
   Usa `clientWidth`/`offsetWidth`, non `getBoundingClientRect`, per le misure dentro la pagina girata.
+- **Animazioni:** quello che si apre entra sfumando e salendo di poco, in circa 0,2 s (Simo le vuole pulite e veloci).
+  Una finestra sopra la pagina, nascosta con `hidden`, prende la classe `velo`; quando la pagina cambia schermata chiama
+  `if (window.gdsAppare) gdsAppare(el)`.
 - **Niente schermate intermedie** di impostazioni se non le chiede: si entra subito nel gioco, e le impostazioni stanno in un tasto piccolo.
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:

@@ -13,7 +13,13 @@
 
    2. Registra il service worker dell'app: chiede sempre prima la versione
       nuova alla rete (così ogni aggiornamento arriva a tutti) e usa la copia
-      salvata solo quando manca la connessione. */
+      salvata solo quando manca la connessione.
+
+   3. gdsAppare(el): fa entrare con la piccola animazione di app.css (.appare)
+      una schermata appena mostrata. Le pagine la chiamano quando cambiano
+      schermata, con  if (window.gdsAppare) gdsAppare(el).
+      app.js si carica per ultimo, quindi mentre la pagina si apre la funzione
+      non c'è ancora: la prima schermata la anima già il passaggio tra pagine. */
 (function () {
   var st = document.createElement('style');
   st.textContent = 'html{touch-action:pan-x pan-y;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}';
@@ -34,3 +40,15 @@
     navigator.serviceWorker.register(root + 'sw.js', { scope: root }).catch(function () {});
   });
 })();
+
+window.gdsAppare = function (el) {
+  if (!el) return;
+  el.classList.remove('appare');
+  void el.offsetWidth;   // fa ripartire l'animazione anche se la classe c'era già
+  el.classList.add('appare');
+  el.addEventListener('animationend', function fine(e) {
+    if (e.target !== el) return;
+    el.classList.remove('appare');
+    el.removeEventListener('animationend', fine);
+  });
+};

@@ -5,7 +5,7 @@
 importScripts('giochi.js');
 const CACHE = 'giochidisimo';
 const BASE = new URL('./', self.location).href;
-const PAGINE = ['', 'giochi.js', 'manifest.webmanifest', 'comune/app.js', 'icone/icon-192.png', 'icone/apple-touch-icon.png']
+const PAGINE = ['', 'giochi.js', 'manifest.webmanifest', 'comune/app.js', 'comune/app.css', 'icone/icon-192.png', 'icone/apple-touch-icon.png']
   .concat((self.GIOCHI ? self.GIOCHI.giochi : []).flatMap(g => [g.link.split('#')[0]].concat(g.extra || [])))
   .map(p => BASE + p);
 

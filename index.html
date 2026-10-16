@@ -11,6 +11,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icone/icon-192.png?v=3">
 <link rel="apple-touch-icon" href="icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="comune/app.css">
 <title>Giochi di Simo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,7 +179,13 @@ function route() {
   window.scrollTo(0, 0);
 }
 $('backBtn').onclick = () => { location.hash = ''; };
-window.addEventListener('hashchange', route);
+window.addEventListener('hashchange', e => {
+  // passaggio morbido tra le carte e l'elenco, con l'animazione del cambio pagina (comune/app.css)
+  if (e.hasUAVisualTransition) { route(); return; }   // il telefono anima già da sé (gesto indietro)
+  if (document.startViewTransition) { document.startViewTransition(route); return; }
+  route();                                            // browser senza view transition
+  if (window.gdsAppare) gdsAppare($('home').hidden ? $('cat') : $('home'));
+});
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 $('installHint').hidden = !!standalone || !/iPhone|iPad|iPod/.test(navigator.userAgent);
 renderHome(); route();

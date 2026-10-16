@@ -1,0 +1,33 @@
+/* Comune a tutte le pagine: va nell'<head> di ogni pagina nuova con
+   <style>@view-transition{navigation:auto}</style>
+   <link rel="stylesheet" href="../../comune/app.css">
+   La prima riga accende il passaggio tra le pagine e deve stare scritta nella
+   pagina: se arriva da questo file, Chrome a volte la legge troppo tardi e salta
+   l'animazione.
+
+   Passaggi morbidi e veloci (circa 0,2 secondi), tutti con lo stesso movimento:
+   quello che si apre entra sfumando e salendo di pochi pixel.
+   - Tra una pagina e l'altra: la pagina vecchia resta finché la nuova è pronta,
+     poi sfuma (view transition tra pagine: Safari da iOS 18.2, Chrome da 126;
+     dove non c'è, il cambio resta istantaneo come prima).
+   - Nella home, tra le carte e l'elenco di una categoria (vedi route in index.html).
+   - Dentro i giochi:
+     .appare  schermata che compare: la mette gdsAppare(el) di app.js;
+     .velo    finestra sopra la pagina, nascosta con hidden: lo sfondo sfuma
+              e il riquadro dentro sale. Si anima da sola ogni volta che si apre. */
+::view-transition-old(root) { animation: .16s ease-in both gds-esce; }
+::view-transition-new(root) { animation: .24s cubic-bezier(.2, .8, .3, 1) both gds-entra; }
+
+.appare { animation: gds-entra .24s cubic-bezier(.2, .8, .3, 1); }
+.velo:not([hidden]) { animation: gds-sfuma .18s ease-out; }
+.velo:not([hidden]) > * { animation: gds-sale .24s cubic-bezier(.2, .8, .3, 1); }
+
+@keyframes gds-esce { to { opacity: 0; } }
+@keyframes gds-entra { from { opacity: 0; transform: translateY(12px); } }
+@keyframes gds-sfuma { from { opacity: 0; } }
+@keyframes gds-sale { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root),
+  .appare, .velo:not([hidden]), .velo:not([hidden]) > * { animation: none !important; }
+}

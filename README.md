@@ -23,8 +23,12 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 ## Aggiungere un gioco
 
 1. Crea la cartella `giochi/<nome>/` con dentro `index.html`.
-   In cima alla pagina metti il link per tornare all'hub e in fondo lo script comune:
+   Nell'`<head>` metti le due righe comuni (passaggi morbidi tra le pagine), in cima alla pagina
+   il link per tornare all'hub e in fondo lo script comune:
    ```html
+   <style>@view-transition{navigation:auto}</style>
+   <link rel="stylesheet" href="../../comune/app.css">
+   ...
    <a href="../../">‹ Giochi</a>
    ...
    <script src="../../comune/app.js"></script>
