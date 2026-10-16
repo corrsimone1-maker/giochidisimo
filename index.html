@@ -60,6 +60,15 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,14vw,64px);li
 
 .hint{margin:34px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
 
+/* Condividi: piccolo, in alto a destra nella home */
+#home{position:relative}
+.share{position:absolute;top:-6px;right:0;display:flex;align-items:center;gap:5px;padding:8px 0;border:0;background:none;
+  color:var(--muted);font-family:var(--ui);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.share svg{width:15px;height:15px;flex:none}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;
+  padding:11px 16px;border-radius:12px;background:var(--text);color:var(--ink);font-weight:700;font-size:14.5px;text-align:center;
+  overflow-wrap:anywhere;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+
 /* Elenco giochi di una categoria */
 .backbtn{display:inline-block;padding:8px 0;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0;cursor:pointer;font-family:var(--ui)}
 .cathead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:10px 0 22px}
@@ -79,11 +88,13 @@ ul.games{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 <body>
 <main class="wrap">
   <section id="home">
+    <button class="share" id="shareBtn" aria-label="Condividi il link dell’app"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12.5V2.5M6.5 6 10 2.5 13.5 6"/><path d="M6.5 9H5a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 5 18h10a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 15 9h-1.5"/></svg>Condividi</button>
     <h1>Giochi di Simo</h1>
     <p class="sub">Niente foglietti, niente fiches: scegli a cosa si gioca stasera.</p>
     <nav class="deck" id="deck" aria-label="Categorie"></nav>
     <p class="hint" id="installHint" hidden>Per averla come app: in Safari tocca Condividi e poi «Aggiungi alla schermata Home».</p>
   </section>
+  <div class="toast" id="toast" role="status" hidden></div>
   <section id="cat" hidden>
     <button class="backbtn" id="backBtn">‹ Tutti i giochi</button>
     <div class="cathead"><div><h1 id="catName"></h1><p id="catDesc"></p></div></div>
@@ -188,6 +199,18 @@ window.addEventListener('hashchange', e => {
 });
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 $('installHint').hidden = !!standalone || !/iPhone|iPad|iPod/.test(navigator.userAgent);
+/* Condividi: il foglio di condivisione del telefono; dove non c'è, copia il link */
+const LINK = new URL('./', location.href).href;   // indirizzo della home, senza #categoria
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
+$('shareBtn').onclick = async () => {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Giochi di Simo', url: LINK }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }   // chiuso senza condividere
+  }
+  try { await navigator.clipboard.writeText(LINK); toast('Link copiato'); }
+  catch (e) { toast(LINK); }
+};
 renderHome(); route();
 </script>
 <script src="comune/app.js"></script>
