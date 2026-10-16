@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111315">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<title>Secret Hitler: Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Special+Elite&family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+<style>
+/* Tema «bunker»: cemento scuro, lamiera, rosso spento e verde acqua spento.
+   Tutto scuro per non stancare gli occhi; i colori servono solo a distinguere i due partiti. */
+:root{
+  --bg:#111315; --plate:#1A1D20; --plate-2:#202428; --plate-3:#0C0E0F; --line:rgba(230,224,210,.09); --line-2:rgba(230,224,210,.16);
+  --text:#E4DED1; --muted:#8D9399; --dim:#5F656B;
+  --red:#A6463D; --red-2:#C25A4F; --red-deep:#4A2420; --teal:#4E8C86; --teal-2:#6BAAA2; --teal-deep:#21403C;
+  --lamp:#C9A46A; --paper:#2A2620; --paper-ink:#E3D7BE;
+  --stencil:'Stardos Stencil','Arial Narrow',Impact,system-ui,sans-serif;
+  --type:'Special Elite','Courier New',ui-monospace,monospace;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+/* cemento: una lampada calda in alto e una grana leggerissima */
+body{min-height:100dvh;background:
+  radial-gradient(120% 60% at 50% -10%,rgba(201,164,106,.10),transparent 60%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .9 0 0 0 0 .88 0 0 0 0 .82 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+  var(--bg)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.back{display:inline-block;padding:8px 0;color:var(--lamp);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:#E59A8F}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--lamp);font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+
+/* Lamiera con rivetti */
+.plate{position:relative;background:linear-gradient(180deg,var(--plate-2),var(--plate));border:1px solid var(--line);border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 24px rgba(0,0,0,.35)}
+.plate.rivets::before,.plate.rivets::after{content:'';position:absolute;top:9px;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#6c7177,#2a2d30 70%);box-shadow:0 1px 0 rgba(0,0,0,.6)}
+.plate.rivets::before{left:9px}.plate.rivets::after{right:9px}
+
+.hero{margin:10px 0 0;padding:22px 18px 18px;overflow:hidden}
+.hero .kick{font-family:var(--stencil);font-size:15px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase}
+.hero h1{font-family:var(--stencil);font-weight:700;font-size:clamp(54px,17vw,82px);line-height:.9;letter-spacing:.04em;margin:6px 0 10px;text-transform:uppercase;color:var(--text)}
+.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.45;max-width:36ch}
+.stamp{position:absolute;right:14px;top:22px;padding:4px 10px;border:2px solid var(--red);border-radius:4px;color:var(--red);
+  font-family:var(--stencil);font-size:13px;letter-spacing:.18em;text-transform:uppercase;transform:rotate(8deg);opacity:.75}
+.hazard{height:8px;margin:14px 2px 18px;border-radius:2px;opacity:.35;
+  background:repeating-linear-gradient(-45deg,var(--red) 0 10px,transparent 10px 20px)}
+
+h2{font-family:var(--stencil);font-weight:700;font-size:21px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
+.panel{padding:16px;margin-bottom:14px}
+.panel .sub{margin:-4px 0 12px;color:var(--muted);font-size:13.5px;line-height:1.45}
+.row{display:flex;gap:8px}
+.in{flex:1;min-width:0;height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--plate-3);font-size:16px}
+.in::placeholder{color:var(--dim)}
+.in:focus{outline:none;border-color:var(--lamp)}
+.btn{display:block;width:100%;padding:15px 18px;border-radius:12px;border:1px solid rgba(0,0,0,.4);background:var(--red);color:#F7EEE6;
+  font-weight:700;font-size:16px;text-align:center;text-decoration:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.btn.teal{background:var(--teal)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line-2);box-shadow:none}
+.btn.small{width:auto;padding:0 16px;height:44px;border-radius:10px;font-size:15px}
+.btn:disabled{opacity:.35}
+.players{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.players li{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 10px;border-radius:999px;background:var(--plate-3);border:1px solid var(--line);font-weight:600}
+.players .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--plate-2);color:var(--muted);font-size:11.5px;font-weight:700}
+.x{width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.07);color:var(--muted);font-size:16px;line-height:1}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.recap{margin:12px 0 0;display:grid;gap:9px}
+.recap div{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:baseline}
+.recap dt{color:var(--muted);font-weight:700;font-size:13.5px}
+.recap dd{margin:0;font-weight:600;line-height:1.4}
+.warn{margin:10px 0 12px;color:#E59A8F;font-size:14px;font-weight:600}
+.center{display:block;margin:14px auto 0}
+
+/* Impostazioni */
+.opt{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--line);cursor:pointer}
+.opt:first-of-type{border-top:0;padding-top:4px}
+.opt b{display:block;font-size:16.5px}
+.opt small{display:block;color:var(--muted);font-size:13.5px;line-height:1.45;margin-top:3px}
+.opt input{flex:0 0 auto;width:24px;height:24px;margin-top:2px;accent-color:var(--teal)}
+.opt.sub-opt{padding-left:14px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+.seg button{height:44px;border-radius:10px;border:1px solid var(--line-2);background:var(--plate-3);font-weight:700}
+.seg button.on{background:var(--teal-deep);border-color:var(--teal);color:#DDEFEC}
+.segnote{margin:10px 0 0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line-2);background:var(--plate-3);font-size:22px;font-weight:700}
+.stepper .v{min-width:30px;text-align:center;font-family:var(--stencil);font-size:26px}
+
+/* Regole */
+.rules h3{font-family:var(--stencil);font-size:18px;letter-spacing:.06em;text-transform:uppercase;margin:18px 0 6px;color:var(--lamp)}
+.rules h3:first-child{margin-top:0}
+.rules p,.rules li{font-size:15px;line-height:1.55;color:#D6D0C4}
+.rules p{margin:0 0 8px}
+.rules ul{margin:0 0 8px;padding-left:20px}
+.rules li{margin:3px 0}
+.rules b{color:var(--text)}
+.rules .ex{font-family:var(--type);font-size:14px;color:var(--paper-ink);background:var(--paper);border-radius:8px;padding:10px 12px;margin:6px 0 10px;line-height:1.5}
+
+/* Schermate a tutto schermo (passa il telefono, fascicoli, scelte) */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-weight:700;font-size:14px;min-height:36px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:18px 0}
+.kicker{color:var(--muted);font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+.who{font-family:var(--stencil);font-weight:700;font-size:clamp(46px,15vw,76px);line-height:1;letter-spacing:.03em;text-transform:uppercase;word-break:break-word}
+.lede{margin:4px 0 0;color:var(--muted);font-size:15px;line-height:1.5;max-width:34ch}
+.bottomActions{display:grid;gap:10px}
+.prog{display:flex;gap:5px;justify-content:center;margin-top:6px}
+.prog i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.14)}
+.prog i.on{background:var(--lamp)}
+
+/* Il fascicolo: cartellina scura con testo dattiloscritto */
+.dossier{position:relative;width:100%;text-align:left;margin-top:16px;border-radius:4px 14px 14px 14px;padding:22px 18px 20px;
+  background:linear-gradient(180deg,#2E2922,#25211B);border:1px solid rgba(227,215,190,.14);box-shadow:0 22px 44px rgba(0,0,0,.5)}
+.dossier::before{content:attr(data-tab);position:absolute;left:-1px;top:-27px;height:28px;padding:6px 14px 0;border-radius:8px 8px 0 0;
+  background:#2E2922;border:1px solid rgba(227,215,190,.14);border-bottom:0;font-family:var(--type);font-size:12.5px;color:#A99E86;letter-spacing:.06em}
+.dossier .stampR{position:absolute;right:12px;top:14px;padding:3px 9px;border:2px solid var(--red);border-radius:3px;color:var(--red);opacity:.8;
+  font-family:var(--stencil);font-size:12px;letter-spacing:.18em;transform:rotate(7deg)}
+.dossier .lab{font-family:var(--type);font-size:13px;color:#A99E86;letter-spacing:.04em;margin:0 0 4px}
+.dossier .role{font-family:var(--stencil);font-size:clamp(44px,14vw,64px);line-height:1;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 8px}
+.dossier .role.L{color:var(--teal-2)} .dossier .role.F,.dossier .role.H{color:var(--red-2)}
+.dossier .txt{font-family:var(--type);font-size:16px;line-height:1.55;color:var(--paper-ink);margin:0 0 6px}
+.dossier .clue{margin:14px 0 0;padding:12px 0 0;border-top:1px dashed rgba(227,215,190,.22)}
+.dossier .clue .lab{color:var(--lamp)}
+.dossier .clue .txt{font-size:17.5px}
+.dossier .note{font-family:var(--ui);font-size:13px;color:#A99E86;line-height:1.45;margin-top:8px}
+.dossier.F{border-color:rgba(194,90,79,.35)} .dossier.L{border-color:rgba(107,170,162,.3)}
+
+/* Scelta dei giocatori */
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:14px}
+.chip{min-height:56px;padding:10px 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--plate-2);font-weight:700;font-size:17px;text-align:left;display:flex;flex-direction:column;justify-content:center}
+.chip small{font-weight:600;font-size:12.5px;color:var(--muted)}
+.chip.on{background:var(--teal-deep);border-color:var(--teal);color:#E7F4F1}
+.chip:disabled{opacity:.35}
+
+/* Plancia di gioco */
+.bhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 12px}
+.bhead .t{font-family:var(--stencil);font-size:40px;line-height:.9;letter-spacing:.05em;text-transform:uppercase}
+.bhead .s{color:var(--muted);font-size:13px;font-weight:600;text-align:right;line-height:1.35}
+.track{padding:12px 12px 10px;margin-bottom:10px}
+.track .tl{display:flex;justify-content:space-between;align-items:center;font-family:var(--stencil);font-size:14px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px 14px}
+.track.lib .tl{color:var(--teal-2)} .track.fas .tl{color:var(--red-2)}
+.cells{display:grid;gap:6px}
+.track.lib .cells{grid-template-columns:repeat(5,1fr)} .track.fas .cells{grid-template-columns:repeat(6,1fr)}
+.cell{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.cell .sq{width:100%;aspect-ratio:3/4;border-radius:7px;border:1px dashed var(--line-2);display:grid;place-items:center;font-family:var(--stencil);font-size:20px;color:var(--dim);background:var(--plate-3)}
+.track.lib .cell.on .sq{background:linear-gradient(180deg,#4E8C86,#36645F);border:1px solid #6BAAA2;color:#E7F4F1}
+.track.fas .cell.on .sq{background:linear-gradient(180deg,#A6463D,#7A322B);border:1px solid #C25A4F;color:#F7E6E2}
+.track.fas .cell.hz .sq{border-color:rgba(194,90,79,.55)}
+.cell .pw{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15;min-height:24px;letter-spacing:.01em}
+.cell .pw.has{color:var(--teal-2)} .cell .pw.cc{color:var(--red-2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--red);color:var(--red-2);font-family:var(--ui);font-size:11px;font-weight:700;letter-spacing:.06em}
+.alert{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin-bottom:10px;border-radius:12px;border:1px solid var(--lamp);background:rgba(201,164,106,.08);font-weight:700}
+.lawbox{padding:14px;margin-bottom:10px}
+.lawbox .lbl{font-family:var(--stencil);font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 10px 14px}
+.lawbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.law{height:76px;border-radius:12px;border:1px solid rgba(0,0,0,.45);font-family:var(--stencil);font-size:21px;letter-spacing:.08em;text-transform:uppercase;color:#F4EEE6;box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.law.l{background:linear-gradient(180deg,#4E8C86,#38665F)} .law.f{background:linear-gradient(180deg,#A6463D,#7C342D)}
+.law:active{transform:translateY(1px)}
+.lawlinks{display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.lawlinks .linkbtn{font-size:14px;color:var(--muted)}
+.hintline{margin:8px 0 0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tool{min-height:58px;padding:10px 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--plate-2);text-align:left;font-weight:700;font-size:15.5px;display:flex;flex-direction:column;justify-content:center}
+.tool small{font-weight:600;font-size:12px;color:var(--muted);margin-top:2px}
+.roster{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
+.roster span{padding:5px 10px;border-radius:999px;background:var(--plate-3);border:1px solid var(--line);font-size:13.5px;font-weight:600}
+.roster span.dead{text-decoration:line-through;color:var(--dim)}
+.roster span .m{color:var(--lamp);margin-left:3px}
+
+/* Voto */
+.votes{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:18px}
+.vote{height:130px;border-radius:14px;border:1px solid rgba(0,0,0,.45);font-family:var(--stencil);font-size:38px;letter-spacing:.1em;color:#F4EEE6}
+.vote.ja{background:linear-gradient(180deg,#4E8C86,#38665F)} .vote.nein{background:linear-gradient(180deg,#A6463D,#7C342D)}
+.big{font-family:var(--stencil);font-size:clamp(40px,12vw,60px);line-height:1;letter-spacing:.04em;text-transform:uppercase}
+.big.L{color:var(--teal-2)} .big.F{color:var(--red-2)}
+
+/* Tieni premuto */
+.hold{position:relative;overflow:hidden}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(255,255,255,.18);pointer-events:none}
+.hold.going .fill{transition:transform var(--ms,800ms) linear;transform:scaleX(1)}
+.hold span{position:relative}
+
+/* Fine partita */
+.reveal{width:100%;text-align:left;display:grid;gap:10px;margin-top:14px}
+.rv{padding:12px 14px;border-radius:12px;background:var(--plate-2);border:1px solid var(--line)}
+.rv .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rv .nm{font-weight:700;font-size:17px}
+.rv .rl{font-family:var(--stencil);font-size:16px;letter-spacing:.08em;text-transform:uppercase}
+.rv .rl.L{color:var(--teal-2)} .rv .rl.F,.rv .rl.H{color:var(--red-2)}
+.rv ul{margin:8px 0 0;padding-left:18px;font-family:var(--type);font-size:13.5px;line-height:1.5;color:var(--paper-ink)}
+.rv li small{font-family:var(--ui);color:var(--muted)}
+
+/* Finestra sopra la pagina (registro) */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(5,6,7,.72);display:flex;align-items:flex-end;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.velo .box{width:100%;max-width:540px;max-height:82dvh;overflow:auto;padding:18px 16px 16px}
+.log{list-style:none;margin:10px 0 14px;padding:0;display:grid;gap:6px}
+.log li{font-family:var(--type);font-size:14px;line-height:1.45;color:var(--paper-ink);padding:8px 10px;border-radius:8px;background:var(--paper)}
+.log li b{font-family:var(--ui);color:var(--lamp);font-size:12px;margin-right:6px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;padding:11px 16px;border-radius:12px;background:#E4DED1;color:#16181A;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){.hold.going .fill{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= Inizio ================= -->
+<main class="wrap" id="setup">
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
+  <header class="plate rivets hero">
+    <div class="stamp">Riservato</div>
+    <div class="kick">Secret Hitler</div>
+    <h1>Dossier</h1>
+    <p>Espansione per il gioco fisico: i ruoli arrivano dal telefono insieme a un indizio logico vero, e il tracciato liberale prende vita.</p>
+  </header>
+  <div class="hazard" aria-hidden="true"></div>
+
+  <section class="plate panel" id="resumePanel" hidden>
+    <h2>Partita in corso</h2>
+    <p class="sub" id="resumeInfo"></p>
+    <div class="row">
+      <button class="btn small teal" id="resumeBtn" style="flex:1">Riprendi</button>
+      <button class="btn small ghost hold" id="dropBtn" style="flex:1"><i class="fill"></i><span>Tieni premuto: chiudi</span></button>
+    </div>
+  </section>
+
+  <section class="plate panel">
+    <h2>Giocatori</h2>
+    <p class="sub">Da 5 a 10, <b>nell’ordine in cui siete seduti</b>, girando in senso orario: gli indizi sui «vicini» usano quest’ordine.</p>
+    <form class="row" id="addPlayer" autocomplete="off">
+      <input class="in" id="playerName" placeholder="Nome" maxlength="16" enterkeyhint="done">
+      <button class="btn small">Aggiungi</button>
+    </form>
+    <ul class="players" id="players"></ul>
+  </section>
+
+  <section class="plate panel">
+    <div class="between"><h2 style="margin:0">Partita</h2><button class="linkbtn" id="settingsBtn">Impostazioni</button></div>
+    <dl class="recap" id="recap"></dl>
+  </section>
+
+  <p class="warn" id="setupWarn" hidden></p>
+  <button class="btn" id="playBtn">Apri i fascicoli</button>
+  <button class="linkbtn center" id="rulesBtn">Come funziona</button>
+</main>
+
+<!-- ================= Impostazioni ================= -->
+<main class="wrap" id="settings" hidden>
+  <button class="back" id="settingsBack">‹ Dossier</button>
+  <section class="plate panel" style="margin-top:10px">
+    <h2>Indizi</h2>
+    <div class="seg" id="levelSeg">
+      <button data-lv="facile">Facili</button><button data-lv="normale">Normali</button><button data-lv="difficile">Difficili</button>
+    </div>
+    <p class="segnote" id="levelNote"></p>
+    <label class="opt" style="margin-top:10px"><span><b>Rapporti</b><small>A ogni legge liberale approvata da un governo, il Presidente riceve in privato un nuovo indizio vero.</small></span><input type="checkbox" id="oRapporti"></label>
+  </section>
+  <section class="plate panel">
+    <h2>Tracciato liberale</h2>
+    <label class="opt"><span><b>Poteri liberali</b><small>All’inizio l’app mette a caso alcuni poteri sotto le caselle liberali: li usa il Presidente che approva quella legge.</small></span><input type="checkbox" id="oLiberale"></label>
+    <div id="libOpts">
+      <div class="opt sub-opt" style="cursor:default"><span><b>Quanti poteri</b><small id="slotNote"></small></span>
+        <div class="stepper"><button id="nMinus" aria-label="Meno poteri">−</button><span class="v" id="nPoteri">2</span><button id="nPlus" aria-label="Più poteri">+</button></div></div>
+      <div id="powerList"></div>
+    </div>
+  </section>
+  <section class="plate panel">
+    <h2>Imprevisti</h2>
+    <label class="opt"><span><b>Voltagabbana</b><small>Alla 3ª legge liberale il telefono fa il giro: un liberale a caso passa coi fascisti. Nessuno sa chi, nemmeno i fascisti. Pensato per 7–10 giocatori.</small></span><input type="checkbox" id="oVolta"></label>
+  </section>
+  <button class="btn" id="settingsDone">Fatto</button>
+</main>
+
+<!-- ================= Regole ================= -->
+<main class="wrap" id="rules" hidden>
+  <button class="back" id="rulesBack">‹ Indietro</button>
+  <section class="plate panel rules" style="margin-top:10px">
+    <h3>L’idea</h3>
+    <p>Si gioca a Secret Hitler con il gioco fisico: tabellone, mazzo delle leggi, carte Ja/Nein, segnalini. Il telefono sostituisce <b>solo le buste dei ruoli</b> e aggiunge gli imprevisti.</p>
+    <p>Ognuno riceve, insieme al ruolo, un <b>indizio logico vero</b> sui ruoli degli altri, che conosce solo lui. Potete dire il vostro indizio quando volete, oppure inventarne uno. <b>Il telefono non si mostra mai.</b></p>
+    <div class="ex">Bruno e Gaia sono di partiti diversi.<br>Tra Carla, Dario ed Elena c’è esattamente un fascista.<br>Hitler non è né Anna né Fabio.</div>
+    <h3>Come si leggono gli indizi</h3>
+    <ul>
+      <li>«Fascista» vuol dire <b>del partito fascista</b>: Hitler compreso.</li>
+      <li>Un indizio non parla mai di chi lo riceve.</li>
+      <li>«In numero pari» comprende lo zero.</li>
+      <li>I «vicini» sono quelli dell’ordine di posto inserito all’inizio, scritti tra parentesi; non cambiano se qualcuno viene giustiziato.</li>
+      <li>Ogni indizio è vero <b>nel momento in cui viene dato</b>. Se c’è stato un cambio di casacca, quelli di prima descrivono la situazione di prima.</li>
+    </ul>
+    <h3>Preparazione</h3>
+    <ul>
+      <li>Niente buste e niente fase a occhi chiusi: il telefono passa di mano in mano e a ognuno mostra ruolo, compagni (come nelle regole normali) e indizio.</li>
+      <li>Il resto si prepara come sempre.</li>
+    </ul>
+    <h3>Durante la partita</h3>
+    <ul>
+      <li>Le leggi si pescano dal mazzo fisico. Dopo ogni legge toccate <b>Liberale</b> o <b>Fascista</b> sull’app: vi dice lei quando succede qualcosa.</li>
+      <li><b>Rapporti</b> (se accesi): a ogni legge liberale approvata da un governo, il Presidente riceve in privato un nuovo indizio vero.</li>
+      <li>Indagine ed Esecuzione del tabellone fascista si fanno dai tasti dell’app, perché i ruoli li conosce lei. Elezione speciale e Sbirciata restano sul tavolo.</li>
+      <li>Con una legge uscita dal caos (tre governi falliti) non scatta nessun potere e nessun rapporto, come nel gioco base.</li>
+    </ul>
+    <h3>Poteri liberali</h3>
+    <ul>
+      <li><b>Voto segreto</b>: la prossima elezione si vota sul telefono e si vede solo quanti Ja e quanti Nein.</li>
+      <li><b>Testimone</b>: il Presidente sceglie un altro giocatore, che riceve in privato un indizio vero. Poi dice quello che vuole.</li>
+      <li><b>Inchiesta</b>: il Presidente guarda in segreto gli scarti del governo precedente. Con la legge approvata, conosce tutte e 3 le carte pescate. Poi dice quello che vuole.</li>
+      <li><b>Confronto</b>: il Presidente sceglie due giocatori e l’app dice solo a lui se sono dello stesso partito.</li>
+    </ul>
+    <h3>Inchiesta: gli scarti in fascicoli</h3>
+    <p>Se l’Inchiesta è in gioco, ogni governo mette i suoi scarti coperti in un mucchietto a parte: sotto quello del Presidente, sopra quello del Cancelliere. Tenete sempre gli <b>ultimi due mucchietti</b>; quando se ne forma un terzo, il più vecchio va nella pila degli scarti. Se intanto il mazzo è stato rimescolato, il mucchietto è vuoto e l’inchiesta salta.</p>
+    <h3>Voltagabbana</h3>
+    <p>Alla 3ª legge liberale il telefono fa il giro: tutti guardano lo schermo. Un liberale a caso scopre di essere passato coi fascisti: vince con loro, ma non sa chi sono, e loro non sanno chi è lui. Da quel momento indagini e confronti mostrano il partito nuovo.</p>
+    <h3>Fine partita</h3>
+    <p>Le condizioni di vittoria sono quelle del gioco base. L’app chiude da sola con la 5ª legge liberale, la 6ª fascista o Hitler giustiziato; se Hitler viene eletto Cancelliere toccate «Fine partita». Alla fine vedete i ruoli veri e tutti gli indizi: si scopre chi ha mentito.</p>
+  </section>
+  <button class="btn ghost" id="rulesBack2">Indietro</button>
+</main>
+
+<!-- ================= Passa il telefono ================= -->
+<section class="stage" id="pass" hidden>
+  <div class="top"><span id="passCount"></span><button class="back" id="passQuit" style="color:var(--muted)">Plancia</button></div>
+  <div class="mid">
+    <div class="kicker">Passa il telefono a</div>
+    <div class="who" id="passName"></div>
+    <p class="lede" id="passNote">Gli altri non guardano.</p>
+    <div class="prog" id="passProg"></div>
+  </div>
+  <div class="bottomActions"><button class="btn" id="passGo">Sono io: apri il fascicolo</button></div>
+</section>
+
+<!-- ================= Contenuto privato ================= -->
+<section class="stage" id="secret" hidden>
+  <div class="top"><span id="secretWho"></span><span>Solo per te</span></div>
+  <div class="mid"><div id="secretBody" style="width:100%"></div></div>
+  <div class="bottomActions"><button class="btn ghost" id="secretDone">Fatto, chiudi il fascicolo</button></div>
+</section>
+
+<!-- ================= Scelta giocatori ================= -->
+<section class="stage" id="pick" hidden>
+  <div class="top"><span id="pickKick"></span><button class="back" id="pickCancel" style="color:var(--muted)">Annulla</button></div>
+  <div class="mid" style="justify-content:flex-start">
+    <div class="big" id="pickTitle" style="font-size:clamp(30px,9vw,44px)"></div>
+    <p class="lede" id="pickSub"></p>
+    <div class="chips" id="pickChips"></div>
+  </div>
+  <div class="bottomActions"><button class="btn" id="pickOk" disabled>Conferma</button></div>
+</section>
+
+<!-- ================= Messaggio pubblico ================= -->
+<section class="stage" id="info" hidden>
+  <div class="top"><span id="infoTop"></span><span></span></div>
+  <div class="mid">
+    <div class="kicker" id="infoKick"></div>
+    <div class="big" id="infoTitle"></div>
+    <div class="lede" id="infoBody" style="max-width:38ch"></div>
+  </div>
+  <div class="bottomActions" id="infoBtns"></div>
+</section>
+
+<!-- ================= Voto segreto ================= -->
+<section class="stage" id="vote" hidden>
+  <div class="top"><span id="voteCount"></span><span>Voto segreto</span></div>
+  <div class="mid">
+    <div class="kicker">Vota</div>
+    <div class="who" id="voteName"></div>
+    <div class="votes"><button class="vote ja" data-v="1">Ja!</button><button class="vote nein" data-v="0">Nein</button></div>
+  </div>
+</section>
+
+<!-- ================= Plancia ================= -->
+<main class="wrap" id="board" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="linkbtn" id="bRules" style="font-size:14px">Regole</button></div>
+  <div class="bhead"><div><div class="kicker" style="letter-spacing:.3em">Secret Hitler</div><div class="t">Dossier</div></div><div class="s" id="bSub"></div></div>
+  <section class="plate rivets track lib"><div class="tl"><span>Tracciato liberale</span></div><div class="cells" id="trackL"></div></section>
+  <section class="plate rivets track fas"><div class="tl"><span>Tracciato fascista</span><span id="hzBadge"></span></div><div class="cells" id="trackF"></div></section>
+  <div class="alert" id="voteBanner" hidden><span>La prossima elezione è a voto segreto</span><button class="btn small teal" id="voteStart">Vota</button></div>
+  <section class="plate lawbox">
+    <div class="lbl">Legge approvata</div>
+    <div class="lawbtns"><button class="law l" id="lawL">Liberale</button><button class="law f" id="lawF">Fascista</button></div>
+    <div class="lawlinks"><button class="linkbtn" id="chaosBtn">Uscita dal caos</button><button class="linkbtn" id="undoBtn">Annulla ultima legge</button></div>
+    <p class="hintline" id="lastNote"></p>
+  </section>
+  <div class="tools">
+    <button class="tool" id="tFile">Il mio fascicolo<small>Rivedi ruolo e indizi</small></button>
+    <button class="tool" id="tLog">Registro<small>Leggi e fatti pubblici</small></button>
+    <button class="tool" id="tInv">Indagine<small>Potere del tabellone fascista</small></button>
+    <button class="tool" id="tExe">Esecuzione<small>Potere del tabellone fascista</small></button>
+  </div>
+  <div class="roster" id="roster"></div>
+  <button class="btn ghost" id="endBtn">Fine partita</button>
+</main>
+
+<!-- ================= Fine ================= -->
+<section class="stage" id="end" hidden>
+  <div class="top"><span>Fine partita</span><span></span></div>
+  <div class="mid" style="justify-content:flex-start;padding-top:24px">
+    <div class="kicker" id="endWhy"></div>
+    <div class="big" id="endWho"></div>
+    <div class="reveal" id="endList"></div>
+  </div>
+  <div class="bottomActions">
+    <button class="btn" id="againBtn">Nuova partita</button>
+    <button class="btn ghost" id="toSetup">Cambia giocatori o impostazioni</button>
+  </div>
+</section>
+
+<!-- Registro -->
+<div class="velo" id="logVelo" hidden><div class="plate box">
+  <h2>Registro</h2>
+  <p class="sub" style="margin:-4px 0 0;color:var(--muted);font-size:13.5px">Solo fatti pubblici: niente segreti qui.</p>
+  <ul class="log" id="logList"></ul>
+  <button class="btn ghost" id="logClose">Chiudi</button>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_PL = 'gds-giocatori', K_CFG = 'gds-dossier', K_GAME = 'gds-dossier-partita', K_ST = 'gds-dossier-storico';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+/* ---------------- Casualità uniforme (crittografica) ---------------- */
+function randInt(n) { const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1); do crypto.getRandomValues(a); while (a[0] >= lim); return a[0] % n; }
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const pickK = (arr, k) => shuffle(arr).slice(0, k);
+const range = n => Array.from({ length: n }, (_, i) => i);
+const norm = s => String(s).trim().replace(/\s+/g, ' ');
+const key = s => norm(s).toLocaleLowerCase('it');
+
+/* ---------------- Dati ---------------- */
+let players = loadJSON(K_PL, []);
+if (!Array.isArray(players)) players = [];
+const DEF = { livello: 'normale', rapporti: true, liberale: true, nPoteri: 2, poteri: { voto: true, testimone: true, inchiesta: true, confronto: true }, voltagabbana: false };
+let cfg = loadCfg();
+function loadCfg() { const c = loadJSON(K_CFG, {}); return Object.assign({}, DEF, c, { poteri: Object.assign({}, DEF.poteri, c.poteri || {}) }); }
+const saveCfg = () => saveJSON(K_CFG, cfg), savePl = () => saveJSON(K_PL, players);
+let G = loadJSON(K_GAME, null);            // partita in corso (anche i segreti: restano solo su questo telefono)
+const saveG = () => saveJSON(K_GAME, G);
+
+/* Regole del gioco base: quanti fascisti (Hitler compreso) e se Hitler conosce i compagni */
+const FASCISTI = { 5: 2, 6: 2, 7: 3, 8: 3, 9: 4, 10: 4 };
+const POTERI = {
+  voto: { nome: 'Voto segreto', corto: 'Voto segreto', desc: 'La prossima elezione si vota sul telefono: si vede solo quanti Ja e quanti Nein.' },
+  testimone: { nome: 'Testimone', corto: 'Testimone', desc: 'Il Presidente sceglie un altro giocatore, che riceve in privato un indizio vero. Poi dice quello che vuole.' },
+  inchiesta: { nome: 'Inchiesta', corto: 'Inchiesta', desc: 'Il Presidente guarda in segreto gli scarti del governo precedente: con la legge approvata, conosce tutte e 3 le carte.' },
+  confronto: { nome: 'Confronto', corto: 'Confronto', desc: 'Il Presidente sceglie due giocatori e l’app dice solo a lui se sono dello stesso partito.' }
+};
+const SLOT = { 1: [2], 2: [2, 4], 3: [1, 2, 4], 4: [1, 2, 3, 4] };   // caselle liberali con un potere, per numero di poteri
+const LIVELLI = {
+  facile: { tipi: ['stesso', 'diverso', 'almenoLib', 'almenoFas', 'hitlerTra', 'hitlerNo'], nota: 'Frasi brevi su due giocatori o su Hitler.' },
+  normale: { tipi: ['stesso', 'diverso', 'almenoLib', 'almenoFas', 'hitlerTra', 'hitlerNo', 'esatti', 'vicini'], nota: 'Si aggiungono i conteggi su tre giocatori e sui vicini di posto.' },
+  difficile: { tipi: ['stesso', 'diverso', 'esatti', 'vicini', 'pari', 'seFasLib', 'seLibFas', 'seFasHitler', 'hitlerTra', 'hitlerNo'], nota: 'Si aggiungono le implicazioni («se… allora…») e la parità su quattro giocatori.' }
+};
+
+/* ======================================================================
+   GENERATORE DI INDIZI
+   Un «mondo» è chi è del partito fascista (Hitler compreso) e chi è Hitler.
+   Un indizio è una frase vera nel mondo reale che non nomina chi la riceve.
+   La sua forza è la frazione di mondi possibili in cui è vera: si tengono
+   solo frasi vere in una parte tra il 30% e il 70% dei mondi, così ogni
+   indizio aiuta ma da solo non risolve niente.
+   ====================================================================== */
+function combinazioni(arr, k) {
+  const out = [], acc = [];
+  (function rec(s) { if (acc.length === k) { out.push(acc.slice()); return; } for (let i = s; i < arr.length; i++) { acc.push(arr[i]); rec(i + 1); acc.pop(); } })(0);
+  return out;
+}
+function mondi(n, f) {
+  const out = [];
+  for (const t of combinazioni(range(n), f)) { const F = new Set(t); for (const h of t) out.push({ F, H: h }); }
+  return out;
+}
+const mondoReale = () => ({ F: new Set(G.fasc), H: G.hitler });
+function elenco(ix) { const a = ix.map(i => G.nomi[i]); return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1]; }
+function frase(holder, tipi) {
+  const n = G.nomi.length, N = i => G.nomi[i], altri = range(n).filter(p => p !== holder);
+  const t = tipi[randInt(tipi.length)];
+  if (t === 'stesso') { const [a, b] = pickK(altri, 2); return { t: `${N(a)} e ${N(b)} sono dello stesso partito.`, f: w => w.F.has(a) === w.F.has(b) }; }
+  if (t === 'diverso') { const [a, b] = pickK(altri, 2); return { t: `${N(a)} e ${N(b)} sono di partiti diversi.`, f: w => w.F.has(a) !== w.F.has(b) }; }
+  if (t === 'almenoLib') { const [a, b] = pickK(altri, 2); return { t: `Almeno uno tra ${N(a)} e ${N(b)} è liberale.`, f: w => !(w.F.has(a) && w.F.has(b)) }; }
+  if (t === 'almenoFas') { const [a, b] = pickK(altri, 2); return { t: `Almeno uno tra ${N(a)} e ${N(b)} è fascista.`, f: w => w.F.has(a) || w.F.has(b) }; }
+  if (t === 'hitlerTra') { const S = pickK(altri, 3); return { t: `Hitler è uno tra ${elenco(S)}.`, f: w => S.includes(w.H) }; }
+  if (t === 'hitlerNo') { const S = pickK(altri, 2); return { t: `Hitler non è né ${N(S[0])} né ${N(S[1])}.`, f: w => !S.includes(w.H) }; }
+  if (t === 'esatti') {
+    const S = pickK(altri, 3), k = randInt(3), cnt = w => S.filter(p => w.F.has(p)).length;
+    const txt = k === 0 ? `Tra ${elenco(S)} non c’è nessun fascista.` : k === 1 ? `Tra ${elenco(S)} c’è esattamente un fascista.` : `Tra ${elenco(S)} ci sono esattamente due fascisti.`;
+    return { t: txt, f: w => cnt(w) === k };
+  }
+  if (t === 'vicini') {
+    const ok = altri.filter(a => (a + n - 1) % n !== holder && (a + 1) % n !== holder);
+    if (!ok.length) return null;
+    const a = ok[randInt(ok.length)], L = (a + n - 1) % n, R = (a + 1) % n, k = randInt(3), cnt = w => (w.F.has(L) ? 1 : 0) + (w.F.has(R) ? 1 : 0);
+    const par = `(${N(L)} e ${N(R)})`;
+    const txt = k === 0 ? `Nessuno dei due vicini di ${N(a)} ${par} è fascista.` : k === 1 ? `Esattamente uno dei due vicini di ${N(a)} ${par} è fascista.` : `Entrambi i vicini di ${N(a)} ${par} sono fascisti.`;
+    return { t: txt, f: w => cnt(w) === k };
+  }
+  if (t === 'pari') { if (altri.length < 5) return null; const S = pickK(altri, Math.min(4, altri.length)); return { t: `Tra ${elenco(S)} i fascisti sono in numero pari (zero compreso).`, f: w => S.filter(p => w.F.has(p)).length % 2 === 0 }; }
+  if (t === 'seFasLib') { const [a, b] = pickK(altri, 2); return { t: `Se ${N(a)} è fascista, allora ${N(b)} è liberale.`, f: w => !(w.F.has(a) && w.F.has(b)) }; }
+  if (t === 'seLibFas') { const [a, b] = pickK(altri, 2); return { t: `Se ${N(a)} è liberale, allora ${N(b)} è fascista.`, f: w => w.F.has(a) || w.F.has(b) }; }
+  if (t === 'seFasHitler') { const [a, b, c] = pickK(altri, 3); return { t: `Se ${N(a)} è fascista, allora Hitler è ${N(b)} oppure ${N(c)}.`, f: w => !w.F.has(a) || w.H === b || w.H === c }; }
+  return null;
+}
+function nuovoIndizio(holder) {
+  const W = mondi(G.nomi.length, G.fasc.length), reale = mondoReale(), tipi = LIVELLI[G.opz.livello].tipi;
+  const gia = new Set((G.indizi[holder] || []).map(x => x.testo));
+  for (let tent = 0; tent < 3000; tent++) {
+    const larga = tent > 1500;                    // se proprio non si trova nulla, si allarga un po' la forza
+    const c = frase(holder, tipi);
+    if (!c || !c.f(reale) || gia.has(c.t)) continue;
+    const s = W.filter(c.f).length / W.length;
+    if (s >= (larga ? 0.2 : 0.3) && s <= (larga ? 0.85 : 0.7)) return c.t;
+  }
+  return 'Nessun indizio utile questa volta.';
+}
+
+/* ---------------- Inizio: giocatori e riepilogo ---------------- */
+function renderSetup() {
+  $('players').innerHTML = players.map((p, i) => `<li><span class="n">${i + 1}</span>${esc(p)}<button class="x" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
+  const lib = cfg.liberale ? Object.keys(POTERI).filter(k => cfg.poteri[k]) : [];
+  $('recap').innerHTML = `
+    <div><dt>Indizi</dt><dd>${{ facile: 'facili', normale: 'normali', difficile: 'difficili' }[cfg.livello]}${cfg.rapporti ? ', con rapporti al Presidente' : ''}</dd></div>
+    <div><dt>Tracciato liberale</dt><dd>${cfg.liberale && lib.length ? `${Math.min(cfg.nPoteri, lib.length)} poteri tra ${lib.map(k => POTERI[k].nome).join(', ')}` : 'senza poteri'}</dd></div>
+    <div><dt>Imprevisti</dt><dd>${cfg.voltagabbana ? 'Voltagabbana alla 3ª legge liberale' : 'nessuno'}</dd></div>`;
+  const n = players.length;
+  const warn = n < 5 ? `Servono almeno 5 giocatori (ora ${n}).` : n > 10 ? 'Al massimo 10 giocatori.' : '';
+  $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn;
+  $('playBtn').disabled = !!warn;
+  const inCorso = G && !G.fine;
+  $('resumePanel').hidden = !inCorso;
+  if (inCorso) $('resumeInfo').textContent = `${G.nomi.length} giocatori · ${G.L} leggi liberali, ${G.F} fasciste. I ruoli restano quelli già distribuiti.`;
+}
+$('addPlayer').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = norm($('playerName').value); if (!v) return;
+  if (players.some(p => key(p) === key(v))) { toast(`${v} c’è già`); return; }
+  if (players.length >= 10) { toast('Al massimo 10 giocatori'); return; }
+  players.push(v); savePl(); $('playerName').value = ''; renderSetup();
+});
+$('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderSetup(); });
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  players = []; savePl(); cfg = JSON.parse(JSON.stringify(DEF)); saveCfg();
+  G = null; saveG(); renderSetup(); toast('Tutto come all’inizio');
+};
+
+/* ---------------- Impostazioni ---------------- */
+function renderSettings() {
+  document.querySelectorAll('#levelSeg button').forEach(b => b.classList.toggle('on', b.dataset.lv === cfg.livello));
+  $('levelNote').textContent = LIVELLI[cfg.livello].nota;
+  $('oRapporti').checked = cfg.rapporti; $('oLiberale').checked = cfg.liberale; $('oVolta').checked = cfg.voltagabbana;
+  $('libOpts').hidden = !cfg.liberale;
+  $('nPoteri').textContent = cfg.nPoteri;
+  $('slotNote').textContent = `Sotto le caselle ${SLOT[cfg.nPoteri].map(s => s + 'ª').join(', ')} legge liberale, estratti a caso tra quelli accesi.`;
+  $('powerList').innerHTML = Object.entries(POTERI).map(([k, p]) => `
+    <label class="opt sub-opt"><span><b>${esc(p.nome)}</b><small>${esc(p.desc)}</small></span><input type="checkbox" data-pw="${k}" ${cfg.poteri[k] ? 'checked' : ''}></label>`).join('');
+}
+$('levelSeg').addEventListener('click', e => { const b = e.target.closest('[data-lv]'); if (!b) return; cfg.livello = b.dataset.lv; saveCfg(); renderSettings(); });
+$('oRapporti').onchange = e => { cfg.rapporti = e.target.checked; saveCfg(); };
+$('oLiberale').onchange = e => { cfg.liberale = e.target.checked; saveCfg(); renderSettings(); };
+$('oVolta').onchange = e => { cfg.voltagabbana = e.target.checked; saveCfg(); };
+$('powerList').addEventListener('change', e => { const c = e.target.closest('[data-pw]'); if (!c) return; cfg.poteri[c.dataset.pw] = c.checked; saveCfg(); });
+$('nMinus').onclick = () => { cfg.nPoteri = Math.max(1, cfg.nPoteri - 1); saveCfg(); renderSettings(); };
+$('nPlus').onclick = () => { cfg.nPoteri = Math.min(4, cfg.nPoteri + 1); saveCfg(); renderSettings(); };
+$('settingsBtn').onclick = () => { renderSettings(); show('settings'); };
+$('settingsBack').onclick = $('settingsDone').onclick = () => { show('setup'); renderSetup(); };
+let rulesFrom = 'setup';
+$('rulesBtn').onclick = () => { rulesFrom = 'setup'; show('rules'); };
+$('bRules').onclick = () => { rulesFrom = 'board'; show('rules'); };
+$('rulesBack').onclick = $('rulesBack2').onclick = () => { if (rulesFrom === 'board') toBoard(); else { show('setup'); renderSetup(); } };
+
+/* ======================================================================
+   PARTITA
+   G = { nomi, ruoli[L|F|H] iniziali, fasc[] (partito fascista adesso), hitler, convertito,
+         vivi[], indagati[], indizi{i:[{testo, quando, dopo}]}, L, F, storia[], log[], poteri{casella:id},
+         votoSegreto, opz, fase, idx, fine, snap[] }
+   ====================================================================== */
+function nuovaPartita() {
+  const n = players.length, f = FASCISTI[n];
+  const ord = shuffle(range(n)), team = ord.slice(0, f), hitler = team[randInt(f)];
+  const ruoli = range(n).map(i => i === hitler ? 'H' : team.includes(i) ? 'F' : 'L');
+  const opz = JSON.parse(JSON.stringify(cfg));
+  G = { nomi: players.slice(), ruoli, fasc: team.slice(), hitler, convertito: null, vivi: range(n).map(() => true), indagati: [],
+        indizi: {}, L: 0, F: 0, storia: [], log: [], poteri: {}, votoSegreto: false, opz, fase: 'distribuzione', idx: 0, fine: null, snap: [] };
+  if (opz.liberale) {
+    const accesi = shuffle(Object.keys(POTERI).filter(k => opz.poteri[k]));
+    SLOT[opz.nPoteri].forEach((s, j) => { if (accesi[j]) G.poteri[s] = accesi[j]; });
+  }
+  range(n).forEach(i => { G.indizi[i] = []; });
+  range(n).forEach(i => { G.indizi[i].push({ testo: nuovoIndizio(i), quando: 'Indizio iniziale', dopo: false }); });
+  logga('Fascicoli distribuiti.');
+  saveG(); distribuisci();
+}
+const partito = i => G.fasc.includes(i) ? 'F' : 'L';
+const vivi = () => range(G.nomi.length).filter(i => G.vivi[i]);
+const piccola = () => G.nomi.length <= 6;
+function logga(t) { G.log.push({ t, l: G.L, f: G.F }); }
+
+/* Scheda privata: ruolo, compagni, indizi */
+function scheda(i, soloNuovo) {
+  const r = G.ruoli[i], n = G.nomi.length, N = j => esc(G.nomi[j]);
+  const fasciAltri = G.fasc.filter(j => j !== i && j !== G.hitler && G.ruoli[j] === 'F');
+  let ruolo, cls, testo;
+  if (G.convertito === i) {
+    ruolo = 'Fascista'; cls = 'F';
+    testo = 'Eri liberale, ma alla 3ª legge liberale sei passato coi fascisti: da adesso vinci con loro. Non sai chi sono gli altri fascisti, e loro non sanno chi sei tu.';
+  } else if (r === 'L') { ruolo = 'Liberale'; cls = 'L'; testo = 'Vinci con 5 leggi liberali o giustiziando Hitler.'; }
+  else if (r === 'F') {
+    ruolo = 'Fascista'; cls = 'F';
+    testo = `${fasciAltri.length ? `Gli altri fascisti: <b>${fasciAltri.map(N).join(', ')}</b>. ` : ''}Hitler è <b>${N(G.hitler)}</b>. Vinci con 6 leggi fasciste o con Hitler eletto Cancelliere dopo la 3ª legge fascista.`;
+  } else {
+    ruolo = 'Hitler'; cls = 'H';
+    const tuoi = G.ruoli.map((x, j) => x === 'F' ? j : -1).filter(j => j >= 0);
+    testo = piccola() ? `Il tuo fascista è <b>${tuoi.map(N).join(', ')}</b>.` : 'Non sai chi sono i fascisti: loro sanno che sei tu.';
+    testo += ' Vinci con 6 leggi fasciste o se vieni eletto Cancelliere dopo la 3ª legge fascista.';
+  }
+  const lista = soloNuovo ? [G.indizi[i][G.indizi[i].length - 1]] : G.indizi[i];
+  const indizi = lista.map(x => `<div class="clue"><div class="lab">${esc(x.quando)}${x.dopo ? ' · dopo il cambio di casacca' : ''}</div><p class="txt">${esc(x.testo)}</p></div>`).join('');
+  const nota = !soloNuovo && G.convertito != null && G.indizi[i].some(x => !x.dopo)
+    ? '<p class="note">Gli indizi ricevuti prima del cambio di casacca descrivono la situazione di allora.</p>' : '';
+  return `<div class="dossier ${cls === 'L' ? 'L' : 'F'}" data-tab="FASCICOLO N° ${String(i + 1).padStart(2, '0')} · ${esc(G.nomi[i].toUpperCase())}">
+    <div class="stampR">RISERVATO</div>
+    <div class="lab">Ruolo</div><div class="role ${cls}">${ruolo}</div>
+    <p class="txt" style="font-size:15px">${testo}</p>${indizi}${nota}</div>`;
+}
+
+/* ---------------- Schermate generiche ---------------- */
+let onPass = null, onSecret = null;
+function passa(i, then, opt = {}) {
+  onPass = then;
+  $('passName').textContent = G.nomi[i];
+  $('passCount').textContent = opt.count || '';
+  $('passNote').textContent = opt.nota || 'Gli altri non guardano.';
+  $('passGo').textContent = opt.btn || 'Sono io: apri il fascicolo';
+  $('passProg').innerHTML = opt.prog ? opt.prog.tot.map((_, k) => `<i class="${k <= opt.prog.at ? 'on' : ''}"></i>`).join('') : '';
+  $('passQuit').hidden = !!opt.noQuit;
+  show('pass');
+}
+$('passGo').onclick = () => { const f = onPass; onPass = null; if (f) f(); };
+$('passQuit').onclick = () => { toast('Riprendete dalla plancia quando volete'); onPass = null; toBoard(); };
+function segreto(i, html, then) {
+  onSecret = then;
+  $('secretWho').textContent = G.nomi[i];
+  $('secretBody').innerHTML = html;
+  show('secret');
+}
+$('secretDone').onclick = () => { const f = onSecret; onSecret = null; if (f) f(); };
+
+let pickState = null;
+function scegli({ kick = '', title, sub = '', opzioni, quanti = 1, disabili = {}, then, annulla }) {
+  pickState = { quanti, sel: [], then, annulla };
+  $('pickKick').textContent = kick; $('pickTitle').textContent = title; $('pickSub').innerHTML = sub;
+  $('pickChips').innerHTML = opzioni.map(i => `<button class="chip" data-i="${i}" ${disabili[i] ? 'disabled' : ''}>${esc(G.nomi[i])}${disabili[i] ? `<small>${esc(disabili[i])}</small>` : ''}</button>`).join('');
+  $('pickOk').disabled = true;
+  show('pick');
+}
+$('pickChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-i]'); if (!b || !pickState) return;
+  const i = +b.dataset.i, s = pickState.sel, k = s.indexOf(i);
+  if (k >= 0) s.splice(k, 1); else { if (s.length >= pickState.quanti) s.shift(); s.push(i); }
+  document.querySelectorAll('#pickChips .chip').forEach(c => c.classList.toggle('on', s.includes(+c.dataset.i)));
+  $('pickOk').disabled = s.length !== pickState.quanti;
+});
+$('pickOk').onclick = () => { const p = pickState; pickState = null; if (p) p.then(p.quanti === 1 ? p.sel[0] : p.sel.slice()); };
+$('pickCancel').onclick = () => { const p = pickState; pickState = null; if (p && p.annulla) p.annulla(); else toBoard(); };
+
+function avviso({ top = '', kick = '', title = '', body = '', bottoni }) {
+  $('infoTop').textContent = top; $('infoKick').textContent = kick; $('infoTitle').innerHTML = title; $('infoBody').innerHTML = body;
+  const box = $('infoBtns'); box.innerHTML = '';
+  bottoni.forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn' + (b.cls ? ' ' + b.cls : '');
+    if (b.hold) { el.classList.add('hold'); el.innerHTML = `<i class="fill"></i><span>${esc(b.t)}</span>`; tieniPremuto(el, b.f); }
+    else { el.textContent = b.t; el.onclick = b.f; }
+    box.appendChild(el);
+  });
+  show('info');
+}
+
+/* Tieni premuto ~0,8 s per confermare (azioni pericolose) */
+function tieniPremuto(el, done, ms = 800) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { e.preventDefault(); stop(); void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); done(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+/* ---------------- Distribuzione dei fascicoli ---------------- */
+function distribuisci() {
+  const n = G.nomi.length;
+  if (G.idx >= n) { G.fase = 'gioco'; saveG(); pronti(); return; }
+  const i = G.idx;
+  passa(i, () => segreto(i, scheda(i), () => { G.idx++; saveG(); distribuisci(); }),
+    { count: `${i + 1} di ${n}`, prog: { tot: range(n), at: i }, noQuit: true });
+}
+function pronti() {
+  const lib = Object.entries(G.poteri).sort((a, b) => a[0] - b[0]).map(([s, k]) => `<b>${s}ª</b> ${POTERI[k].nome}`);
+  const parti = [
+    'Mettete via le buste dei ruoli: non servono, e non c’è la fase a occhi chiusi.',
+    'Le leggi si pescano dal mazzo fisico. Dopo ogni legge toccate <b>Liberale</b> o <b>Fascista</b>: l’app vi dice quando succede qualcosa.'
+  ];
+  if (lib.length) parti.push(`Poteri liberali di questa partita: ${lib.join(' · ')}.`);
+  if (Object.values(G.poteri).includes('inchiesta')) parti.push('<b>Scarti in fascicoli</b>: ogni governo mette i suoi scarti coperti in un mucchietto a parte (sotto il Presidente, sopra il Cancelliere). Tenete gli ultimi due mucchietti.');
+  if (G.opz.voltagabbana) parti.push('Alla 3ª legge liberale ci sarà un cambio di casacca.');
+  avviso({ top: 'Tutti hanno il fascicolo', kick: 'Si comincia', title: 'Al tavolo', body: parti.map(p => `<p style="margin:0 0 10px">${p}</p>`).join(''),
+    bottoni: [{ t: 'Vai alla plancia', f: toBoard }] });
+}
+
+/* ---------------- Plancia ---------------- */
+function toBoard() {
+  if (!G) { show('setup'); renderSetup(); return; }
+  if (G.fine) { mostraFine(); return; }
+  if (G.fase === 'distribuzione') { distribuisci(); return; }
+  renderBoard(); show('board');
+}
+function renderBoard() {
+  const n = G.nomi.length;
+  $('bSub').innerHTML = `${n} giocatori<br>${vivi().length < n ? `${n - vivi().length} giustiziat${n - vivi().length === 1 ? 'o' : 'i'}` : 'tutti in gioco'}`;
+  $('trackL').innerHTML = [1, 2, 3, 4, 5].map(s => {
+    const pw = G.poteri[s], cc = G.opz.voltagabbana && s === 3;
+    let lab = s === 5 ? 'Vittoria' : pw ? POTERI[pw].corto : '';
+    if (cc) lab = (lab ? lab + ' + ' : '') + 'Cambio';
+    return `<div class="cell ${G.L >= s ? 'on' : ''}"><div class="sq">${G.L >= s ? '✓' : s}</div><div class="pw ${pw ? 'has' : ''} ${cc && !pw ? 'cc' : ''}">${esc(lab)}</div></div>`;
+  }).join('');
+  $('trackF').innerHTML = [1, 2, 3, 4, 5, 6].map(s => `<div class="cell ${G.F >= s ? 'on' : ''} ${s >= 4 ? 'hz' : ''}"><div class="sq">${G.F >= s ? '✓' : s}</div><div class="pw">${s === 6 ? 'Vittoria' : s === 5 ? 'Veto' : ''}</div></div>`).join('');
+  $('hzBadge').innerHTML = G.F >= 3 ? '<span class="badge">ZONA HITLER</span>' : '';
+  $('voteBanner').hidden = !G.votoSegreto;
+  $('undoBtn').hidden = !G.snap.length;
+  const ult = G.storia[G.storia.length - 1];
+  $('lastNote').textContent = !ult ? 'Nessuna legge ancora.'
+    : ult.tipo === 'F' ? 'Ultima: fascista. Se il tabellone dà Indagine o Esecuzione, usate i tasti qui sotto; Elezione speciale e Sbirciata restano sul tavolo.'
+    : `Ultima: liberale${ult.caos ? ', dal caos' : ''}.`;
+  $('roster').innerHTML = range(n).map(i => `<span class="${G.vivi[i] ? '' : 'dead'}">${esc(G.nomi[i])}${G.indagati.includes(i) ? '<span class="m" title="già indagato">◉</span>' : ''}</span>`).join('');
+}
+
+/* Legge approvata: fotografia per «Annulla», poi gli eventi in fila */
+function fotografa() { const c = JSON.parse(JSON.stringify(G)); delete c.snap; G.snap.push(c); if (G.snap.length > 15) G.snap.shift(); }
+function legge(tipo, caos) {
+  const chiude = (tipo === 'L' && G.L === 4) || (tipo === 'F' && G.F === 5);
+  if (!chiude) { applica(tipo, caos); return; }
+  avviso({ top: caos ? 'Legge dal caos' : 'Legge approvata', kick: tipo === 'L' ? '5ª legge liberale' : '6ª legge fascista',
+    title: tipo === 'L' ? 'Vincono i liberali?' : 'Vincono i fascisti?', body: 'Con questa legge la partita finisce e si scoprono ruoli e indizi.',
+    bottoni: [{ t: 'Sì, è passata', cls: tipo === 'L' ? 'teal' : '', f: () => applica(tipo, caos) }, { t: 'Annulla', cls: 'ghost', f: toBoard }] });
+}
+function applica(tipo, caos) {
+  fotografa();
+  if (tipo === 'L') G.L++; else G.F++;
+  G.storia.push({ tipo, caos: !!caos });
+  logga(`Legge ${tipo === 'L' ? 'liberale' : 'fascista'} n. ${tipo === 'L' ? G.L : G.F}${caos ? ' (dal caos)' : ''}.`);
+  saveG();
+  if (tipo === 'L' && G.L >= 5) { fine('L', 'Cinque leggi liberali'); return; }
+  if (tipo === 'F' && G.F >= 6) { fine('F', 'Sei leggi fasciste'); return; }
+  if (tipo === 'F') { renderBoard(); show('board'); toast(caos ? 'Legge fascista dal caos: nessun potere' : 'Legge fascista registrata'); return; }
+  const s = G.L, pw = caos ? null : G.poteri[s], rap = !caos && G.opz.rapporti, cambio = G.opz.voltagabbana && s === 3 && G.convertito == null;
+  const coda = [];
+  if (rap || pw) coda.push(next => chiediPresidente(pres => { G.pres = pres; next(); }, () => { G.pres = null; next(); }));
+  if (rap) coda.push(next => G.pres == null ? next() : rapporto(G.pres, next));
+  if (pw) coda.push(next => G.pres == null ? next() : potere(pw, G.pres, next));
+  if (cambio) coda.push(next => voltagabbana(next));
+  esegui(coda, () => { G.pres = null; saveG(); toBoard(); });
+}
+function esegui(coda, fineCoda) { const step = k => k >= coda.length ? fineCoda() : coda[k](() => step(k + 1)); step(0); }
+function chiediPresidente(then, salta) {
+  scegli({ kick: `Legge liberale n. ${G.L}`, title: 'Chi è il Presidente?', sub: 'Il Presidente del governo che ha appena approvato la legge.',
+    opzioni: vivi(), then, annulla: salta });
+}
+$('lawL').onclick = () => legge('L', false);
+$('lawF').onclick = () => legge('F', false);
+$('chaosBtn').onclick = () => avviso({ top: 'Tre governi falliti', kick: 'Caos', title: 'Che legge è uscita?',
+  body: 'La prima carta del mazzo passa da sola: non scatta nessun potere e nessun rapporto, come nel gioco base.',
+  bottoni: [{ t: 'Liberale', cls: 'teal', f: () => legge('L', true) }, { t: 'Fascista', f: () => legge('F', true) }, { t: 'Annulla', cls: 'ghost', f: toBoard }] });
+$('undoBtn').onclick = () => {
+  if (!G.snap.length) return;
+  const snaps = G.snap, prev = snaps.pop();
+  G = Object.assign(prev, { snap: snaps }); saveG(); renderBoard();
+  toast('Ultima legge annullata. Se qualcuno ha già visto un indizio nuovo, lo ignori.');
+};
+
+/* Rapporto: un indizio nuovo al Presidente */
+function rapporto(pres, next) {
+  G.indizi[pres].push({ testo: nuovoIndizio(pres), quando: `Rapporto dopo la ${G.L}ª legge liberale`, dopo: G.convertito != null });
+  logga(`Rapporto per ${G.nomi[pres]}.`); saveG();
+  passa(pres, () => segreto(pres, scheda(pres, true), next), { nota: 'Rapporto riservato per il Presidente.', btn: 'Sono io: leggi il rapporto', noQuit: true });
+}
+
+/* ---------------- Poteri liberali ---------------- */
+function potere(pw, pres, next) {
+  const P = POTERI[pw], N = G.nomi[pres];
+  if (pw === 'voto') {
+    G.votoSegreto = true; logga(`${N} usa il Voto segreto: la prossima elezione si vota sul telefono.`); saveG();
+    avviso({ top: `${G.L}ª legge liberale`, kick: 'Potere liberale', title: P.nome, body: `${esc(P.desc)}<br><br>Quando la prossima elezione è pronta (Presidente e Cancelliere nominati), toccate <b>Vota</b> sulla plancia.`,
+      bottoni: [{ t: 'Avanti', f: next }] });
+    return;
+  }
+  if (pw === 'testimone') {
+    scegli({ kick: `${N} è Presidente`, title: 'Chi è il testimone?', sub: `${esc(N)} sceglie un altro giocatore: riceverà in privato un indizio vero.`,
+      opzioni: vivi().filter(i => i !== pres),
+      then: t => {
+        G.indizi[t].push({ testo: nuovoIndizio(t), quando: `Testimonianza chiesta da ${N}`, dopo: G.convertito != null });
+        logga(`${N} chiama ${G.nomi[t]} come testimone.`); saveG();
+        passa(t, () => segreto(t, scheda(t, true), next), { nota: 'Testimonianza riservata.', btn: 'Sono io: leggi', noQuit: true });
+      }, annulla: next });
+    return;
+  }
+  if (pw === 'inchiesta') {
+    const gov = G.storia.slice(0, -1).filter(x => !x.caos);
+    const prec = gov[gov.length - 1];
+    logga(`${N} apre un’Inchiesta sul governo precedente.`); saveG();
+    avviso({ top: `${G.L}ª legge liberale`, kick: 'Potere liberale', title: P.nome,
+      body: prec
+        ? `<b>${esc(N)}</b> guarda in segreto il mucchietto degli scarti del <b>governo precedente</b> (sotto lo scarto del Presidente, sopra quello del Cancelliere).<br><br>Quel governo aveva approvato una legge <b>${prec.tipo === 'L' ? 'liberale' : 'fascista'}</b>: con i due scarti, ${esc(N)} conosce tutte e 3 le carte. Poi dice quello che vuole.<br><br>Se nel frattempo c’è stato un veto, nel mucchietto ci sono le carte del veto. Se è vuoto perché il mazzo è stato rimescolato, l’inchiesta salta.`
+        : 'Non c’è ancora un governo precedente con i suoi scarti: l’inchiesta salta.',
+      bottoni: [{ t: 'Fatto', f: next }] });
+    return;
+  }
+  if (pw === 'confronto') {
+    scegli({ kick: `${N} è Presidente`, title: 'Confronto', sub: `${esc(N)} sceglie <b>due</b> giocatori: l’app gli dice, solo a lui, se sono dello stesso partito.`,
+      opzioni: vivi().filter(i => i !== pres), quanti: 2,
+      then: ([a, b]) => {
+        const stesso = partito(a) === partito(b);
+        logga(`${N} confronta ${G.nomi[a]} e ${G.nomi[b]}.`); saveG();
+        passa(pres, () => segreto(pres, `<div class="dossier" data-tab="CONFRONTO RISERVATO"><div class="stampR">RISERVATO</div>
+          <div class="lab">Esito</div><p class="txt" style="font-size:20px">${esc(G.nomi[a])} e ${esc(G.nomi[b])}</p>
+          <div class="role ${stesso ? 'L' : 'F'}" style="font-size:clamp(30px,9vw,42px)">${stesso ? 'Stesso partito' : 'Partiti diversi'}</div>
+          <p class="note">Il partito di adesso: Hitler conta come fascista${G.convertito != null ? ', il voltagabbana come fascista' : ''}.</p></div>`, next),
+          { nota: 'Esito riservato per il Presidente.', btn: 'Sono io: leggi l’esito', noQuit: true });
+      }, annulla: next });
+  }
+}
+
+/* ---------------- Voltagabbana ---------------- */
+function voltagabbana(next) {
+  const cand = vivi().filter(i => G.ruoli[i] === 'L');
+  if (!cand.length) { next(); return; }
+  const c = cand[randInt(cand.length)];
+  G.convertito = c; G.fasc.push(c);
+  logga('Cambio di casacca: un liberale è passato coi fascisti.'); saveG();
+  const giro = vivi();
+  avviso({ top: '3ª legge liberale', kick: 'Imprevisto', title: 'Voltagabbana', body: 'Il telefono fa il giro: <b>tutti</b> guardano lo schermo, uno alla volta. Uno di voi potrebbe aver cambiato casacca.',
+    bottoni: [{ t: 'Comincia il giro', f: () => {
+      const step = k => {
+        if (k >= giro.length) {
+          avviso({ top: 'Giro finito', kick: 'Da adesso', title: 'Un liberale gioca coi fascisti', body: 'Nessuno sa chi è, nemmeno i fascisti. Indagini e confronti mostrano il partito nuovo.', bottoni: [{ t: 'Avanti', f: next }] });
+          return;
+        }
+        const i = giro[k];
+        passa(i, () => segreto(i, i === c
+          ? `<div class="dossier F" data-tab="COMUNICAZIONE RISERVATA"><div class="stampR">RISERVATO</div><div class="lab">Da adesso sei</div><div class="role F">Fascista</div>
+             <p class="txt">Hai cambiato casacca: vinci con i fascisti. Non sai chi sono gli altri fascisti, e loro non sanno chi sei tu. Tieni la faccia di prima.</p></div>`
+          : `<div class="dossier" data-tab="COMUNICAZIONE RISERVATA"><div class="stampR">RISERVATO</div><div class="lab">Per te</div><div class="role" style="color:var(--paper-ink)">Nulla cambia</div>
+             <p class="txt">Resti quello che eri. Da adesso però un liberale gioca coi fascisti.</p></div>`,
+          () => step(k + 1)), { count: `${k + 1} di ${giro.length}`, prog: { tot: giro, at: k }, btn: 'Sono io: apri', noQuit: true });
+      };
+      step(0);
+    } }] });
+}
+
+/* ---------------- Voto segreto ---------------- */
+let V = null;
+$('voteStart').onclick = () => {
+  const giro = vivi();
+  V = { giro, k: 0, ja: 0, nein: 0 };
+  avviso({ top: 'Voto segreto', kick: 'Prima di votare', title: 'Governo nominato?', body: 'Il Presidente ha già nominato il Cancelliere? Il telefono passa a tutti, in ordine di posto: ognuno vota da solo.',
+    bottoni: [{ t: 'Sì, si vota', cls: 'teal', f: votoPassa }, { t: 'Non ancora', cls: 'ghost', f: toBoard }] });
+};
+function votoPassa() {
+  const i = V.giro[V.k];
+  passa(i, () => { $('voteName').textContent = G.nomi[i]; $('voteCount').textContent = `${V.k + 1} di ${V.giro.length}`; show('vote'); },
+    { count: `${V.k + 1} di ${V.giro.length}`, prog: { tot: V.giro, at: V.k }, btn: 'Sono io: vota', noQuit: true });
+}
+document.querySelectorAll('.vote').forEach(b => b.onclick = () => {
+  if (!V) return;
+  if (b.dataset.v === '1') V.ja++; else V.nein++;
+  V.k++;
+  if (V.k < V.giro.length) { votoPassa(); return; }
+  const eletto = V.ja > V.nein;
+  G.votoSegreto = false; logga(`Voto segreto: ${V.ja} Ja, ${V.nein} Nein (${eletto ? 'governo eletto' : 'governo bocciato'}).`); saveG();
+  avviso({ top: 'Voto segreto', kick: `${V.ja} Ja · ${V.nein} Nein`, title: eletto ? '<span class="big L">Governo eletto</span>' : '<span class="big F">Governo bocciato</span>',
+    body: eletto ? 'Si procede con la sessione legislativa, come sempre.' : 'Il segnalino delle elezioni fallite avanza di uno, come sempre.',
+    bottoni: [{ t: 'Plancia', f: toBoard }] });
+  V = null;
+});
+
+/* ---------------- Strumenti della plancia ---------------- */
+$('tFile').onclick = () => scegli({ kick: 'Il mio fascicolo', title: 'Di chi è?', sub: 'Il telefono passa a lui: rivede ruolo e indizi.', opzioni: range(G.nomi.length),
+  then: i => passa(i, () => segreto(i, scheda(i), toBoard), { btn: 'Sono io: apri' }) });
+$('tInv').onclick = () => scegli({ kick: 'Potere fascista', title: 'Chi è il Presidente?', sub: 'Chi usa il potere di Indagine.', opzioni: vivi(),
+  then: pres => {
+    const dis = {}; G.indagati.forEach(i => { dis[i] = 'già indagato'; });
+    scegli({ kick: `Indagine di ${G.nomi[pres]}`, title: 'Su chi?', sub: 'Ognuno può essere indagato una volta sola.', opzioni: vivi().filter(i => i !== pres), disabili: dis,
+      then: t => {
+        G.indagati.push(t); logga(`${G.nomi[pres]} indaga su ${G.nomi[t]}.`); saveG();
+        const p = partito(t);
+        passa(pres, () => segreto(pres, `<div class="dossier ${p}" data-tab="INDAGINE RISERVATA"><div class="stampR">RISERVATO</div>
+          <div class="lab">${esc(G.nomi[t])} è del partito</div><div class="role ${p}">${p === 'L' ? 'Liberale' : 'Fascista'}</div>
+          <p class="note">Come nel gioco base vedi solo il partito: Hitler risulta fascista. Poi dici quello che vuoi.</p></div>`, toBoard),
+          { nota: 'Esito riservato per il Presidente.', btn: 'Sono io: leggi l’esito' });
+      } });
+  } });
+$('tExe').onclick = () => scegli({ kick: 'Potere fascista', title: 'Chi viene giustiziato?', sub: 'Lo sceglie il Presidente.', opzioni: vivi(),
+  then: t => avviso({ top: 'Esecuzione', kick: 'Confermi?', title: esc(G.nomi[t]), body: 'Se è Hitler, vincono i liberali. Altrimenti esce dal gioco senza rivelare il ruolo.',
+    bottoni: [{ t: 'Tieni premuto: giustizia', hold: true, f: () => {
+      G.vivi[t] = false;
+      if (t === G.hitler) { logga(`${G.nomi[t]} è stato giustiziato: era Hitler.`); saveG(); fine('L', `${G.nomi[t]} era Hitler ed è stato giustiziato`); return; }
+      logga(`${G.nomi[t]} è stato giustiziato. Non era Hitler.`); saveG();
+      avviso({ top: 'Esecuzione', kick: G.nomi[t], title: 'Non era Hitler', body: 'Esce dal gioco senza rivelare il ruolo, come nel gioco base.', bottoni: [{ t: 'Plancia', f: toBoard }] });
+    } }, { t: 'Annulla', cls: 'ghost', f: toBoard }] }) });
+$('tLog').onclick = () => {
+  $('logList').innerHTML = G.log.map(x => `<li><b>${x.l}L · ${x.f}F</b>${esc(x.t)}</li>`).reverse().join('') || '<li>Ancora niente.</li>';
+  $('logVelo').hidden = false;
+};
+$('logClose').onclick = () => { $('logVelo').hidden = true; };
+$('logVelo').addEventListener('click', e => { if (e.target.id === 'logVelo') $('logVelo').hidden = true; });
+$('endBtn').onclick = () => avviso({ top: 'Fine partita', kick: 'Chi ha vinto?', title: 'Chiudere la partita',
+  body: 'Per esempio se Hitler è stato eletto Cancelliere dopo la 3ª legge fascista. Poi si vedono ruoli e indizi.',
+  bottoni: [{ t: 'Hanno vinto i fascisti', f: () => conferma('F', 'Vittoria fascista') }, { t: 'Hanno vinto i liberali', cls: 'teal', f: () => conferma('L', 'Vittoria liberale') }, { t: 'Annulla', cls: 'ghost', f: toBoard }] });
+function conferma(chi, perche) {
+  avviso({ top: 'Fine partita', kick: 'Sicuri?', title: chi === 'L' ? 'Vincono i liberali' : 'Vincono i fascisti', body: 'Si scoprono ruoli e indizi di tutti.',
+    bottoni: [{ t: 'Tieni premuto: rivela tutto', hold: true, f: () => fine(chi, perche) }, { t: 'Annulla', cls: 'ghost', f: toBoard }] });
+}
+
+/* ---------------- Fine e rivelazione ---------------- */
+function fine(chi, perche) {
+  G.fine = { chi, perche }; G.snap = []; saveG();
+  const st = loadJSON(K_ST, []);
+  st.push({ data: new Date().toISOString(), n: G.nomi.length, vince: chi, perche, L: G.L, F: G.F, opz: G.opz, poteri: G.poteri, cambio: G.convertito != null });
+  saveJSON(K_ST, st.slice(-200));
+  mostraFine();
+}
+function mostraFine() {
+  const { chi, perche } = G.fine;
+  $('endWhy').textContent = perche;
+  $('endWho').innerHTML = `<span class="big ${chi}">${chi === 'L' ? 'Vincono i liberali' : 'Vincono i fascisti'}</span>`;
+  const nomeRuolo = i => G.convertito === i ? 'Liberale → fascista' : { L: 'Liberale', F: 'Fascista', H: 'Hitler' }[G.ruoli[i]];
+  const cls = i => G.convertito === i ? 'F' : G.ruoli[i];
+  $('endList').innerHTML = range(G.nomi.length).map(i => `<div class="rv"><div class="hd"><span class="nm">${esc(G.nomi[i])}${G.vivi[i] ? '' : ' <small style="color:var(--muted)">(giustiziato)</small>'}</span><span class="rl ${cls(i)}">${nomeRuolo(i)}</span></div>
+    <ul>${G.indizi[i].map(x => `<li>${esc(x.testo)} <small>· ${esc(x.quando)}</small></li>`).join('')}</ul></div>`).join('');
+  show('end');
+}
+$('againBtn').onclick = () => { if (players.length >= 5 && players.length <= 10) nuovaPartita(); else { G = null; saveG(); show('setup'); renderSetup(); } };
+$('toSetup').onclick = () => { G = null; saveG(); show('setup'); renderSetup(); };
+
+/* ---------------- Avvio ---------------- */
+$('playBtn').onclick = () => {
+  if (G && !G.fine) { toast('C’è una partita in corso: riprendila o chiudila'); return; }
+  nuovaPartita();
+};
+$('resumeBtn').onclick = toBoard;
+tieniPremuto($('dropBtn'), () => { G = null; saveG(); renderSetup(); toast('Partita chiusa'); });
+
+function show(id) {
+  ['setup', 'settings', 'rules', 'pass', 'secret', 'pick', 'info', 'vote', 'board', 'end'].forEach(s => { $(s).hidden = s !== id; });
+  $('logVelo').hidden = true;
+  window.scrollTo(0, 0);
+  if (window.gdsAppare) gdsAppare($(id));   // entrata morbida (comune/app.js)
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
+
+/* All'apertura: se c'era una partita a metà distribuzione o finita, si riprende da lì */
+if (G && G.fine) mostraFine();
+else if (G && G.fase === 'distribuzione') { renderSetup(); show('setup'); }
+else renderSetup();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

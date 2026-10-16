@@ -23,7 +23,8 @@ self.GIOCHI = {
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
     { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus e i dadi del Perudo', simbolo: 'maschera' },
-    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] }
+    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
+    { id: 'expansions', nome: 'Expansions', descrizione: 'Espansioni nostre per i giochi da tavolo che abbiamo già', simbolo: 'fascicolo', unita: ['espansione', 'espansioni'] }
   ],
   giochi: [
     { categoria: 'carte', nome: 'Dichiarare', descrizione: 'Prese dichiarate e rispettate: n² + 10', link: 'giochi/segnapunti/#dichiarare', colore: '#B39DF0' },
@@ -36,6 +37,7 @@ self.GIOCHI = {
     { categoria: 'giochi', nome: 'Perudo', descrizione: 'I tuoi dadi sotto il bicchiere, quando quelli veri non bastano', link: 'giochi/perudo/', colore: '#9BCB3C' },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#D04BA0' },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#EE7A5E' },
-    { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0' }
+    { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0' },
+    { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#D23B30' }
   ]
 };

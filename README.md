@@ -16,6 +16,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
+| Expansions | Secret Hitler: Dossier (espansione per il gioco fisico: ruoli dal telefono, un indizio logico vero a testa, rapporti al Presidente, poteri liberali a scelta tra Voto segreto, Testimone, Inchiesta e Confronto, Voltagabbana facoltativo, indagine ed esecuzione) | `giochi/dossier/` |
 
 > Le istruzioni complete per Claude (dove mettere parole e ruoli, convenzioni, come provare e pubblicare)
 > sono in [`CLAUDE.md`](CLAUDE.md).
@@ -48,7 +49,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia:** le partite e le impostazioni stanno sul
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
 - **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue

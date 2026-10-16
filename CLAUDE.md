@@ -42,6 +42,7 @@ Categorie in `giochi.js`:
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
+- `expansions` (Secret Hitler: Dossier; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
 
@@ -118,7 +119,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
    - `categoria`, `nome`, `descrizione`, `link`;
    - `colore`: **diverso da tutti gli altri** (oggi: lilla `#B39DF0`, burgundy `#A3324F`, ciano `#22C1D4`,
      oro `#E3B23C`, indaco `#4F58D9`, viola `#8A4FD8`, petrolio `#16938C`, lime `#9BCB3C`, fucsia `#D04BA0`,
-     corallo `#EE7A5E`, blu `#3A78E0`);
+     corallo `#EE7A5E`, blu `#3A78E0`, rosso `#D23B30`);
    - `extra` se la pagina carica altri file, così funzionano anche offline.
 3. Aggiorna la tabella nel `README.md`.
 
@@ -148,10 +149,24 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-giocatori` (nomi in comune tra Impostore e Lupus);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
+  - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`.
 
   Non cambiare il formato di una chiave senza convertire i dati vecchi.
 - **Disegni:** solo disegni originali. Niente riproduzioni di disegni protetti: per esempio le facce vere delle monete in euro non si copiano, e infatti le monete di Conta Monete sono inventate.
+
+### Secret Hitler: Dossier → `giochi/dossier/index.html`
+
+Espansione di Simo per il Secret Hitler fisico: tema «bunker» scuro (rosso spento `#A6463D`, verde acqua spento `#4E8C86`,
+font Stardos Stencil e Special Elite solo in questa pagina). Si usano tabellone, mazzo delle leggi e carte Ja/Nein veri;
+l'app sostituisce le buste dei ruoli e dà gli imprevisti.
+- **Indizi:** `frase()` e `nuovoIndizio()` generano frasi vere sul mondo reale (chi è del partito fascista, chi è Hitler),
+  che non nominano chi le riceve e sono vere tra il 30% e il 70% dei mondi possibili. Una forma nuova va aggiunta in `frase()`
+  e nell'elenco `tipi` del livello giusto in `LIVELLI`; poi verifica con un controllo indipendente che migliaia di indizi
+  generati siano tutti veri.
+- **Opzioni:** rapporti al Presidente a ogni legge liberale, poteri liberali (Voto segreto, Testimone, Inchiesta, Confronto)
+  sotto le caselle di `SLOT`, Voltagabbana alla 3ª legge liberale. Tutte si scelgono in Impostazioni prima della partita.
+- Le regole spiegate stanno nella schermata «Come funziona» della pagina: se cambi una meccanica, aggiornala anche lì.
 
 ## Cose da sapere
 
