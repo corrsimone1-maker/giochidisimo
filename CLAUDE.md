@@ -27,7 +27,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 
 | File | Cosa fa |
 |---|---|
-| `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e il tastino «Condividi» in alto a destra (foglio di condivisione del telefono, altrimenti copia il link). |
+| `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e il tastino «Condividi» in basso a destra sotto le carte (foglio di condivisione del telefono, altrimenti copia il link). |
 | `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. |
 | `sw.js` | Service worker: chiede prima alla rete, usa la cache solo offline. Salva le pagine di `giochi.js` e i file `extra`. |
 | `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, registra il service worker e offre `gdsAppare(el)` per far entrare una schermata. |
