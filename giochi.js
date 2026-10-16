@@ -10,6 +10,8 @@
    link        percorso della pagina (il # sceglie il gioco nelle pagine
                che ne contengono più di uno)
    colore      colore della striscia a sinistra nell'elenco
+   icona       (facoltativo) disegno accanto al nome nell'elenco: il nome di
+               uno dei disegni in ICONE dentro index.html (es. 'esagoni')
    extra       (facoltativo) altri file della pagina da salvare per l'uso
                senza connessione
 
@@ -22,7 +24,7 @@ self.GIOCHI = {
   categorie: [
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
-    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus e i dadi del Perudo', simbolo: 'maschera' },
+    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, i dadi del Perudo e Hex ad Aste', simbolo: 'maschera' },
     { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
     { id: 'expansions', nome: 'Expansions', descrizione: 'Espansioni nostre per i giochi da tavolo che abbiamo già', simbolo: 'fascicolo', unita: ['espansione', 'espansioni'] }
   ],
@@ -35,6 +37,7 @@ self.GIOCHI = {
     { categoria: 'giochi', nome: 'Impostore', descrizione: 'Tutti hanno la parola segreta, tranne uno', link: 'giochi/impostore/', colore: '#000000', extra: ['giochi/impostore/parole.js'] },
     { categoria: 'giochi', nome: 'Lupus', descrizione: 'Ruoli segreti e scaletta della notte per il narratore', link: 'giochi/lupus/', colore: '#1F2E8C', extra: ['giochi/lupus/ruoli.js'] },
     { categoria: 'giochi', nome: 'Perudo', descrizione: 'I tuoi dadi sotto il bicchiere, quando quelli veri non bastano', link: 'giochi/perudo/', colore: '#16938C' },
+    { categoria: 'giochi', nome: 'Hex ad Aste', descrizione: 'Hex con le carte vere: chi vince l’asta mette la pedina', link: 'giochi/hex/', colore: '#3D9AF2', icona: 'esagoni' },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A' },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#CFC4E4' },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0' },

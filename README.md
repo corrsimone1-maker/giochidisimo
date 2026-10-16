@@ -13,6 +13,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Giochi | Impostore (parola segreta, pacchetti di parole scelti dalle Impostazioni) | `giochi/impostore/` (parole in `parole.js`) |
 | Giochi | Lupus (30 ruoli tra cui scegliere, distribuzione segreta, scaletta della notte per il narratore) | `giochi/lupus/` (ruoli in `ruoli.js`) |
 | Giochi | Perudo (i propri dadi sotto il bicchiere: si guarda tenendo premuto, si mescola tenendo premuto, −1 dado, calza) | `giochi/perudo/` |
+| Giochi | Hex ad Aste (Hex in cui ogni pedina si conquista con un’asta di carte vere: l’app gestisce solo la scacchiera; si sceglie a mano chi ha vinto l’asta, Pareggio e gettone di priorità, annulla tenendo premuto, 5×5–11×11, mazzo francese o italiano, regolamento con schemi) | `giochi/hex/` |
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
@@ -49,7 +50,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier:** le partite e le impostazioni stanno sul
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
 - **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue

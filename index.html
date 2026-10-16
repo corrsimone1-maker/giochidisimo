@@ -82,6 +82,10 @@ ul.games{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .game .gn{display:block;font-family:var(--display);font-weight:800;font-size:25px;line-height:1.05}
 .game .gd{display:block;margin-top:4px;color:var(--muted);font-size:14.5px;line-height:1.35}
 .game .go{font-size:28px;color:var(--muted);line-height:1}
+/* icona facoltativa (campo icona in giochi.js), tra il testo e la freccia */
+.game.ic{grid-template-columns:8px 1fr auto auto}
+.game .gi{display:block;width:48px;height:48px;margin-right:-4px;color:#4A5878}
+.game .gi svg{display:block;width:100%;height:100%}
 .empty{color:var(--muted)}
 </style>
 </head>
@@ -174,6 +178,18 @@ ART.fascicolo = `<svg viewBox="0 0 120 120" aria-hidden="true">
     </g>
   </svg>`;
 const LETTER = { carte: 'C', dado: 'A', punti: 'P', maschera: 'G', fascicolo: 'E' };
+/* Icone dei singoli giochi nell'elenco (campo icona in giochi.js) */
+const ICONE = {
+  esagoni: `<svg viewBox="0 0 48 48" aria-hidden="true"><g stroke-width="2.2" stroke-linejoin="round">
+    <polygon points="30.1,12.6 27.1,17.8 21,17.8 17.9,12.6 21,7.4 27.1,7.4" fill="#E5493D" stroke="#E5493D"/>
+    <polygon points="30.1,24 27.1,29.2 21,29.2 17.9,24 21,18.8 27.1,18.8" fill="#E5493D" stroke="#E5493D"/>
+    <polygon points="30.1,35.4 27.1,40.6 21,40.6 17.9,35.4 21,30.2 27.1,30.2" fill="none" stroke="currentColor"/>
+    <polygon points="20.2,18.3 17.2,23.5 11.1,23.5 8,18.3 11.1,13.1 17.2,13.1" fill="#3D9AF2" stroke="#3D9AF2"/>
+    <polygon points="20.2,29.7 17.2,34.9 11.1,34.9 8,29.7 11.1,24.5 17.2,24.5" fill="none" stroke="currentColor"/>
+    <polygon points="40,18.3 37,23.5 30.9,23.5 27.8,18.3 30.9,13.1 37,13.1" fill="none" stroke="currentColor"/>
+    <polygon points="40,29.7 37,34.9 30.9,34.9 27.8,29.7 30.9,24.5 37,24.5" fill="#3D9AF2" stroke="#3D9AF2"/>
+  </g></svg>`
+};
 
 function renderHome() {
   $('deck').innerHTML = G.categorie.map(c => {
@@ -193,8 +209,8 @@ function renderCat(id) {
   if (!c) return false;
   const list = G.giochi.filter(g => g.categoria === id);
   $('catName').textContent = c.nome; $('catDesc').textContent = c.descrizione || '';
-  $('games').innerHTML = list.length ? list.map(g => `<li><a class="game" href="${esc(g.link)}" style="--c:${esc(g.colore || '')}">
-      <span class="spine"></span><span><span class="gn">${esc(g.nome)}</span><span class="gd">${esc(g.descrizione || '')}</span></span><span class="go" aria-hidden="true">›</span></a></li>`).join('')
+  $('games').innerHTML = list.length ? list.map(g => { const ic = ICONE[g.icona]; return `<li><a class="game${ic ? ' ic' : ''}" href="${esc(g.link)}" style="--c:${esc(g.colore || '')}">
+      <span class="spine"></span><span><span class="gn">${esc(g.nome)}</span><span class="gd">${esc(g.descrizione || '')}</span></span>${ic ? `<span class="gi">${ic}</span>` : ''}<span class="go" aria-hidden="true">›</span></a></li>`; }).join('')
     : '<li class="empty">Ancora nessun gioco qui.</li>';
   document.title = `${c.nome}, Giochi di Simo`;
   return true;

@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1424">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<title>Hex ad Aste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Tema notte di Giochi di Simo. I colori delle squadre (--t0, --t1 e le loro sfumature)
+   li imposta applicaColori() a partire dalla coppia scelta nelle Impostazioni. */
+:root{
+  --night:#0E1424; --night-2:#1B2540; --night-3:#0B0F1C; --line:rgba(232,226,212,.12);
+  --text:#ECE7DC; --muted:#97A3BA; --gold:#D8A84A; --ink:#0E1424;
+  --cella:#1F2A47; --cella-spenta:#1A233D; --gap:#0E1424;
+  --t0:#E5493D; --t1:#3D9AF2;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;
+  background:radial-gradient(120% 55% at 50% 42%,#18223B 0%,var(--night) 70%)}
+
+/* Barra in alto */
+.top{display:flex;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) 14px 2px}
+.back{flex:none;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
+.title{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;margin:0;font-family:var(--display);font-weight:800;font-size:20px;white-space:nowrap}
+.title svg{width:22px;height:22px;flex:none}
+.links{flex:none;display:flex;align-items:center;gap:2px}
+.linkbtn{padding:8px 4px;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.gear{display:grid;place-items:center;width:38px;height:38px;margin-right:-8px;border:0;background:none;color:var(--muted)}
+.gear svg{width:20px;height:20px}
+@media (max-width:370px){.title span{display:none}}
+
+/* Riga di stato: cosa fare adesso */
+.status{min-height:26px;padding:2px 16px 0;font-size:15px;font-weight:700;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status b{font-weight:800}
+.status.pronto{color:var(--text)}
+
+/* Scacchiera */
+.board{position:relative;flex:1 1 auto;min-height:0;margin:2px 6px 0}
+.board > svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.conta{position:absolute;top:2px;right:8px;text-align:right;font-size:12.5px;line-height:1.35;color:var(--muted);font-weight:600;pointer-events:none}
+.conta b{display:block;font-family:var(--display);font-size:15px;font-weight:800;color:var(--text)}
+.conta.giro em{font-style:normal;color:var(--gold);font-weight:800}
+
+/* Disegno degli esagoni (vale anche per gli schemi del regolamento) */
+.b0{fill:var(--t0)} .b1{fill:var(--t1)}
+.cella{fill:var(--cella);stroke:var(--gap);stroke-width:.1;stroke-linejoin:round}
+.gioco .cella{transition:fill .15s;cursor:pointer}
+.gioco:not(.arma) .cella.vuota{fill:var(--cella-spenta)}
+.gioco.arma .cella.vuota{fill:var(--arma)}
+.cella.o0{fill:var(--t0-cella)} .cella.o1{fill:var(--t1-cella)}
+.pedine,.cammino,.bordi,.segni{pointer-events:none}
+.pb0{fill:var(--t0)} .pb1{fill:var(--t1)}
+.pedina .orlo{fill:none;stroke:rgba(0,0,0,.4);stroke-width:.05}
+.pedina .ult{fill:#FFF8EA;opacity:.9}
+.tv.finita .pedina:not(.via){opacity:.4}
+.tv.finita .cella{fill:var(--cella-spenta)}
+.tv.finita .cella.via{fill:var(--tw-cella)}
+.pedina.via .orlo{stroke:#FFF8EA;stroke-width:.08;stroke-opacity:.9}
+.nuova{animation:pop .24s cubic-bezier(.2,.9,.3,1.25);transform-box:fill-box;transform-origin:center}
+@keyframes pop{from{transform:scale(.35);opacity:0}}
+.cammino polyline{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cammino .alone{stroke:var(--tw);stroke-width:.62;opacity:.4}
+.cammino .linea{stroke:#FFF8EA;stroke-width:.13;opacity:.95}
+.tv.finita .cammino{animation:accendi .6s ease-out}
+@keyframes accendi{from{opacity:0}}
+.segni .anello{fill:none;stroke-width:.09;stroke-dasharray:.2 .14}
+.segni .anello.s0{stroke:var(--t0)} .segni .anello.s1{stroke:var(--t1)}
+.segni .punto{fill:var(--muted);opacity:.85}
+
+/* Comandi in basso */
+.ctrl{padding:8px 12px calc(10px + env(safe-area-inset-bottom))}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.team{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:66px;padding:0 8px;border-radius:16px;
+  border:2px solid var(--c);background:var(--night-2);color:var(--c);transition:background .15s,color .15s,box-shadow .15s,opacity .15s}
+.team .tn{font-family:var(--display);font-weight:800;font-size:23px;letter-spacing:.04em;line-height:1;text-transform:uppercase}
+.team .ts{font-size:12px;font-weight:700;color:var(--muted);line-height:1.1}
+.team[aria-pressed="true"]{background:var(--c);color:var(--ink);box-shadow:0 0 0 3px rgba(255,255,255,.12),0 8px 26px -6px var(--c)}
+.team[aria-pressed="true"] .ts{color:var(--ink);opacity:.8}
+.teams.uno .team[aria-pressed="false"]{opacity:.45}
+.teams.richiama .team{animation:richiama .45s ease-in-out}
+@keyframes richiama{20%{transform:translateY(-5px)}45%{transform:translateY(0)}65%{transform:translateY(-3px)}}
+
+.win{display:flex;align-items:center;justify-content:space-between;gap:12px;height:66px;padding:0 10px 0 16px;border-radius:16px;
+  border:2px solid var(--tw);background:linear-gradient(100deg,var(--tw-cella),var(--night-2) 75%);box-shadow:0 10px 30px -10px var(--tw)}
+.win .wt{min-width:0}
+.win .wn{font-family:var(--display);font-weight:800;font-size:25px;line-height:1;color:var(--tw);white-space:nowrap}
+.win .ws{margin-top:4px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.win button{flex:none;height:46px;padding:0 14px;border-radius:12px;border:0;background:var(--gold);color:var(--ink);font-weight:800;font-size:15px}
+.win.entra{animation:vince .5s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes vince{from{opacity:0;transform:translateY(10px) scale(.96)}}
+
+.row2{display:grid;grid-template-columns:1.15fr 1fr;gap:10px;margin-top:10px}
+.btn{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:52px;padding:0 10px;
+  border-radius:14px;border:1px solid var(--line);background:var(--night-2);font-weight:800;font-size:15.5px;line-height:1.15;text-align:center}
+.btn small{font-size:11.5px;font-weight:700;color:var(--muted)}
+.btn .lbl{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px}
+.btn.off{opacity:.38}
+.btn:disabled{opacity:.38}
+.chip{display:inline-flex;align-items:center;gap:5px}
+.chip i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--g);box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+/* Tasto da tenere premuto: la barra si riempie, se lasci prima torna indietro */
+.hold{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+.hold .fill{position:absolute;inset:0;background:rgba(216,168,74,.42);transform:scaleX(0);transform-origin:left;transition:transform .16s ease-out}
+.hold.carica .fill{transform:scaleX(1);transition:transform var(--ms,1200ms) linear}
+
+.toast{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:12px;width:max-content;max-width:92vw;
+  padding:10px 12px 10px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.toast button{flex:none;padding:6px 10px;border:0;border-radius:8px;background:#1A1F2B;color:#ECE7DC;font-weight:800;font-size:13.5px}
+
+/* Finestre: impostazioni e regolamento */
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,12,.74)}
+.sheet{width:min(560px,100%);max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--night-2);border:1px solid var(--line);border-bottom:0;
+  border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+/* intestazione sempre visibile mentre il foglio scorre (Chiudi, Reset) */
+.sheet .hd{position:sticky;top:-18px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:-18px -16px 0;padding:18px 16px 8px;background:var(--night-2);border-radius:20px 20px 0 0;box-shadow:0 10px 12px -12px rgba(0,0,0,.7)}
+.sheet h2{margin:0;font-family:var(--display);font-weight:800;font-size:25px}
+.sheet h3{margin:20px 0 9px;font-size:14px;color:var(--muted);font-weight:700}
+.sheet p.note{margin:8px 0 0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:#F0A49A}
+.seg{display:grid;gap:6px}
+.seg.c4{grid-template-columns:repeat(4,1fr)} .seg.c2{grid-template-columns:1fr 1fr}
+.seg button{height:46px;padding:0 6px;border-radius:11px;border:1px solid var(--line);background:var(--night-3);font-weight:800;font-size:15px}
+.seg button small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
+.seg button[aria-pressed="true"]{border-color:var(--gold);background:#2A2C33;box-shadow:inset 0 0 0 1px var(--gold)}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pairs button{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:12px;border:1px solid var(--line);background:var(--night-3);font-weight:700;font-size:14px}
+.pairs i{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--c);box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.pairs button[aria-pressed="true"]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:#2A2C33}
+.conferma{margin-top:10px;padding:12px;border-radius:12px;border:1px solid rgba(240,164,154,.45);background:rgba(229,73,61,.08)}
+.conferma p{margin:0 0 10px;font-size:14px;line-height:1.45;font-weight:600}
+.conferma .seg button{height:44px}
+.rowb{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin-top:22px}
+.rowb .btn{height:50px}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+
+/* Regolamento */
+.rules h3{margin:22px 0 6px;font-family:var(--display);font-size:19px;font-weight:800;color:var(--gold)}
+.rules h3:first-of-type{margin-top:12px}
+.rules p,.rules li{font-size:15px;line-height:1.55;color:#D9D3C7}
+.rules p{margin:0 0 8px}
+.rules ul,.rules ol{margin:0 0 8px;padding-left:21px}
+.rules li{margin:3px 0}
+.rules b{color:var(--text)}
+.rules .t0{color:var(--t0);font-weight:800} .rules .t1{color:var(--t1);font-weight:800}
+.schema{display:flex;justify-content:center;margin:6px 0 10px;padding:10px;border-radius:14px;background:var(--night-3)}
+.schema svg{display:block;width:100%;height:auto}
+.schema.piccolo svg{max-width:210px}
+.schema.medio svg{max-width:250px}
+.didas{margin:-4px 0 10px;text-align:center;font-size:13px;color:var(--muted)}
+.attenzione{margin:8px 0 10px;padding:10px 12px;border-radius:12px;border-left:4px solid var(--gold);background:rgba(216,168,74,.09);font-size:14.5px;line-height:1.5}
+.carte{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px;margin:6px 0 10px}
+.carte span{padding:6px 2px;border-radius:8px;background:var(--night-3);text-align:center;font-size:12px;font-weight:700;color:var(--muted)}
+.carte b{display:block;font-family:var(--display);font-size:18px;color:var(--text)}
+.sheet .fine{margin-top:18px}
+@media (max-height:680px){
+  .top{padding-top:max(4px,env(safe-area-inset-top))}
+  .back,.linkbtn{padding-top:6px;padding-bottom:6px}
+  .status{min-height:22px;font-size:14px}
+  .ctrl{padding-top:6px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .team,.win{height:54px} .team .tn{font-size:20px} .win .wn{font-size:22px} .win button{height:40px}
+  .row2{margin-top:8px} .row2 .btn{height:44px}
+}
+@media (prefers-reduced-motion:reduce){
+  .nuova,.win.entra,.teams.richiama .team,.tv.finita .cammino{animation:none}
+  .hold.carica .fill{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <h1 class="title"><svg viewBox="0 0 48 48" aria-hidden="true" id="titleIcon"></svg><span>Hex ad Aste</span></h1>
+    <div class="links">
+      <button class="linkbtn" id="rulesBtn">Come si gioca</button>
+      <button class="gear" id="setBtn" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    </div>
+  </div>
+
+  <div class="status" id="status" aria-live="polite"></div>
+
+  <div class="board" id="board">
+    <div class="conta" id="conta"></div>
+  </div>
+
+  <div class="ctrl">
+    <div class="teams" id="teams">
+      <button class="team" id="team0" data-t="0" aria-pressed="false"><span class="tn" id="tn0">Rosso</span><span class="ts" id="ts0">alto ↕ basso</span></button>
+      <button class="team" id="team1" data-t="1" aria-pressed="false"><span class="tn" id="tn1">Blu</span><span class="ts" id="ts1">sinistra ↔ destra</span></button>
+    </div>
+    <div class="win" id="win" hidden>
+      <div class="wt"><div class="wn" id="winName"></div><div class="ws" id="winSub"></div></div>
+      <button id="winNew">Nuova partita</button>
+    </div>
+    <div class="row2">
+      <button class="btn hold" id="undoBtn"><span class="fill"></span><span class="lbl">Annulla mossa<small>tieni premuto</small></span></button>
+      <button class="btn" id="tieBtn"><span class="lbl">Pareggio<small class="chip" id="tieChip"><i></i><span></span></small></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toastText"></span><button id="toastUndo" hidden>Annulla</button></div>
+
+<!-- Impostazioni -->
+<div class="overlay velo" id="settings" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="hd"><h2 id="setTitle">Impostazioni</h2><button class="reset" id="resetBtn">Reset</button></div>
+    <h3>Scacchiera</h3>
+    <div class="seg c4" id="sizeSeg"></div>
+    <div class="conferma" id="sizeAsk" hidden>
+      <p id="sizeAskText"></p>
+      <div class="seg c2"><button id="sizeNo">Lascia stare</button><button id="sizeYes"></button></div>
+    </div>
+    <h3>Colori delle squadre</h3>
+    <div class="pairs" id="pairs"></div>
+    <p class="note">Cambiare i colori non tocca la partita in corso.</p>
+    <h3>Mazzo</h3>
+    <div class="seg c2" id="deckSeg">
+      <button data-m="francese">Francese<small>52 carte</small></button>
+      <button data-m="italiano">Italiano<small>40 carte</small></button>
+    </div>
+    <p class="note" id="deckNote"></p>
+    <h3>Gettone di priorità</h3>
+    <div class="seg c2" id="prioSeg"><button data-g="0"></button><button data-g="1"></button></div>
+    <p class="note">Di solito lo passa il tasto «Pareggio»: qui si corregge a mano.</p>
+    <div class="rowb">
+      <button class="btn hold" id="newBtn"><span class="fill"></span><span class="lbl">Nuova partita<small>tieni premuto</small></span></button>
+      <button class="btn primary" id="setDone">Fatto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Regolamento -->
+<div class="overlay velo" id="rules" hidden>
+  <div class="sheet rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+    <div class="hd"><h2 id="rulesTitle">Come si gioca</h2><button class="reset" id="rulesX" style="text-decoration:none;font-size:15px;font-weight:700;color:var(--gold)">Chiudi</button></div>
+    <div id="rulesBody"></div>
+    <button class="btn primary fine" id="rulesDone" style="width:100%">Torna alla partita</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* =====================================================================
+   HEX AD ASTE
+   Variante di Hex in cui il diritto di mettere una pedina si vince con
+   un'asta di carte vere. L'app gestisce solo la scacchiera: non conosce
+   le carte e non sceglie mai da sola chi muove.
+
+   Dati in localStorage:
+     gds-hex          impostazioni { n, colori, mazzo }
+     gds-hex-partita  partita in corso { n, mosse: [[casella, squadra], ...], sel, gettone }
+   Squadra 0 = quella che collega alto e basso (Rosso di base),
+   squadra 1 = quella che collega sinistra e destra (Blu di base).
+   ===================================================================== */
+const KEY = 'gds-hex', KEYP = 'gds-hex-partita';
+const MISURE = [5, 7, 9, 11];
+const COPPIE = {
+  rossoblu:     { nomi: ['Rosso', 'Blu'],     colori: ['#E5493D', '#3D9AF2'] },
+  arancioviola: { nomi: ['Arancio', 'Viola'], colori: ['#F0913A', '#A27AF5'] },
+  oroturchese:  { nomi: ['Oro', 'Turchese'],  colori: ['#E8C24A', '#22BFC8'] },
+  rosaverde:    { nomi: ['Rosa', 'Verde'],    colori: ['#EE6EA7', '#3DBE79'] }
+};
+const MAZZI = {
+  francese: { nome: 'francese', carte: 26, semi: ['cuori e quadri', 'picche e fiori'],
+    regola: 'Asso = 1, carte numeriche = valore scritto, Jack = 11, Donna = 12, Re = 13',
+    valori: [['1', 'Asso'], ['2–10', 'numeri'], ['11', 'Jack'], ['12', 'Donna'], ['13', 'Re']] },
+  italiano: { nome: 'italiano', carte: 20, semi: ['coppe e denari', 'spade e bastoni'],
+    regola: 'Asso = 1, dal 2 al 7 = valore scritto, Fante = 8, Cavallo = 9, Re = 10',
+    valori: [['1', 'Asso'], ['2–7', 'numeri'], ['8', 'Fante'], ['9', 'Cavallo'], ['10', 'Re']] }
+};
+const DEF = { n: 5, colori: 'rossoblu', mazzo: 'francese' };
+const ATTESA_ANNULLA = 1200;   // millisecondi da tenere premuto «Annulla mossa»
+
+/* ---------------------------------------------------------------------
+   GEOMETRIA
+   Casella (r, c): riga r dall'alto, colonna c da sinistra, indice r·N + c.
+   Esagoni con il lato in alto (lato = 1). Centro della casella:
+       x = 1,5·c        y = √3·(r + c/2)
+   Le colonne sono verticali e ognuna scende di mezza casella rispetto a
+   quella a sinistra: il rombo ha i bordi sinistro e destro verticali e
+   quelli alto e basso inclinati di 30°. È il rombo classico ruotato di 90°,
+   così le caselle vengono più grandi su un telefono in verticale.
+   Due caselle sono vicine (hanno un lato in comune) esattamente quando
+   (dr, dc) è una di queste sei direzioni:
+   ------------------------------------------------------------------- */
+const R3 = Math.sqrt(3);
+const DIREZIONI = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, 1], [1, -1]];
+function vicini(N, i) {
+  const r = Math.floor(i / N), c = i % N, out = [];
+  for (const [dr, dc] of DIREZIONI) {
+    const rr = r + dr, cc = c + dc;
+    if (rr >= 0 && rr < N && cc >= 0 && cc < N) out.push(rr * N + cc);   // niente "a capo" tra le righe
+  }
+  return out;
+}
+/* Squadra 0: dalla riga 0 alla riga N−1. Squadra 1: dalla colonna 0 alla N−1.
+   Le caselle d'angolo stanno su due bordi, ma ogni squadra guarda solo i suoi:
+   una pedina rossa sull'angolo in alto a destra tocca il bordo destro, che per
+   il Rosso non conta. */
+const partenza = (N, i, t) => t === 0 ? Math.floor(i / N) === 0 : i % N === 0;
+const arrivo = (N, i, t) => t === 0 ? Math.floor(i / N) === N - 1 : i % N === N - 1;
+
+/* Ricerca in ampiezza da tutte le pedine della squadra sul bordo di partenza.
+   Restituisce il cammino più corto (indici delle caselle, dal bordo di partenza
+   a quello di arrivo) oppure null se i due bordi non sono collegati. */
+function cammino(N, celle, t) {
+  const prima = new Int32Array(N * N).fill(-2);   // -2 = non vista, -1 = inizio
+  const coda = [];
+  for (let i = 0; i < N * N; i++) if (celle[i] === t && partenza(N, i, t)) { prima[i] = -1; coda.push(i); }
+  for (let h = 0; h < coda.length; h++) {
+    const i = coda[h];
+    if (arrivo(N, i, t)) {
+      const p = [];
+      for (let j = i; j !== -1; j = prima[j]) p.push(j);
+      return p.reverse();
+    }
+    for (const j of vicini(N, i)) if (celle[j] === t && prima[j] === -2) { prima[j] = i; coda.push(j); }
+  }
+  return null;
+}
+function celleDi(g) {
+  const a = new Int8Array(g.n * g.n).fill(-1);
+  for (const [i, t] of g.mosse) a[i] = t;
+  return a;
+}
+/* In Hex le due squadre non possono essere collegate insieme (una catena
+   alto-basso e una sinistra-destra si incrocerebbero), quindi c'è al più un vincitore. */
+function esito(g) {
+  const celle = celleDi(g);
+  for (const t of [0, 1]) { const p = cammino(g.n, celle, t); if (p) return { celle, vince: t, via: p }; }
+  return { celle, vince: null, via: null };
+}
+
+/* ---------------------------------------------------------------------
+   DATI
+   ------------------------------------------------------------------- */
+function leggi(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function scrivi(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function pulisciPref(p) {
+  p = p && typeof p === 'object' ? p : {};
+  return { n: MISURE.includes(p.n) ? p.n : DEF.n, colori: COPPIE[p.colori] ? p.colori : DEF.colori, mazzo: MAZZI[p.mazzo] ? p.mazzo : DEF.mazzo };
+}
+const nuovaPartita = n => ({ n, mosse: [], sel: null, gettone: 0 });
+/* Una partita salvata si usa solo se è coerente: caselle valide e diverse,
+   squadre 0/1, e nessuna mossa dopo una vittoria (in quel caso si taglia lì). */
+function pulisciPartita(g) {
+  if (!g || typeof g !== 'object' || !MISURE.includes(g.n) || !Array.isArray(g.mosse)) return null;
+  const N = g.n, celle = new Int8Array(N * N).fill(-1), mosse = [];
+  for (const m of g.mosse) {
+    if (!Array.isArray(m) || m.length !== 2) return null;
+    const [i, t] = m;
+    if (!Number.isInteger(i) || i < 0 || i >= N * N || (t !== 0 && t !== 1) || celle[i] !== -1) return null;
+    celle[i] = t; mosse.push([i, t]);
+    if (cammino(N, celle, t)) break;
+  }
+  return { n: N, mosse, sel: g.sel === 0 || g.sel === 1 ? g.sel : null, gettone: g.gettone === 1 ? 1 : 0 };
+}
+let P = pulisciPref(leggi(KEY));
+let G = pulisciPartita(leggi(KEYP)) || nuovaPartita(P.n);
+P.n = G.n;
+const salva = () => { scrivi(KEY, P); scrivi(KEYP, G); };
+let S = esito(G);              // stato calcolato: celle, vincitore, cammino vincente
+let ultimaNuova = -1;          // pedina appena messa, per la piccola animazione
+
+const nome = t => COPPIE[P.colori].nomi[t];
+const colore = t => COPPIE[P.colori].colori[t];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------------------------------------------------------------------
+   COLORI
+   ------------------------------------------------------------------- */
+function mescola(a, b, t) {   // t = quanto di a
+  const x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+  const ch = s => Math.round(((x >> s) & 255) * t + ((y >> s) & 255) * (1 - t));
+  return '#' + [16, 8, 0].map(s => ch(s).toString(16).padStart(2, '0')).join('');
+}
+function applicaColori() {
+  const st = document.documentElement.style;
+  for (const t of [0, 1]) {
+    st.setProperty('--t' + t, colore(t));
+    st.setProperty('--t' + t + '-cella', mescola(colore(t), '#1F2A47', .3));
+  }
+}
+
+/* ---------------------------------------------------------------------
+   DISEGNO (SVG, unità = lato dell'esagono)
+   ------------------------------------------------------------------- */
+const BORDO = 0.42;   // spessore delle strisce colorate fuori dalla scacchiera
+const f3 = v => String(Math.round(v * 1000) / 1000);
+const pt = p => f3(p[0]) + ',' + f3(p[1]);
+const centroRC = (r, c) => [1.5 * c, R3 * (r + c / 2)];
+function vertice(r, c, j) { const [x, y] = centroRC(r, c), a = j * Math.PI / 3; return [x + Math.cos(a), y + Math.sin(a)]; }
+function esagono(x, y, k) { const a = []; for (let j = 0; j < 6; j++) a.push([x + k * Math.cos(j * Math.PI / 3), y + k * Math.sin(j * Math.PI / 3)]); return a.map(pt).join(' '); }
+const meta = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+/* Contorno esterno della scacchiera, in senso orario. Vertici dell'esagono:
+   0 destra, 1 basso-destra, 2 basso-sinistra, 3 sinistra, 4 alto-sinistra, 5 alto-destra.
+   Negli angoli ottusi un lato di confine guarda fuori da due bordi insieme: lo si
+   divide a metà, esattamente dove passa la linea centro-angolo che separa i colori. */
+function contorno(N) {
+  const alto = [], destra = [], basso = [], sinistra = [];
+  for (let c = 0; c < N; c++) alto.push(vertice(0, c, 4), vertice(0, c, 5));
+  const mTR = meta(vertice(0, N - 1, 5), vertice(0, N - 1, 0));
+  alto.push(mTR);
+  for (let r = 0; r < N; r++) destra.push(vertice(r, N - 1, 0), vertice(r, N - 1, 1));
+  const mBL = meta(vertice(N - 1, 0, 3), vertice(N - 1, 0, 2));
+  basso.push(mBL);
+  for (let c = 0; c < N; c++) basso.push(vertice(N - 1, c, 2), vertice(N - 1, c, 1));
+  for (let r = 0; r < N; r++) sinistra.push(vertice(r, 0, 4), vertice(r, 0, 3));
+  sinistra.push(mBL);
+  return alto.concat(destra, basso.reverse(), sinistra.reverse());
+}
+/* I quattro triangoli colorati dietro la scacchiera: dal centro del rombo verso
+   i suoi angoli. Una maschera li riduce a una striscia lungo il contorno. */
+function triangoli(N) {
+  const D = 4, K = N - 1;
+  const TL = [-D, -R3 * D], TR = [1.5 * K + D, (1.5 * K - D) / R3],
+    BR = [1.5 * K + D, (4.5 * K + 3 * D) / R3], BL = [-D, (3 * K + D) / R3];
+  const C = [0.75 * K, 0.75 * R3 * K];
+  return [[0, [C, TL, TR]], [1, [C, TR, BR]], [0, [C, BR, BL]], [1, [C, BL, TL]]];
+}
+function riquadro(N) {
+  const m = 1 + BORDO + 0.06, K = N - 1;
+  const x0 = -m, y0 = -R3 / 2 - BORDO - 0.06, x1 = 1.5 * K + m, y1 = R3 * 1.5 * K + R3 / 2 + BORDO + 0.06;
+  return [x0, y0, x1 - x0, y1 - y0];
+}
+let uid = 0;
+/* Scacchiera completa N×N. opt: { celle, via, ultima, segni:{i:'anello0'|'punto'}, classe, stile } */
+function svgTavola(N, opt = {}) {
+  const id = 'tv' + (++uid), [x0, y0, w, h] = riquadro(N);
+  const pts = a => a.map(pt).join(' ');
+  const sulla = new Set(opt.via || []);
+  let celle = '';
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const [x, y] = centroRC(r, c), i = r * N + c, t = opt.celle ? opt.celle[i] : -1;
+    celle += `<polygon class="cella ${t === 0 || t === 1 ? 'o' + t : 'vuota'}${sulla.has(i) ? ' via' : ''}" data-i="${i}" points="${esagono(x, y, 1)}"/>`;
+  }
+  return `<svg class="tv ${opt.classe || ''}"${opt.stile ? ` style="${opt.stile}"` : ''} viewBox="${f3(x0)} ${f3(y0)} ${f3(w)} ${f3(h)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scacchiera ${N}×${N}">
+    <defs>
+      <mask id="${id}m" maskUnits="userSpaceOnUse" x="${f3(x0)}" y="${f3(y0)}" width="${f3(w)}" height="${f3(h)}">
+        <polygon points="${pts(contorno(N))}" fill="#fff" stroke="#fff" stroke-width="${2 * BORDO}" stroke-linejoin="round"/>
+      </mask>
+      <radialGradient id="${id}g" cx=".36" cy=".3" r=".78">
+        <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".3"/>
+      </radialGradient>
+    </defs>
+    <g class="bordi" mask="url(#${id}m)">${triangoli(N).map(([t, a]) => `<polygon class="b${t}" points="${pts(a)}"/>`).join('')}</g>
+    <g class="celle">${celle}</g>
+    <g class="pedine" data-g="${id}g">${opt.celle ? svgPedine(N, opt.celle, opt.via, opt.ultima, id + 'g') : ''}</g>
+    <g class="segni">${opt.segni ? svgSegni(N, opt.segni) : ''}</g>
+    <g class="cammino">${opt.via ? svgCammino(N, opt.via) : ''}</g>
+  </svg>`;
+}
+function svgPedine(N, celle, via, ultima, grad) {
+  const sulla = new Set(via || []);
+  let s = '';
+  for (let i = 0; i < N * N; i++) {
+    const t = celle[i]; if (t !== 0 && t !== 1) continue;
+    const [x, y] = centroRC(Math.floor(i / N), i % N);
+    s += `<g class="pedina${sulla.has(i) ? ' via' : ''}${i === ultimaNuova && ultima === i ? ' nuova' : ''}">
+      <circle class="pb${t}" cx="${f3(x)}" cy="${f3(y)}" r=".6"/><circle cx="${f3(x)}" cy="${f3(y)}" r=".6" fill="url(#${grad})"/>
+      <circle class="orlo" cx="${f3(x)}" cy="${f3(y)}" r=".6"/>${i === ultima ? `<circle class="ult" cx="${f3(x)}" cy="${f3(y)}" r=".13"/>` : ''}</g>`;
+  }
+  return s;
+}
+function svgCammino(N, via) {
+  const p = via.map(i => pt(centroRC(Math.floor(i / N), i % N))).join(' ');
+  return `<polyline class="alone" points="${p}"/><polyline class="linea" points="${p}"/>`;
+}
+function svgSegni(N, segni) {
+  let s = '';
+  for (const [i, tipo] of Object.entries(segni)) {
+    const [x, y] = centroRC(Math.floor(i / N), i % N);
+    if (tipo === 'punto') s += `<circle class="punto" cx="${f3(x)}" cy="${f3(y)}" r=".16"/>`;
+    else s += `<circle class="anello s${tipo.slice(-1)}" cx="${f3(x)}" cy="${f3(y)}" r=".52"/>`;
+  }
+  return s;
+}
+
+/* ---------------------------------------------------------------------
+   SCACCHIERA DELLA PARTITA
+   ------------------------------------------------------------------- */
+const board = $('board');
+let tv = null, tvN = 0;
+function costruisci() {
+  board.querySelectorAll('svg').forEach(e => e.remove());
+  board.insertAdjacentHTML('afterbegin', svgTavola(G.n, { classe: 'gioco' }));
+  tv = board.querySelector('svg'); tvN = G.n;
+}
+function disegna() {
+  if (tvN !== G.n || !tv) costruisci();
+  const N = G.n, finita = S.vince !== null, sulla = new Set(S.via || []);
+  tv.classList.toggle('finita', finita);
+  tv.classList.toggle('arma', !finita && G.sel !== null);
+  if (G.sel !== null) tv.style.setProperty('--arma', mescola(colore(G.sel), '#24304F', .13));
+  if (finita) { tv.style.setProperty('--tw', colore(S.vince)); tv.style.setProperty('--tw-cella', mescola(colore(S.vince), '#1F2A47', .38)); }
+  tv.querySelectorAll('.cella').forEach(el => {
+    const i = +el.dataset.i, t = S.celle[i];
+    el.setAttribute('class', 'cella ' + (t === -1 ? 'vuota' : 'o' + t) + (sulla.has(i) ? ' via' : ''));
+  });
+  const peds = tv.querySelector('.pedine'), ultima = G.mosse.length ? G.mosse[G.mosse.length - 1][0] : -1;
+  peds.innerHTML = svgPedine(N, S.celle, S.via, ultima, peds.dataset.g);
+  tv.querySelector('.cammino').innerHTML = finita ? svgCammino(N, S.via) : '';
+}
+
+/* ---------------------------------------------------------------------
+   INTERFACCIA
+   ------------------------------------------------------------------- */
+const ICONA = `<g stroke-width="2.2" stroke-linejoin="round">
+  <polygon points="30.1,12.6 27.1,17.8 21,17.8 17.9,12.6 21,7.4 27.1,7.4" fill="#E5493D" stroke="#E5493D"/>
+  <polygon points="30.1,24 27.1,29.2 21,29.2 17.9,24 21,18.8 27.1,18.8" fill="#E5493D" stroke="#E5493D"/>
+  <polygon points="30.1,35.4 27.1,40.6 21,40.6 17.9,35.4 21,30.2 27.1,30.2" fill="none" stroke="currentColor"/>
+  <polygon points="20.2,18.3 17.2,23.5 11.1,23.5 8,18.3 11.1,13.1 17.2,13.1" fill="#3D9AF2" stroke="#3D9AF2"/>
+  <polygon points="20.2,29.7 17.2,34.9 11.1,34.9 8,29.7 11.1,24.5 17.2,24.5" fill="none" stroke="currentColor"/>
+  <polygon points="40,18.3 37,23.5 30.9,23.5 27.8,18.3 30.9,13.1 37,13.1" fill="none" stroke="currentColor"/>
+  <polygon points="40,29.7 37,34.9 30.9,34.9 27.8,29.7 30.9,24.5 37,24.5" fill="#3D9AF2" stroke="#3D9AF2"/>
+</g>`;
+$('titleIcon').innerHTML = ICONA;
+$('titleIcon').style.color = '#5B6A8C';
+
+function aggiorna() {
+  S = esito(G);
+  applicaColori();
+  disegna();
+  const finita = S.vince !== null, m = G.mosse.length;
+  // pulsanti delle squadre
+  for (const t of [0, 1]) {
+    const b = $('team' + t);
+    b.style.setProperty('--c', colore(t));
+    b.setAttribute('aria-pressed', String(G.sel === t));
+    $('tn' + t).textContent = nome(t);
+    $('ts' + t).textContent = G.sel === t ? 'ha vinto l’asta' : (t === 0 ? 'alto ↕ basso' : 'sinistra ↔ destra');
+  }
+  $('teams').classList.toggle('uno', G.sel !== null);
+  $('teams').hidden = finita; $('win').hidden = !finita;
+  // riga di stato
+  const st = $('status');
+  st.classList.toggle('pronto', G.sel !== null && !finita);
+  if (finita) st.textContent = 'Partita finita';
+  else if (G.sel === null) st.textContent = 'Chi ha vinto l’asta?';
+  else st.innerHTML = `Tocca una casella libera per <b style="color:${colore(G.sel)}">${esc(nome(G.sel))}</b>`;
+  // aste e carte: ogni asta finisce con una pedina, quindi aste giocate = mosse
+  const D = MAZZI[P.mazzo].carte, conta = $('conta');
+  conta.hidden = finita;
+  const giro = m > 0 && m % D === 0;
+  conta.classList.toggle('giro', giro);
+  conta.innerHTML = `<b>Asta ${m + 1}</b>` + (giro ? '<em>Riprendete le carte</em>' : `${D - (m % D)} carte a squadra`);
+  // vittoria
+  if (finita) {
+    $('win').style.setProperty('--tw', colore(S.vince));
+    $('win').style.setProperty('--tw-cella', mescola(colore(S.vince), '#1B2540', .3));
+    $('winName').textContent = `Vince ${nome(S.vince)}!`;
+    $('winSub').textContent = `${S.vince === 0 ? 'alto e basso collegati' : 'sinistra e destra collegate'} · ${m} ${m === 1 ? 'asta' : 'aste'}`;
+  }
+  // tasti in basso
+  $('undoBtn').classList.toggle('off', m === 0);
+  $('tieBtn').disabled = finita;
+  $('tieChip').style.setProperty('--g', colore(G.gettone));
+  $('tieChip').lastElementChild.textContent = 'gettone: ' + nome(G.gettone);
+}
+
+/* Scegliere chi ha vinto l'asta. Ritoccare la squadra scelta la toglie. */
+document.querySelectorAll('.team').forEach(b => b.addEventListener('click', () => {
+  if (S.vince !== null) return;
+  chiudiToast();
+  const t = +b.dataset.t;
+  G.sel = G.sel === t ? null : t;
+  salva(); aggiorna();
+}));
+
+/* Toccare una casella: vale solo se si alza il dito sulla stessa casella. */
+let tocco = null;
+board.addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button > 0) { tocco = null; return; }   // due dita insieme: non vale
+  const el = e.target.closest && e.target.closest('.cella');
+  tocco = el ? { id: e.pointerId, i: +el.dataset.i } : null;
+});
+board.addEventListener('pointerup', e => {
+  if (!tocco || tocco.id !== e.pointerId) return;
+  const sotto = document.elementFromPoint(e.clientX, e.clientY), el = sotto && sotto.closest && sotto.closest('.cella');
+  const i = tocco.i; tocco = null;
+  if (el && +el.dataset.i === i) piazza(i);
+});
+board.addEventListener('pointercancel', () => { tocco = null; });
+board.addEventListener('contextmenu', e => e.preventDefault());
+
+function piazza(i) {
+  if (S.vince !== null) { toast('Partita finita. Per riaprirla tieni premuto «Annulla mossa».'); return; }
+  if (G.sel === null) { richiama(); return; }
+  if (S.celle[i] !== -1) return;   // casella già occupata
+  chiudiToast();
+  const t = G.sel;
+  G.mosse.push([i, t]);
+  G.sel = null;                     // si torna a «Chi ha vinto l'asta?»: nessuna scelta automatica
+  ultimaNuova = i;
+  salva(); aggiorna();
+  ultimaNuova = -1;
+  if (S.vince !== null) {
+    const w = $('win'); w.classList.remove('entra'); void w.offsetWidth; w.classList.add('entra');
+    if (navigator.vibrate) try { navigator.vibrate([30, 60, 30, 60, 80]); } catch (e) {}
+  } else if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+}
+function richiama() {
+  const tb = $('teams'); tb.classList.remove('richiama'); void tb.offsetWidth; tb.classList.add('richiama');
+  toast('Prima tocca chi ha vinto l’asta: ' + nome(0) + ' o ' + nome(1));
+}
+
+/* Annulla mossa: toglie solo l'ultima pedina e torna a com'era subito prima,
+   con la sua squadra di nuovo selezionata. Si può ripetere, anche a partita finita. */
+function annulla() {
+  if (!G.mosse.length) { toast('Nessuna mossa da annullare'); return; }
+  chiudiToast();
+  const [, t] = G.mosse.pop();
+  G.sel = t;
+  salva(); aggiorna();
+  toast(`Tolta l’ultima pedina di ${nome(t)}: tocca la casella giusta o cambia squadra`);
+  if (navigator.vibrate) try { navigator.vibrate(20); } catch (e) {}
+}
+
+/* Pareggio: vince l'asta chi ha il gettone, poi il gettone passa all'altra squadra. */
+$('tieBtn').addEventListener('click', () => {
+  if (S.vince !== null) return;
+  const prima = { sel: G.sel, gettone: G.gettone, mosse: G.mosse.length }, h = G.gettone;
+  G.sel = h; G.gettone = 1 - h;
+  salva(); aggiorna();
+  toast(`Pareggio: vince ${nome(h)}, che aveva il gettone. Ora il gettone è di ${nome(1 - h)}.`, () => {
+    if (G.mosse.length !== prima.mosse) return;
+    G.sel = prima.sel; G.gettone = prima.gettone; salva(); aggiorna();
+  });
+});
+
+function ricomincia() {
+  G = nuovaPartita(P.n);
+  salva(); aggiorna();
+}
+$('winNew').addEventListener('click', () => { ricomincia(); toast(`Nuova partita ${P.n}×${P.n}`); });
+
+/* ---------- Tasti da tenere premuti ---------- */
+function tieniPremuto(btn, ms, azione, aiuto) {
+  let t = null, inizio = 0;
+  const via = () => { clearTimeout(t); t = null; btn.classList.remove('carica'); };
+  const parti = () => {
+    via(); inizio = Date.now();
+    btn.style.setProperty('--ms', ms + 'ms');
+    void btn.offsetWidth;
+    btn.classList.add('carica');
+    t = setTimeout(() => { via(); azione(); }, ms);
+  };
+  const lascia = () => {
+    if (!t) return;
+    const presto = Date.now() - inizio < ms;
+    via();
+    if (presto && aiuto) toast(aiuto);
+  };
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); if (e.button > 0) return; parti(); });
+  btn.addEventListener('pointerup', lascia);
+  btn.addEventListener('pointercancel', via);
+  btn.addEventListener('pointerleave', lascia);
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+  btn.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); parti(); } });
+  btn.addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') lascia(); });
+}
+tieniPremuto($('undoBtn'), ATTESA_ANNULLA, annulla, 'Per annullare tieni premuto finché la barra si riempie');
+tieniPremuto($('newBtn'), 800, () => { ricomincia(); $('settings').hidden = true; toast(`Nuova partita ${P.n}×${P.n}`); }, 'Tieni premuto per cominciare una nuova partita');
+
+/* ---------- Avvisi ---------- */
+let toastT = null, toastAzione = null;
+function toast(msg, azione) {
+  $('toastText').textContent = msg;
+  toastAzione = azione || null;
+  $('toastUndo').hidden = !azione;
+  $('toast').hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(chiudiToast, azione ? 4500 : 2600);
+}
+function chiudiToast() { clearTimeout(toastT); $('toast').hidden = true; toastAzione = null; }
+$('toastUndo').addEventListener('click', () => { const a = toastAzione; chiudiToast(); if (a) a(); });
+
+/* ---------------------------------------------------------------------
+   IMPOSTAZIONI
+   ------------------------------------------------------------------- */
+let misuraChiesta = null;
+function renderImpostazioni() {
+  $('sizeSeg').innerHTML = MISURE.map(n => `<button data-n="${n}" aria-pressed="${n === G.n}">${n}×${n}</button>`).join('');
+  $('pairs').innerHTML = Object.entries(COPPIE).map(([k, c]) =>
+    `<button data-k="${k}" aria-pressed="${k === P.colori}"><i style="--c:${c.colori[0]}"></i>${c.nomi[0]} · ${c.nomi[1]}<i style="--c:${c.colori[1]}"></i></button>`).join('');
+  document.querySelectorAll('#deckSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === P.mazzo)));
+  const M = MAZZI[P.mazzo];
+  $('deckNote').textContent = `${nome(0)}: ${M.semi[0]}; ${nome(1)}: ${M.semi[1]}. ${M.carte} carte a squadra. ${M.regola}.`;
+  document.querySelectorAll('#prioSeg button').forEach(b => {
+    const t = +b.dataset.g;
+    b.textContent = nome(t);
+    b.setAttribute('aria-pressed', String(G.gettone === t));
+  });
+  $('sizeAsk').hidden = misuraChiesta === null;
+  if (misuraChiesta !== null) {
+    $('sizeAskText').textContent = `Per passare a ${misuraChiesta}×${misuraChiesta} serve una scacchiera nuova: la partita in corso (${G.mosse.length} ${G.mosse.length === 1 ? 'pedina' : 'pedine'}) si perde.`;
+    $('sizeYes').textContent = `Nuova ${misuraChiesta}×${misuraChiesta}`;
+  }
+}
+function apriImpostazioni() { misuraChiesta = null; renderImpostazioni(); $('settings').hidden = false; }
+function chiudiImpostazioni() { misuraChiesta = null; $('settings').hidden = true; }
+$('setBtn').addEventListener('click', apriImpostazioni);
+$('setDone').addEventListener('click', chiudiImpostazioni);
+$('settings').addEventListener('click', e => { if (e.target === $('settings')) chiudiImpostazioni(); });
+function cambiaMisura(n) {
+  P.n = n; G = nuovaPartita(n); misuraChiesta = null;
+  salva(); aggiorna(); renderImpostazioni();
+}
+$('sizeSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-n]'); if (!b) return;
+  const n = +b.dataset.n;
+  if (n === G.n) { misuraChiesta = null; renderImpostazioni(); return; }
+  const iniziata = G.mosse.length > 0 || G.gettone !== 0;
+  if (iniziata) { misuraChiesta = n; renderImpostazioni(); return; }
+  cambiaMisura(n);
+});
+$('sizeNo').addEventListener('click', () => { misuraChiesta = null; renderImpostazioni(); });
+$('sizeYes').addEventListener('click', () => { if (misuraChiesta !== null) { const n = misuraChiesta; cambiaMisura(n); toast(`Nuova scacchiera ${n}×${n}`); } });
+$('pairs').addEventListener('click', e => {
+  const b = e.target.closest('[data-k]'); if (!b) return;
+  P.colori = b.dataset.k; salva(); aggiorna(); renderImpostazioni();   // la partita resta com'è
+});
+$('deckSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b) return;
+  P.mazzo = b.dataset.m; salva(); aggiorna(); renderImpostazioni();
+});
+$('prioSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-g]'); if (!b || S.vince !== null) return;
+  G.gettone = +b.dataset.g; salva(); aggiorna(); renderImpostazioni();
+});
+/* Reset: impostazioni di base e partita nuova; va toccato due volte entro 3 secondi */
+let resetT = null;
+$('resetBtn').addEventListener('click', () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  P = Object.assign({}, DEF); G = nuovaPartita(P.n); misuraChiesta = null;
+  salva(); aggiorna(); renderImpostazioni(); toast('Tutto come all’inizio');
+});
+
+/* ---------------------------------------------------------------------
+   REGOLAMENTO (si aggiorna con colori e mazzo scelti)
+   ------------------------------------------------------------------- */
+function celleDa(N, lista) { const a = new Int8Array(N * N).fill(-1); for (const [r, c, t] of lista) a[r * N + c] = t; return a; }
+function renderRegole() {
+  const T = t => `<span class="t${t}">${esc(nome(t))}</span>`, M = MAZZI[P.mazzo];
+  // esempio di partita vinta dal Rosso su una 4×4
+  const ex = celleDa(4, [[0, 1, 0], [1, 1, 0], [2, 0, 0], [3, 0, 0], [1, 0, 1], [2, 1, 1], [1, 2, 1], [0, 3, 1]]);
+  const exVia = cammino(4, ex, 0);
+  // vicini: la casella centrale di una 3×3 ha tutte e sei le vicine
+  const vic = { 0: 'punto', 8: 'punto' }; [1, 2, 3, 5, 6, 7].forEach(i => { vic[i] = 'anello0'; });
+  // ponte: due pedine Blu in (1,0) e (0,2), caselle in comune (0,1) e (1,1)
+  const ponte = celleDa(3, [[1, 0, 1], [0, 2, 1]]);
+  const valori = M.valori.map(([v, a]) => `<span><b>${v}</b>${a}</span>`).join('');
+  $('rulesBody').innerHTML = `
+    <h3>Obiettivo</h3>
+    <p>Hex si gioca su una scacchiera a forma di rombo fatta di caselle esagonali. ${T(0)} deve collegare il <b>bordo in alto</b> con quello <b>in basso</b>, ${T(1)} il <b>bordo di sinistra</b> con quello <b>di destra</b>, con una catena continua di pedine del proprio colore. Le strisce colorate intorno alla scacchiera mostrano i bordi di ciascuno.</p>
+    <p>La catena non deve essere dritta: può girare in qualunque direzione. Vince <b>subito</b> la prima squadra che completa il collegamento. Una casella occupata resta di quella squadra per tutta la partita.</p>
+    <div class="schema medio">${svgTavola(4, { celle: ex, via: exVia, classe: 'finita', stile: `--tw:${colore(0)};--tw-cella:${mescola(colore(0), '#1F2A47', .38)}` })}</div>
+    <p class="didas">${esc(nome(0))} ha collegato alto e basso: la catena gira, ma non si interrompe.</p>
+    <p>Le caselle d’angolo stanno su due bordi, ma ognuno conta solo i propri: ${T(0)} su un angolo non tocca i bordi di ${T(1)}. In Hex non esiste il pareggio: a scacchiera piena una delle due squadre ha per forza collegato i suoi bordi.</p>
+
+    <h3>Le connessioni esagonali</h3>
+    <p>Due pedine sono collegate solo se le loro caselle hanno <b>un lato in comune</b>. Ogni casella ne ha al massimo sei vicine (quelle sul bordo meno). Due esagoni o hanno un lato in comune o non si toccano affatto: non ci sono contatti «di spigolo» come sulla scacchiera degli scacchi.</p>
+    <div class="schema piccolo">${svgTavola(3, { celle: celleDa(3, [[1, 1, 0]]), segni: vic })}</div>
+    <p class="didas">Le sei caselle cerchiate sono vicine a quella centrale; i due puntini no.</p>
+
+    <h3>Il ponte (e perché qui non basta)</h3>
+    <p>Nell’Hex classico, due pedine come queste formano un <b>ponte</b>: non si toccano, ma hanno due caselle libere in comune. Se l’avversario ne occupa una, basta prendere l’altra.</p>
+    <div class="schema piccolo">${svgTavola(3, { celle: ponte, segni: { 1: 'anello1', 4: 'anello1' } })}</div>
+    <p class="didas">Le due pedine ${esc(nome(1))} si collegano occupando una delle due caselle tratteggiate.</p>
+    <div class="attenzione"><b>Con le aste il ponte non è sicuro.</b> Le mosse non si alternano: l’avversario può vincere due aste di fila e occupare entrambe le caselle prima che tu possa rispondere.</div>
+
+    <h3>Come si svolge un’asta</h3>
+    <ol>
+      <li>Prima di ogni mossa ogni squadra sceglie una carta del proprio mazzetto e la mette sul tavolo <b>coperta</b>.</li>
+      <li>Le due carte si scoprono <b>insieme</b>. Vince l’asta la carta di valore più alto.</li>
+      <li>Chi vince mette una pedina in una casella libera qualsiasi.</li>
+      <li><b>Entrambe</b> le carte vanno negli scarti, anche quella che ha perso.</li>
+    </ol>
+    <p>Una squadra può vincere più aste di fila, e allora mette più pedine di fila. Quando le carte finiscono, ogni squadra riprende le sue e comincia un nuovo giro di aste: il contatore in alto a destra della scacchiera conta le aste e avvisa quando è il momento.</p>
+
+    <h3>Le carte (mazzo ${M.nome})</h3>
+    <p>${T(0)}: <b>${M.semi[0]}</b>. ${T(1)}: <b>${M.semi[1]}</b>. ${M.carte} carte per squadra: ogni valore compare due volte.</p>
+    <div class="carte">${valori}</div>
+    <p>${P.mazzo === 'francese' ? 'I jolly non si usano. Per giocare con le carte italiane (40 carte, Re = 10) cambia mazzo nelle Impostazioni.' : 'Per giocare con le carte francesi (52 carte, Re = 13) cambia mazzo nelle Impostazioni.'}</p>
+
+    <h3>Pareggi e gettone di priorità</h3>
+    <ul>
+      <li>All’inizio della partita il gettone di priorità è di ${T(0)}.</li>
+      <li>Se le due carte hanno lo stesso valore, vince l’asta chi ha il gettone.</li>
+      <li>Dopo ogni pareggio il gettone passa all’altra squadra.</li>
+      <li>Sull’app tocca <b>Pareggio</b>: sceglie come vincitore dell’asta chi aveva il gettone e lo passa all’altra squadra. Sul tasto si vede sempre di chi è il gettone adesso; se serve si corregge nelle Impostazioni.</li>
+    </ul>
+
+    <h3>Scegliere la squadra e mettere la pedina</h3>
+    <ol>
+      <li>Fate l’asta con le carte vere.</li>
+      <li>Toccate ${T(0)} o ${T(1)}: chi ha vinto l’asta. Finché non scegliete, le caselle non rispondono.</li>
+      <li>Toccate una casella libera: ci va una pedina di quella squadra.</li>
+      <li>L’app torna su «Chi ha vinto l’asta?»: non sceglie mai da sola chi muove dopo.</li>
+    </ol>
+    <ul>
+      <li><b>Annulla mossa</b>: tieni premuto finché la barra si riempie (poco più di un secondo). Toglie l’ultima pedina e riseleziona la sua squadra. Si può ripetere, anche dopo una vittoria.</li>
+      <li><b>Nuova partita</b>: dal riquadro della vittoria, oppure nelle Impostazioni tenendo premuto. Restano dimensione, colori e mazzo.</li>
+      <li>La partita resta salvata sul telefono anche se chiudi la pagina.</li>
+    </ul>`;
+}
+$('rulesBtn').addEventListener('click', () => { renderRegole(); $('rules').hidden = false; $('rules').querySelector('.sheet').scrollTop = 0; });
+const chiudiRegole = () => { $('rules').hidden = true; };
+$('rulesX').addEventListener('click', chiudiRegole);
+$('rulesDone').addEventListener('click', chiudiRegole);
+$('rules').addEventListener('click', e => { if (e.target === $('rules')) chiudiRegole(); });
+
+salva();
+aggiorna();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

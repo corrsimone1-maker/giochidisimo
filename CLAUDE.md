@@ -28,7 +28,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | File | Cosa fa |
 |---|---|
 | `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e il tastino «Condividi» in basso a destra, che deve restare **l'ultima cosa** della home (scorre con le carte) (foglio di condivisione del telefono, altrimenti copia il link). |
-| `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. |
+| `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. Il campo facoltativo `icona` mette un disegno accanto al nome nell'elenco: i disegni stanno in `ICONE` dentro `index.html` (oggi solo `esagoni`, per Hex ad Aste). |
 | `sw.js` | Service worker: chiede prima alla rete, usa la cache solo offline. Salva le pagine di `giochi.js` e i file `extra`. |
 | `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, registra il service worker e offre `gdsAppare(el)` per far entrare una schermata. |
 | `comune/app.css` | Incluso in **ogni** pagina: passaggi morbidi (circa 0,2 s) tra le pagine, tra home e categorie, per le schermate (`.appare`) e le finestre (`.velo`). |
@@ -40,7 +40,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
-- `giochi` (Impostore, Lupus, Perudo);
+- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
@@ -121,7 +121,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
      Impostore nero `#000000`, Lupus blu notte `#1F2E8C`, Perudo petrolio `#16938C`, Poker rosso caramella `#E8102A`,
      7 Wonders rosino-celeste della scatola `#CFC4E4`, Chi inizia blu `#3A78E0`,
-     Dossier verde acqua dei liberali `#4E8C86`, lo stesso della pagina);
+     Dossier verde acqua dei liberali `#4E8C86`, lo stesso della pagina, Hex ad Aste azzurro `#3D9AF2`, lo stesso del Blu nella pagina);
    - `extra` se la pagina carica altri file, così funzionano anche offline.
 3. Aggiorna la tabella nel `README.md`.
 
@@ -151,6 +151,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-giocatori` (nomi in comune tra Impostore e Lupus);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
+  - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`.
 
@@ -169,6 +170,23 @@ l'app sostituisce le buste dei ruoli e dà gli imprevisti.
 - **Opzioni:** rapporti al Presidente a ogni legge liberale, poteri liberali (Voto segreto, Testimone, Inchiesta, Confronto)
   sotto le caselle di `SLOT`, Voltagabbana alla 3ª legge liberale. Tutte si scelgono in Impostazioni prima della partita.
 - Le regole spiegate stanno nella schermata «Come funziona» della pagina: se cambi una meccanica, aggiornala anche lì.
+
+### Hex ad Aste → `giochi/hex/index.html`
+
+Hex in cui il diritto di mettere una pedina si vince con un'asta di carte vere (una carta coperta a testa, vince la più alta,
+pareggio al gettone di priorità che poi passa). **L'app gestisce solo la scacchiera**: non simula le carte e non sceglie mai
+da sola chi muove; dopo ogni pedina torna su «Chi ha vinto l'asta?».
+- **Squadre:** 0 collega alto e basso (Rosso di base, carte rosse), 1 sinistra e destra (Blu di base, carte nere). I colori sono
+  coppie fisse in `COPPIE`, così non possono essere uguali o troppo simili.
+- **Geometria:** casella (r, c), indice `r·N + c`, esagoni col lato in alto, centro `x = 1,5·c`, `y = √3·(r + c/2)`: è il rombo
+  classico ruotato di 90°, con i bordi sinistro e destro verticali, perché in verticale le caselle vengono più grandi.
+  Vicini: le sei direzioni di `DIREZIONI`, con controllo dei limiti (niente «a capo» tra le righe). Vittoria: `cammino()`, ricerca
+  in ampiezza dal proprio bordo di partenza, che restituisce il cammino più corto da evidenziare. Le strisce colorate sono
+  quattro triangoli centro-angoli ritagliati da una maschera lungo il contorno.
+- **Annulla mossa** (tieni premuto 1,2 s): toglie l'ultima di `mosse` e riseleziona la sua squadra, anche a partita finita.
+- Il regolamento sta in `renderRegole()` e segue colori e mazzo scelti: se cambi una meccanica, aggiornalo lì.
+- **Verifica:** se tocchi la geometria, controlla che le adiacenze ricavate dai poligoni disegnati (due vertici in comune)
+  coincidano con `vicini()` e che su scacchiere piene a caso ci sia sempre esattamente un vincitore.
 
 ## Cose da sapere
 
