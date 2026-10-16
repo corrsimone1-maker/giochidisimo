@@ -28,7 +28,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | File | Cosa fa |
 |---|---|
 | `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e il tastino «Condividi» in basso a destra, che deve restare **l'ultima cosa** della home (scorre con le carte) (foglio di condivisione del telefono, altrimenti copia il link). |
-| `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. Il campo facoltativo `icona` mette un disegno accanto al nome nell'elenco: i disegni stanno in `ICONE` dentro `index.html` (oggi solo `esagoni`, per Hex ad Aste). |
+| `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. |
 | `sw.js` | Service worker: chiede prima alla rete, usa la cache solo offline. Salva le pagine di `giochi.js` e i file `extra`. |
 | `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, registra il service worker e offre `gdsAppare(el)` per far entrare una schermata. |
 | `comune/app.css` | Incluso in **ogni** pagina: passaggi morbidi (circa 0,2 s) tra le pagine, tra home e categorie, per le schermate (`.appare`) e le finestre (`.velo`). |
@@ -121,7 +121,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo petrolio `#16938C`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
-     Dossier verde acqua dei liberali `#4E8C86`, lo stesso della pagina, Hex ad Aste azzurro `#3D9AF2`, lo stesso del Blu nella pagina);
+     Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline.
 3. Aggiorna la tabella nel `README.md`.
