@@ -117,9 +117,11 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
 1. Crea `giochi/<nome>/index.html`, partendo da una pagina simile. Il Contapunti va bene per le pagine sempre in orizzontale, Impostore per quelle a «passa il telefono».
 2. Aggiungi una riga in `giochi.js`:
    - `categoria`, `nome`, `descrizione`, `link`;
-   - `colore`: **diverso da tutti gli altri** (oggi: lilla `#B39DF0`, burgundy `#A3324F`, ciano `#22C1D4`,
-     oro `#E3B23C`, indaco `#4F58D9`, viola `#8A4FD8`, petrolio `#16938C`, lime `#9BCB3C`, fucsia `#D04BA0`,
-     corallo `#EE7A5E`, blu `#3A78E0`, rosso `#D23B30`);
+   - `colore`: **diverso da tutti gli altri** (oggi, scelti da Simo: Dichiarare verde menta `#98E2C6`,
+     Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
+     Impostore nero `#000000`, Lupus blu notte `#1F2E8C`, Perudo petrolio `#16938C`, Poker rosso caramella `#E8102A`,
+     7 Wonders rosino-celeste della scatola `#CFC4E4`, Chi inizia blu `#3A78E0`,
+     Dossier verde acqua dei liberali `#4E8C86`, lo stesso della pagina);
    - `extra` se la pagina carica altri file, così funzionano anche offline.
 3. Aggiorna la tabella nel `README.md`.
 
