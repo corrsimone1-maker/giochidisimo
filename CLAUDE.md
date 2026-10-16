@@ -119,7 +119,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
    - `categoria`, `nome`, `descrizione`, `link`;
    - `colore`: **diverso da tutti gli altri** (oggi, scelti da Simo: Dichiarare verde acceso `#2ED15A`,
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
-     Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo petrolio `#16938C`, Poker rosso caramella `#E8102A`,
+     Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;

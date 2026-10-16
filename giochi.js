@@ -36,7 +36,7 @@ self.GIOCHI = {
     { categoria: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', link: 'giochi/contapunti/', colore: '#4F58D9' },
     { categoria: 'giochi', nome: 'Impostore', descrizione: 'Tutti hanno la parola segreta, tranne uno', link: 'giochi/impostore/', colore: '#000000', filo: '#FFFFFF', extra: ['giochi/impostore/parole.js'] },
     { categoria: 'giochi', nome: 'Lupus', descrizione: 'Ruoli segreti e scaletta della notte per il narratore', link: 'giochi/lupus/', colore: '#1F2E8C', extra: ['giochi/lupus/ruoli.js'] },
-    { categoria: 'giochi', nome: 'Perudo', descrizione: 'I tuoi dadi sotto il bicchiere, quando quelli veri non bastano', link: 'giochi/perudo/', colore: '#16938C' },
+    { categoria: 'giochi', nome: 'Perudo', descrizione: 'I tuoi dadi sotto il bicchiere, quando quelli veri non bastano', link: 'giochi/perudo/', colore: '#E0249A' },
     { categoria: 'giochi', nome: 'Hex ad Aste', descrizione: 'Hex con le carte vere: chi vince l’asta mette la pedina', link: 'giochi/hex/', colore: '#006BFF' },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A' },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70' },
