@@ -169,7 +169,7 @@ const BASE = 'http://localhost:8765/';
 
   // home: la carta dell'espansione in Expansions
   await page.goto(BASE + '#expansions'); await page.waitForTimeout(400); await shot('home-expansions');
-  assert.ok((await page.textContent('body')).includes('Codenames: Double Agents'));
+  assert.ok((await page.textContent('body')).replace(/\u00A0/g, ' ').includes('Nome in Codice: Double Agents'));
   console.log(errori.length ? 'ERRORI:\n' + errori.join('\n') : 'nessun errore nella pagina');
   await browser.close();
   if (errori.length) process.exit(1);

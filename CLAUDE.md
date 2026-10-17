@@ -43,7 +43,7 @@ Categorie in `giochi.js`:
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo, Hex ad Aste);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
-- `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Codenames: Double Agents; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
+- `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
 
@@ -123,7 +123,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
-     Codenames: Double Agents verde acido `#B7E449`);
+     Nome in Codice: Double Agents verde acido `#B7E449`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -234,7 +234,11 @@ la Borsa e i crediti virtuali (separati dalle sterline). **Non conosce il tabell
   fuzz sui saldi). Se cambi una regola aggiungi un caso. `node prove/camelup.bilanciamento.js` stampa i numeri del bilanciamento.
 - Le regole spiegate stanno in `renderRegole()`: se cambi una meccanica o un parametro di base, aggiornale lì.
 
-### Codenames: Double Agents → `giochi/codenames/`
+### Nome in Codice: Double Agents → `giochi/codenames/`
+
+Nell'elenco della home si chiama **«Nome in Codice: Double Agents»** (scelta di Simo; in `giochi.js` gli spazi
+dentro «Nome in Codice» e «Double Agents» sono `\u00A0`, così la riga va a capo solo dopo i due punti). Dentro la pagina
+resta «Codenames», più corto.
 
 Espansione di Simo per il Codenames fisico (25 carte parola e tessere vere, niente carte chiave). Tema «bunker di intelligence»
 (antracite `#0B0D0C`, verde acido `#B7E449`, salvia `#7E8F70`, ambra `#E2A94C` per avvisi e doppi agenti; rosso `#E0574B` e blu
