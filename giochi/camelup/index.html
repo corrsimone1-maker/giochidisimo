@@ -351,7 +351,7 @@ h2{font-family:var(--display);font-weight:400;font-size:23px;margin:0 0 10px;col
 
   <section class="pan">
     <h2>Giocatori</h2>
-    <p class="sub">Da 2 a 8, <b>nell’ordine in cui siete seduti</b> in senso orario. La stella indica chi comincia (il più giovane).</p>
+    <p class="sub">Da 2 a 8, <b>nell’ordine in cui siete seduti</b> in senso antiorario. La stella indica chi comincia (il più giovane).</p>
     <form class="row" id="addPlayer" autocomplete="off">
       <input class="in" id="playerName" placeholder="Nome" maxlength="16" enterkeyhint="done">
       <button class="btn small">Aggiungi</button>
@@ -834,14 +834,14 @@ function renderAstaIntro() {
   const pri = CU.prioritaAsta(S).map(g => esc(S.nomi[g])).join(', ');
   const h = P.tappe[S.tappa].hash;
   $('aiInfo').innerHTML = `
-    <div><b>Inizia</b><span>${esc(S.nomi[S.primo])}${S.tappa > 1 ? ' (a sinistra di chi ha estratto l’ultimo dado)' : ''}</span><button class="link muto" id="aiPrimo" style="margin-left:auto">Cambia</button></div>
+    <div><b>Inizia</b><span>${esc(S.nomi[S.primo])}${S.tappa > 1 ? ' (a destra di chi ha estratto l’ultimo dado: si gira in senso antiorario)' : ''}</span><button class="link muto" id="aiPrimo" style="margin-left:auto">Cambia</button></div>
     <div><b>Spareggio</b><span>${pri}</span></div>
     <div><b>Impegno</b><span class="mono">${hashCorto(h)}</span></div>`;
   $('aiPrimo').onclick = scegliPrimo;
   linkAnnulla($('aiAnnulla'));
 }
 function scegliPrimo() {
-  finestra('Chi inizia la tappa?', '<p style="margin:0 0 10px">Di regola il giocatore a sinistra di chi ha preso l’ultima tessera piramide; nella prima tappa il più giovane.</p><div class="chips" id="pmChips"></div>', [{ t: 'Annulla', cls: 'sec' }]);
+  finestra('Chi inizia la tappa?', '<p style="margin:0 0 10px">Il giocatore a destra di chi ha preso l’ultima tessera piramide (giriamo in senso antiorario); nella prima tappa il più giovane.</p><div class="chips" id="pmChips"></div>', [{ t: 'Annulla', cls: 'sec' }]);
   $('pmChips').innerHTML = S.nomi.map((nm, g) => `<button class="chip ${g === S.primo ? 'on' : ''}" data-g="${g}">${esc(nm)}</button>`).join('');
   $('pmChips').onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; $('infoVelo').hidden = true; if (+b.dataset.g !== S.primo && fai({ t: 'primo', g: +b.dataset.g })) toast(`Inizia ${S.nomi[S.primo]}`); vai(); };
 }

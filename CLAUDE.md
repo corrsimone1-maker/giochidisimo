@@ -166,6 +166,8 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
 
   Non cambiare il formato di una chiave senza convertire i dati vecchi.
+- **Giro al tavolo:** si gioca sempre in **senso antiorario** (il prossimo è a destra), tranne a poker. Nei testi
+  scrivi «antiorario» e, quando le regole originali dicono «a sinistra», adatta a «a destra».
 - **Disegni:** solo disegni originali. Niente riproduzioni di disegni protetti: per esempio le facce vere delle monete in euro non si copiano, e infatti le monete di Conta Monete sono inventate.
 
 ### Pulizia dei dati → `comune/pulizia.js`
