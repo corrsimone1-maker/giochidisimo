@@ -43,7 +43,7 @@ Categorie in `giochi.js`:
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo, Hex ad Aste);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
-- `expansions` (Secret Hitler: Dossier, Camel Up: Economics; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
+- `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Codenames: Double Agents; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
 
@@ -122,7 +122,8 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
-     Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`);
+     Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
+     Codenames: Double Agents verde acido `#B7E449`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -159,6 +160,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
+  - `gds-codenames` (`cfg` e `primo`), `gds-codenames-partita` (partita: mappa segreta ed eventi), `gds-codenames-storico` (risultati, per bilanciare);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
@@ -176,7 +178,8 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
 - **Tasto «Pulisci tutto»** in fondo alla home, a sinistra di Condividi, da tenere premuto 1,2 s: cancella subito i dati
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
-  - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`);
+  - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`,
+    `gds-codenames-storico`);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -230,6 +233,30 @@ la Borsa e i crediti virtuali (separati dalle sterline). **Non conosce il tabell
 - **Prove:** `node prove/camelup.test.js` (piramide, distribuzioni, impegno, asta, spionaggio, LMSR, limiti, turni, annullamenti,
   fuzz sui saldi). Se cambi una regola aggiungi un caso. `node prove/camelup.bilanciamento.js` stampa i numeri del bilanciamento.
 - Le regole spiegate stanno in `renderRegole()`: se cambi una meccanica o un parametro di base, aggiornale lì.
+
+### Codenames: Double Agents → `giochi/codenames/`
+
+Espansione di Simo per il Codenames fisico (25 carte parola e tessere vere, niente carte chiave). Tema «bunker di intelligence»
+(antracite `#0B0D0C`, verde acido `#B7E449`, salvia `#7E8F70`, ambra `#E2A94C` per avvisi e doppi agenti; rosso `#E0574B` e blu
+`#4D8CF0` solo per le squadre; font Chakra Petch, IBM Plex Mono e Figtree solo in questa pagina).
+- **Mappa:** 7 solo rossi, 7 solo blu, 3 doppi (`D`), 7 neutrali, 1 assassino, mescolati con Fisher–Yates e `randIntCrypto`.
+  Posizioni 0–24 = A1…E5 (colonne A–E, righe 1–5 viste dai capispia). Ogni capospia vede le sue 10 parole tutte uguali.
+- **`motore.js`** (in `extra`): tutta la logica, senza pagina. Partita `{ v, id, cfg, mappa, primo, eventi, svelate, annullati, ui }`;
+  lo stato si ricava **rigiocando gli eventi** (`DA.stato`). Eventi: `indagine`, `indizio`, `criptato`, `intercetta`, `tocco`
+  (con `k` contro i doppi tocchi), `stop` (spiegati in cima al file). Punti: `e + d + (d ≥ 2 ? 1 : 0)`.
+- **Privacy:** la plancia usa solo `DA.vistaPubblica(S)`, le mappe solo `DA.vistaPrivata(S, s)`. Le prove controllano che la plancia
+  sia identica con o senza intercettazione (e ovunque sia), per qualunque messaggio criptato e qualunque indagine. Il gettone di
+  intercettazione si scala **al primo tocco**, così il contatore non dice se l'intercettazione c'è. Le schermate riservate si aprono
+  tenendo premuto e si chiudono da sole con `visibilitychange` (telefono bloccato) e dopo 3 minuti di sola consultazione.
+- **Annulla:** toglie l'ultimo evento. Non si annullano `indagine`, `criptato` e il primo tocco contro un'intercettazione piazzata
+  (mostrerebbero segreti già visti). Un tocco annullato finisce in `svelate`: la carta resta «nota» a tutti.
+- **Parametri di base diversi dalla proposta originale** (decisi con le simulazioni, spiegati nel capitolo 13 del regolamento):
+  `bonusRisposta: 1` (un'intercettazione in più a chi gioca per secondo; senza, chi inizia vinceva ~59%). Niente intercettazione
+  sull'assassino; le intercettazioni sono «a sorpresa» (gli agenti non sanno se ci sono). La soglia non supera 7 (`LIMITI`).
+- **Prove:** `node prove/codenames.test.js` (generazione e uniformità, viste e indistinguibilità, punteggio, intercettazioni, criptati,
+  indagine, turni, annullamenti, 5.000 partite casuali). `node prove/codenames.bilanciamento.js` stampa le simulazioni.
+  Nel browser: `prove/codenames.pagina.test.js` (serve `python3 -m http.server 8765`). Se cambi una regola aggiungi un caso.
+- Il regolamento sta in `renderRegole()` (14 capitoli con schemi): se cambi una meccanica o un parametro di base, aggiornalo lì.
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

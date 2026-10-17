@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B0D0C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<script src="motore.js"></script>
+<title>Codenames: Double Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Tema «bunker di intelligence»: antracite, terminali di sorveglianza, verde acido come unico accento.
+   Rosso e blu solo per le squadre; ambra per gli avvisi e per i doppi agenti. Niente bagliori. */
+:root{
+  --nero:#0B0D0C; --fondo:#0E1110; --pannello:#141816; --pannello-2:#1A1F1C; --pozzo:#090B0A; --cella:#171B19;
+  --linea:rgba(214,226,200,.08); --linea-2:rgba(214,226,200,.15); --linea-acido:rgba(183,228,73,.28);
+  --acido:#B7E449; --acido-2:#D2F07D; --acido-ombra:rgba(183,228,73,.08); --salvia:#7E8F70; --militare:#5D6656; --ambra:#E2A94C; --ambra-ombra:rgba(226,169,76,.12);
+  --testo:#E2E7DC; --muto:#8D978A; --fioco:#5C6559;
+  --R:#E0574B; --R2:#F08578; --Rs:#3B1A17; --B:#4D8CF0; --B2:#86B2F7; --Bs:#15253F;
+  --neutro:#BDB29A; --neutro-s:#2C2A24;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --disp:'Chakra Petch','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;color:var(--testo);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+html{background:var(--nero)}
+/* sfondo: lampada fredda appena accennata in alto e righe di scansione quasi invisibili */
+body{min-height:100dvh;background:
+  repeating-linear-gradient(0deg,rgba(214,226,200,.012) 0 1px,transparent 1px 3px),
+  radial-gradient(120% 50% at 50% -12%,rgba(183,228,73,.06),transparent 62%),
+  var(--nero)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--acido);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px}
+.back{display:inline-block;padding:8px 0;color:var(--acido);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.link{background:none;border:0;padding:6px 0;color:var(--acido);font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.link.muto{color:var(--muto);font-size:14px}
+.links{display:flex;gap:16px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muto);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:var(--ambra)}
+.mono{font-family:var(--mono)}
+.kick{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muto)}
+
+/* Intestazione */
+.hero{position:relative;margin:10px 0 16px;padding:22px 18px 18px;border:1px solid var(--linea);border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(183,228,73,.035),transparent 60%),var(--pannello)}
+.hero::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(183,228,73,.05) 0) 0 0/24px 24px,linear-gradient(0deg,transparent 0 calc(100% - 1px),rgba(183,228,73,.05) 0) 0 0/24px 24px;
+  -webkit-mask:linear-gradient(160deg,#000,transparent 70%);mask:linear-gradient(160deg,#000,transparent 70%)}
+.hero h1{position:relative;font-family:var(--disp);font-weight:700;font-size:clamp(46px,14.5vw,70px);line-height:.9;letter-spacing:.01em;margin:8px 0 12px;text-transform:uppercase}
+.hero h1 span{color:var(--acido)}
+.hero p{position:relative;margin:0;color:var(--muto);font-size:15px;line-height:1.5;max-width:36ch}
+.term{position:relative;margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--salvia)}
+.term b{color:var(--acido);font-weight:500}
+.cursore{display:inline-block;width:7px;height:13px;margin-left:3px;vertical-align:-2px;background:var(--acido);opacity:.8;animation:lampeggia 1.1s steps(1) infinite}
+@keyframes lampeggia{50%{opacity:0}}
+.hero-top{position:relative;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 12px}
+.stato-led{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--acido)}
+.stato-led i{width:7px;height:7px;border-radius:50%;background:var(--acido);box-shadow:0 0 0 3px rgba(183,228,73,.12)}
+
+/* Pannelli */
+.pan{background:var(--pannello);border:1px solid var(--linea);border-radius:16px;padding:16px;margin-bottom:12px}
+.pan.acido{border-color:var(--linea-acido)}
+h2{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px}
+.sub{margin:-4px 0 12px;color:var(--muto);font-size:14px;line-height:1.45}
+.row{display:flex;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.in{flex:1;min-width:0;height:48px;padding:0 14px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-size:17px;font-family:var(--mono)}
+.in::placeholder{color:var(--fioco)}
+.in:focus{outline:none;border-color:var(--acido)}
+
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:13px;border:0;background:var(--acido);color:#11160A;
+  font-weight:700;font-size:16.5px;text-align:center;text-decoration:none;overflow:hidden}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:transparent;color:var(--testo);border:1px solid var(--linea-2)}
+.btn.R{background:var(--R);color:#1A0806}.btn.B{background:var(--B);color:#06101F}
+.btn.small{width:auto;min-height:44px;padding:0 16px;border-radius:11px;font-size:15px}
+.btn:disabled{opacity:.33;transform:none}
+.btn small{display:block;font-weight:600;opacity:.72;font-size:12.5px}
+.btn .col{display:flex;flex-direction:column;line-height:1.2}
+.stack{display:grid;gap:10px}
+.center{display:block;margin:14px auto 0}
+.warn{margin:10px 0 12px;color:var(--ambra);font-size:14px;font-weight:600}
+
+/* Interruttori */
+.opt{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--linea);cursor:pointer}
+.opt:first-of-type{border-top:0;padding-top:4px}
+.opt b{display:block;font-size:16px}
+.opt small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:3px}
+.opt input[type=checkbox]{flex:0 0 auto;-webkit-appearance:none;appearance:none;width:26px;height:26px;margin:1px 0 0;border-radius:7px;border:1.5px solid var(--salvia);background:var(--pozzo);display:grid;place-items:center;cursor:pointer}
+.opt input[type=checkbox]:checked{background:var(--acido);border-color:var(--acido)}
+.opt input[type=checkbox]:checked::after{content:'';width:7px;height:12px;border:solid #11160A;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.opt.fisso{cursor:default}
+.lucchetto{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--acido);border:1px solid var(--linea-acido);border-radius:6px;padding:4px 7px;margin-top:2px}
+.par{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--linea)}
+.par:first-of-type{border-top:0}
+.par b{display:block;font-size:15.5px}
+.par small{display:block;color:var(--muto);font-size:13px;line-height:1.4;margin-top:2px}
+.par.spento{opacity:.4;pointer-events:none}
+.stepper{display:flex;align-items:center;gap:6px;flex:none}
+.stepper button{width:42px;height:42px;border-radius:10px;border:1px solid var(--linea-2);background:var(--pozzo);font-size:20px;font-weight:600;color:var(--acido)}
+.stepper button:disabled{opacity:.3}
+.stepper .v{min-width:40px;text-align:center;font-family:var(--disp);font-size:24px;font-weight:600}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{min-height:46px;border-radius:10px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:600;font-size:14.5px;color:var(--muto)}
+.seg button.on{border-color:var(--acido);color:var(--acido-2);background:var(--acido-ombra)}
+.seg.due{grid-template-columns:1fr 1fr}
+.recap{margin:4px 0 0;color:var(--muto);font-size:13.5px;line-height:1.55}
+.recap b{color:var(--testo);font-weight:600}
+.preset{display:grid;gap:8px}
+.preset button{text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo)}
+.preset button.on{border-color:var(--acido);background:var(--acido-ombra)}
+.preset b{display:block;font-size:15px}
+.preset small{display:block;color:var(--muto);font-size:12.5px;margin-top:2px;line-height:1.4}
+.preset .tag{float:right;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ambra);margin-left:8px}
+
+/* Plancia */
+.barra{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--fioco);text-transform:uppercase;margin:4px 0 10px}
+.barra b{color:var(--salvia);font-weight:500}
+.turno{position:relative;padding:16px 16px 14px 20px;overflow:hidden}
+.turno::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--tc,var(--acido))}
+.turno .t{font-family:var(--disp);font-weight:700;font-size:clamp(34px,10.5vw,46px);line-height:1;letter-spacing:.02em;text-transform:uppercase;color:var(--tc2,var(--testo))}
+.turno .l{color:var(--muto);font-size:14.5px;line-height:1.45;margin-top:6px}
+.turno .l b{color:var(--testo);font-weight:600}
+.fasi{display:flex;gap:4px;margin-top:12px}
+.fasi i{flex:1 1 auto;white-space:nowrap;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-align:center;padding:5px 6px;border-radius:6px;background:var(--pozzo);color:var(--fioco);border:1px solid var(--linea)}
+.fasi i.on{color:var(--acido-2);border-color:var(--linea-acido);background:var(--acido-ombra)}
+.fasi i.fatto{color:var(--salvia)}
+.punteggi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sq{padding:13px 14px;border-radius:14px;background:var(--pannello);border:1px solid var(--linea);position:relative}
+.sq.attiva{border-color:var(--c)}
+.sq .nm{display:flex;justify-content:space-between;align-items:center;font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.08em;color:var(--c2)}
+.sq .nm small{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muto);font-weight:500}
+.sq .pt{font-family:var(--disp);font-weight:700;font-size:40px;line-height:1;margin:6px 0 6px}
+.sq .pt small{font-size:20px;color:var(--fioco);font-weight:600}
+.seg7{display:grid;grid-template-columns:repeat(var(--n,7),1fr);gap:3px;margin-bottom:8px}
+.seg7 i{height:6px;border-radius:2px;background:rgba(255,255,255,.07)}
+.seg7 i.on{background:var(--c)}
+.sq .det{font-size:12.5px;color:var(--muto);line-height:1.5}
+.sq .det b{color:var(--testo);font-weight:600}
+.ris{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--linea)}
+.ris div{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--muto)}
+.pips{display:flex;gap:3px}
+.pips i{width:9px;height:9px;border-radius:2px;border:1px solid var(--salvia)}
+.pips i.on{background:var(--acido);border-color:var(--acido)}
+.pips.ambra i.on{background:var(--ambra);border-color:var(--ambra)}
+
+.indizio{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea-2);margin:12px 0 0}
+.indizio .w{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:.04em;text-transform:uppercase;word-break:break-word}
+.indizio .w small{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muto);display:block;font-weight:500}
+.indizio .n{font-family:var(--mono);font-size:13px;color:var(--muto);text-align:right;white-space:nowrap}
+.indizio .n b{display:block;font-family:var(--disp);font-size:26px;color:var(--testo)}
+.indizio.cripto{border-style:dashed;border-color:var(--linea-acido)}
+.nota-int{margin-top:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--salvia)}
+.nota-int.ok{color:var(--ambra)}
+.azioni{display:grid;gap:10px;margin-top:14px}
+.azioni.due{grid-template-columns:1fr 1fr}
+.azioni .btn{min-height:62px}
+.indagine-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:11px 13px;margin-top:12px;border-radius:12px;border:1px dashed var(--ambra);background:var(--ambra-ombra);color:var(--testo);font-weight:700;font-size:15px;text-align:left}
+.indagine-btn small{display:block;font-weight:500;color:var(--muto);font-size:12.5px;margin-top:2px}
+.indagine-btn span:last-child{color:var(--ambra);font-family:var(--mono)}
+.tocchi-bar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px}
+.attendi .azioni,.attendi .tocchi-bar,.attendi .indagine-btn{opacity:.45;pointer-events:none;transition:opacity .15s}
+
+/* Griglia 5×5 */
+.griglia{display:grid;grid-template-columns:16px repeat(5,minmax(0,1fr));gap:5px;user-select:none;-webkit-user-select:none}
+.griglia .ci{font-family:var(--mono);font-size:11px;color:var(--fioco);display:grid;place-items:center;min-height:14px}
+.cella{position:relative;aspect-ratio:1.22/1;min-height:44px;border-radius:9px;border:1px solid var(--linea-2);background:var(--cella);display:grid;place-items:center;padding:0;
+  font-family:var(--mono);font-weight:600;font-size:13px;color:var(--muto);overflow:hidden;transition:transform .12s ease,border-color .12s ease}
+.cella .lb{position:relative;z-index:1}
+button.cella:not(:disabled):active{transform:scale(.96)}
+button.cella:disabled{cursor:default}
+.cella.libera.cliccabile{border-color:rgba(214,226,200,.24);color:var(--testo);background:#1C211E}
+.cella.sel{border-color:var(--acido);box-shadow:inset 0 0 0 2px var(--acido);color:var(--acido-2);background:#1E2618}
+.cella.sel::after{content:'';position:absolute;left:0;right:0;height:2px;background:var(--acido);opacity:.55;animation:scansione 1.4s ease-in-out infinite}
+@keyframes scansione{0%{top:0}50%{top:calc(100% - 2px)}100%{top:0}}
+.cella.R{background:var(--R);border-color:var(--R);color:#2A0C08}
+.cella.B{background:var(--B);border-color:var(--B);color:#081325}
+.cella.N{background:var(--neutro);border-color:var(--neutro);color:#3A352A}
+.cella.A{background:#050605;border-color:#E0574B;color:#E0574B}
+.cella.coperta{opacity:.42}
+.cella.mioR{background:var(--Rs);border-color:var(--R);color:var(--R2);box-shadow:inset 0 0 0 1px rgba(224,87,75,.35)}
+.cella.mioB{background:var(--Bs);border-color:var(--B);color:var(--B2);box-shadow:inset 0 0 0 1px rgba(77,140,240,.35)}
+.cella.mioR.pieno{background:var(--R);color:#2A0C08}
+.cella.mioB.pieno{background:var(--B);color:#081325}
+.cella.ass{background:#050605;border:1px solid var(--R);color:var(--R2)}
+.cella.ignoto{background:var(--cella);color:var(--fioco)}
+.cella .badge{position:absolute;right:3px;top:3px;z-index:2;font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.04em;padding:1px 4px;border-radius:4px;background:rgba(0,0,0,.55);color:var(--ambra)}
+.cella .badge.ok{color:var(--acido-2)}
+.cella.nota{border-style:dashed;border-width:2px}
+.cella.nota.nR{border-color:var(--R)}.cella.nota.nB{border-color:var(--B)}.cella.nota.nN{border-color:var(--neutro)}.cella.nota.nA{border-color:#E0574B}.cella.nota.nD{border-color:var(--ambra)}
+.cella svg{position:absolute;inset:0;margin:auto;width:56%;height:56%;opacity:.9}
+.cella.dbl::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 0 46%,rgba(0,0,0,.35) 46% 54%,transparent 54%)}
+.cella.vera-D{background:linear-gradient(135deg,var(--R) 0 50%,var(--B) 50%);border-color:var(--ambra);color:#0B0D0C;box-shadow:inset 0 0 0 2px var(--ambra)}
+.legenda{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12.5px;color:var(--muto)}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda i{width:14px;height:11px;border-radius:3px;display:inline-block;border:1px solid var(--linea-2)}
+
+/* Schermate a tutto schermo */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muto);font-weight:600;font-size:14px;min-height:40px;gap:10px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:18px 0}
+.stage .mid.alto{justify-content:flex-start;padding-top:12px;align-items:stretch;text-align:left}
+.big{font-family:var(--disp);font-weight:700;font-size:clamp(34px,10.5vw,48px);line-height:1.02;letter-spacing:.02em;text-transform:uppercase}
+.lede{margin:2px auto 0;color:var(--muto);font-size:15px;line-height:1.5;max-width:34ch}
+.lede b{color:var(--testo)}
+.bottom{display:grid;gap:10px}
+.sigillo{width:94px;height:94px;border-radius:24px;border:1px solid var(--c,var(--acido));display:grid;place-items:center;margin:0 auto 8px;position:relative;
+  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c,var(--acido)) 14%,transparent),transparent 70%)}
+.sigillo svg{width:46px;height:46px;color:var(--c,var(--acido))}
+.sigillo::after{content:'';position:absolute;inset:-7px;border-radius:30px;border:1px dashed color-mix(in srgb,var(--c,var(--acido)) 40%,transparent)}
+.riservato{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.2em;padding:4px 8px;border-radius:6px;border:1px solid currentColor}
+
+/* Mappa privata */
+.testa-mappa{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0 12px;border-bottom:1px solid var(--linea);margin-bottom:12px}
+.testa-mappa .t{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--c2)}
+.testa-mappa .t small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--muto);font-weight:500}
+.nascondi{min-height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:700;font-size:15px;color:var(--testo)}
+.istruzione{font-size:14.5px;line-height:1.5;color:var(--muto);margin:0 0 12px}
+.istruzione b{color:var(--testo)}
+.scan{position:relative}
+.scan.entra::after{content:'';position:absolute;left:-4px;right:-4px;top:0;height:3px;border-radius:2px;background:var(--acido);opacity:.6;animation:passata .62s cubic-bezier(.4,.1,.3,1) forwards;pointer-events:none}
+@keyframes passata{from{top:0;opacity:.7}to{top:100%;opacity:0}}
+.scan.entra .griglia{animation:svela .62s ease-out}
+@keyframes svela{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.griglia.scelta button.cella:disabled{opacity:.4}
+.risposta{width:100%;padding:24px 16px;border-radius:18px;background:var(--pannello);border:1px solid var(--c,var(--acido));display:flex;flex-direction:column;align-items:center;gap:8px}
+.risposta .t{font-family:var(--disp);font-weight:700;font-size:clamp(30px,9vw,42px);line-height:1.05;letter-spacing:.02em;text-transform:uppercase;color:var(--c,var(--acido))}
+.risposta .s{font-family:var(--mono);font-size:13px;color:var(--muto);letter-spacing:.08em}
+.messaggio .w{font-family:var(--disp);font-weight:700;font-size:clamp(40px,13vw,64px);letter-spacing:.04em;line-height:1;text-transform:uppercase;color:var(--acido-2);word-break:break-word}
+.messaggio .n{font-family:var(--disp);font-weight:700;font-size:56px;line-height:1;color:var(--testo)}
+.numeri{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:4px 0 12px}
+.numeri button{min-height:52px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo);font-family:var(--disp);font-weight:700;font-size:22px;color:var(--testo)}
+.numeri button.on{border-color:var(--acido);color:var(--acido-2);background:var(--acido-ombra)}
+.numeri.due{grid-template-columns:1fr 1fr}
+.numeri.due button{min-height:64px;font-size:30px}
+
+/* Esito di un tocco */
+.esito{width:100%;max-width:544px;padding:22px 18px 18px;border-radius:20px;background:var(--pannello);border:1px solid var(--c,var(--linea-2));text-align:center;position:relative;overflow:hidden}
+.esito .tes{width:110px;height:72px;margin:4px auto 14px;border-radius:12px;background:var(--c,var(--cella));display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:18px;color:rgba(0,0,0,.6);position:relative;overflow:hidden}
+.esito .tes.vera-D{background:linear-gradient(135deg,var(--R) 0 50%,var(--B) 50%);box-shadow:inset 0 0 0 3px var(--ambra)}
+.esito .tes.A{background:#050605;color:var(--R2);box-shadow:inset 0 0 0 2px var(--R)}
+.esito .tes.int{background:var(--pozzo);color:var(--ambra);box-shadow:inset 0 0 0 2px var(--ambra)}
+.esito .t{font-family:var(--disp);font-weight:700;font-size:clamp(26px,8vw,34px);line-height:1.05;letter-spacing:.03em;text-transform:uppercase}
+.esito .p{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--muto);margin-top:6px}
+.esito .fisico{margin:14px 0 4px;padding:11px 12px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);color:#D5DCCD;font-size:14.5px;line-height:1.5}
+.esito .fisico b{color:var(--testo)}
+.esito .ii{margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--salvia)}
+.esito .ii.ok{color:var(--ambra)}
+.esito .btn{margin-top:14px}
+
+/* Finestre sopra la pagina */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(3,4,4,.78);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
+.velo.centro{align-items:center;padding:16px}
+.velo .box{width:100%;max-width:544px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 16px;border-radius:18px;background:var(--pannello);border:1px solid var(--linea-2)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;pointer-events:none;max-width:92vw;padding:11px 16px;border-radius:12px;background:var(--acido-2);color:#11160A;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+
+/* Cronologia e tabelle */
+.log{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.log li{font-size:14px;line-height:1.45;color:#D5DCCD;padding:8px 10px 8px 12px;border-radius:9px;background:var(--pozzo);border-left:3px solid var(--linea-2)}
+.log li.R{border-left-color:var(--R)}.log li.B{border-left-color:var(--B)}
+.log li.t{background:transparent;border:0;color:var(--salvia);font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;padding:10px 2px 2px}
+.log li .mono{color:var(--ambra);font-size:12.5px}
+.tab{width:100%;border-collapse:collapse;font-size:14px}
+.tab th{text-align:right;color:var(--muto);font-weight:600;font-size:12px;padding:6px 4px;border-bottom:1px solid var(--linea-2);font-family:var(--mono);letter-spacing:.08em}
+.tab th:first-child,.tab td:first-child{text-align:left}
+.tab td{padding:9px 4px;border-bottom:1px solid var(--linea);text-align:right}
+.tab .R{color:var(--R2);font-weight:700}.tab .B{color:var(--B2);font-weight:700}
+.vince{padding:22px 18px;border-radius:18px;border:1px solid var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 12%,transparent),transparent 70%),var(--pannello);margin:8px 0 12px}
+.vince .t{font-family:var(--disp);font-weight:700;font-size:clamp(36px,11vw,52px);line-height:1;text-transform:uppercase;color:var(--c2)}
+.vince .s{color:var(--muto);font-size:15px;line-height:1.5;margin-top:8px}
+.vince .pp{display:flex;gap:18px;margin-top:14px;font-family:var(--disp);font-weight:700;font-size:30px}
+.mappe2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mappe2 .griglia{gap:3px;grid-template-columns:10px repeat(5,minmax(0,1fr))}
+.mappe2 .cella{min-height:0;border-radius:5px;font-size:8.5px}
+.mappe2 .ci{font-size:8px}
+.mappe2 h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;margin:0 0 6px;font-weight:500}
+
+/* Regolamento */
+.rules h3{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.03em;margin:26px 0 8px;color:var(--acido-2);text-transform:uppercase;scroll-margin-top:12px}
+.rules h3 .k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--fioco);font-weight:500;margin-bottom:2px}
+.rules h4{font-size:15.5px;margin:14px 0 6px;color:var(--testo)}
+.rules p,.rules li{font-size:15px;line-height:1.6;color:#D3D9CB}
+.rules p{margin:0 0 9px}
+.rules ul,.rules ol{margin:0 0 9px;padding-left:21px}
+.rules li{margin:3px 0}
+.rules b{color:var(--testo)}
+.rules span.R{color:var(--R2);font-weight:700}.rules span.B{color:var(--B2);font-weight:700}.rules .Am{color:var(--ambra);font-weight:700}
+.rules .f{font-family:var(--mono);font-size:14.5px;color:var(--acido-2);background:var(--pozzo);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;margin:6px 0 10px;line-height:1.6;overflow-x:auto}
+.rules .box{padding:12px 14px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin:8px 0 12px}
+.rules .box.amb{border-color:rgba(226,169,76,.35);background:var(--ambra-ombra)}
+.rules .box.acido{border-color:var(--linea-acido);background:var(--acido-ombra)}
+.rules .box p:last-child,.rules .box ul:last-child{margin-bottom:0}
+.rules .didas{font-size:13px;color:var(--muto);margin:6px 0 12px;line-height:1.45}
+.rules table{width:100%;border-collapse:collapse;margin:6px 0 12px;font-size:14px}
+.rules th,.rules td{padding:7px 6px;border-bottom:1px solid var(--linea);text-align:left}
+.rules th{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--muto);font-weight:500}
+.rules td.r,.rules th.r{text-align:right}
+.indice{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 6px}
+.indice a{display:block;padding:9px 10px;border-radius:10px;background:var(--pozzo);border:1px solid var(--linea);color:var(--testo);text-decoration:none;font-size:13.5px;line-height:1.3}
+.indice a span{font-family:var(--mono);font-size:11px;color:var(--acido);margin-right:6px}
+.schema{margin:10px 0 6px}
+.schema.picc{max-width:300px;margin-left:auto;margin-right:auto}
+.schede{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin:8px 0 10px}
+.schede button{min-height:40px;border-radius:9px;border:0;background:transparent;color:var(--muto);font-weight:600;font-size:14px}
+.schede button.on{background:var(--pannello-2);color:var(--acido-2)}
+.flusso{display:grid;gap:0;margin:8px 0 12px}
+.flusso .p{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;position:relative;padding-bottom:12px}
+.flusso .p:not(:last-child)::before{content:'';position:absolute;left:16px;top:30px;bottom:0;width:2px;background:var(--linea-2)}
+.flusso .l{width:34px;height:30px;border-radius:8px;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:13px;background:var(--pozzo);border:1px solid var(--linea-acido);color:var(--acido)}
+.flusso .p b{display:block;font-size:15px;color:var(--testo)}
+.flusso .p small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:2px}
+.flusso .p.opz .l{border-style:dashed;color:var(--ambra);border-color:rgba(226,169,76,.5)}
+.bivio{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
+.bivio div{padding:11px 12px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea)}
+.bivio b{display:block;font-family:var(--disp);font-size:16px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.bivio small{display:block;color:var(--muto);font-size:13px;line-height:1.45}
+.barre{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;margin:8px 0 12px;font-size:13.5px}
+.barre .b{height:12px;border-radius:3px;background:var(--acido);opacity:.85}
+.barre .b.bonus{background:linear-gradient(90deg,var(--acido) 0 var(--x),var(--ambra) var(--x))}
+.barre span{font-family:var(--mono);color:var(--muto)}
+
+/* Tieni premuto */
+.hold{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(10,14,6,.28);pointer-events:none}
+.btn.sec.hold .fill,.nascondi.hold .fill{background:rgba(183,228,73,.16)}
+.hold.going .fill{transition:transform var(--ms,600ms) linear;transform:scaleX(1)}
+.hold span,.hold .col{position:relative}
+.cambio{animation:cambio .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes cambio{from{opacity:.2;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){
+  .hold.going .fill{transition:none}.cambio,.cursore,.cella.sel::after,.scan.entra::after,.scan.entra .griglia{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= Inizio ================= -->
+<main class="wrap" id="inizio">
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
+  <header class="hero">
+    <div class="hero-top"><div class="kick">Codenames · espansione</div><div class="stato-led"><i></i>CANALE SICURO</div></div>
+    <h1>Double<br><span>Agents</span></h1>
+    <p>Due mappe segrete diverse, tre agenti che lavorano per entrambe le squadre, intercettazioni e messaggi criptati. Le 25 carte restano sul tavolo: il telefono custodisce i segreti.</p>
+    <div class="term">&gt; mappe: <b>2</b> · doppi agenti: <b>3</b> · soglia: <b id="heroSoglia">7</b><span class="cursore"></span></div>
+  </header>
+
+  <section class="pan acido" id="resumePan" hidden>
+    <h2>Operazione in corso</h2>
+    <p class="sub" id="resumeInfo"></p>
+    <div class="row">
+      <button class="btn small" id="resumeBtn" style="flex:1">Riprendi</button>
+      <button class="btn small sec hold" id="dropBtn" style="flex:1"><i class="fill"></i><span>Tieni premuto: chiudi</span></button>
+    </div>
+  </section>
+  <section class="pan" id="ultimaPan" hidden>
+    <div class="between"><div><h2 style="margin:0">Ultima operazione</h2><p class="recap" id="ultimaInfo"></p></div><button class="btn small sec" id="ultimaDeb">Debriefing</button></div>
+  </section>
+
+  <section class="pan">
+    <h2>Meccaniche</h2>
+    <div class="opt fisso"><span><b>Doppi agenti</b><small>Due mappe private diverse; tre agenti appartengono a entrambe le squadre. È il cuore dell’espansione.</small></span><span class="lucchetto">SEMPRE</span></div>
+    <label class="opt"><span><b>Intercettazioni</b><small>Il capospia avversario può provare a indovinare la prima carta toccata e bloccare il turno.</small></span><input type="checkbox" id="oInt"></label>
+    <label class="opt"><span><b>Messaggi criptati</b><small>Indizi segreti, solo per i propri agenti: valgono 1 o 2 e non si intercettano.</small></span><input type="checkbox" id="oCripto"></label>
+    <label class="opt"><span><b>Indagine</b><small>Una volta a partita il capospia scopre se una sua parola è un doppio agente.</small></span><input type="checkbox" id="oInd"></label>
+    <div class="between" style="border-top:1px solid var(--linea);padding-top:12px;margin-top:2px">
+      <p class="recap" id="recap" style="margin:0"></p>
+      <button class="link" id="bilBtn" style="flex:none">Bilanciamento</button>
+    </div>
+  </section>
+
+  <section class="pan">
+    <h2>Chi inizia</h2>
+    <div class="seg" id="segPrimo"><button data-v="caso">Sorteggio</button><button data-v="R">Rossi</button><button data-v="B">Blu</button></div>
+    <p class="recap" id="primoNota" style="margin-top:10px"></p>
+  </section>
+
+  <button class="btn" id="playBtn">Genera le mappe segrete</button>
+  <button class="link center" id="rulesBtn">Regolamento</button>
+</main>
+
+<!-- ================= Bilanciamento ================= -->
+<main class="wrap" id="bilanciamento" hidden>
+  <div class="toprow"><button class="back" id="bilBack">‹ Indietro</button><span class="kick">Bilanciamento</span></div>
+  <section class="pan" style="margin-top:8px">
+    <h2>Configurazioni</h2>
+    <div class="preset" id="presetList"></div>
+  </section>
+  <section class="pan">
+    <h2>Parametri</h2>
+    <div id="parList"></div>
+  </section>
+  <section class="pan">
+    <h2>Le vostre partite</h2>
+    <p class="recap" id="storicoInfo" style="margin:0"></p>
+  </section>
+  <p class="recap" id="bilNota" style="margin:0 2px 12px"></p>
+  <button class="btn" id="bilDone">Fatto</button>
+</main>
+
+<!-- ================= Regolamento ================= -->
+<main class="wrap" id="regole" hidden>
+  <div class="toprow"><button class="back" id="regBack">‹ Indietro</button><span class="kick">Regolamento</span></div>
+  <section class="pan rules" style="margin-top:8px" id="regoleTesto"></section>
+  <button class="btn sec" id="regBack2">Indietro</button>
+</main>
+
+<!-- ================= Preparazione ================= -->
+<main class="wrap" id="preparazione" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><span class="kick">Preparazione</span></div>
+  <section class="pan acido" style="margin-top:8px">
+    <div class="kick" style="color:var(--acido)">Mappe generate</div>
+    <div class="big" style="margin:6px 0 8px">Operazione pronta</div>
+    <p class="recap" id="prepPrimo" style="font-size:15px"></p>
+  </section>
+  <section class="pan">
+    <h2>Il tavolo</h2>
+    <ol class="recap" style="padding-left:20px;margin:0 0 12px;font-size:14.5px;color:#D3D9CB">
+      <li>Disponete <b>25 carte parola</b> in una griglia 5×5. Le carte chiave del gioco originale restano nella scatola.</li>
+      <li>I due capispia siedono <b>dallo stesso lato</b>. Visto da loro: colonne <b>A–E</b> da sinistra a destra, righe <b>1–5</b> dalla più lontana alla più vicina.</li>
+      <li>Tenete a portata le tessere rosse, blu, neutrali e l’assassino: le mette chi tocca, quando lo dice il telefono.</li>
+    </ol>
+    <div id="prepSchema" class="schema picc"></div>
+  </section>
+  <section class="pan">
+    <h2>Le mappe</h2>
+    <p class="sub" style="margin:0 0 12px">Ogni capospia può guardare la sua mappa adesso e ogni volta che vuole, dalla plancia. Si apre tenendo premuto, si chiude con «Nascondi».</p>
+    <div class="row"><button class="btn small R" id="prepMappaR" style="flex:1">Mappa rossa</button><button class="btn small B" id="prepMappaB" style="flex:1">Mappa blu</button></div>
+  </section>
+  <button class="btn" id="prepGo">Inizia l’operazione</button>
+</main>
+
+<!-- ================= Plancia ================= -->
+<main class="wrap" id="plancia" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><div class="links"><button class="link muto" id="pRegole">Regole</button><button class="link muto" id="pMenu">Menu</button></div></div>
+  <div class="barra"><span>OP <b id="pOp"></b></span><span id="pTurnoN"></span></div>
+
+  <div class="punteggi" id="pPunti"></div>
+
+  <section class="pan turno" id="pTurno">
+    <div class="kick" id="pKick"></div>
+    <div class="t" id="pTitolo"></div>
+    <div class="l" id="pLinea"></div>
+    <div class="fasi" id="pFasi"></div>
+    <div id="pConsole"></div>
+  </section>
+
+  <section class="pan">
+    <div class="between" style="margin-bottom:10px"><h2 style="margin:0">Griglia</h2><span class="kick" id="pGrigliaNota">vista pubblica</span></div>
+    <div id="pGriglia"></div>
+    <div id="pTocchiBar"></div>
+    <div class="legenda" id="pLegenda"></div>
+  </section>
+
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn small R" id="pMappaR" style="flex:1">Mappa rossa</button>
+    <button class="btn small B" id="pMappaB" style="flex:1">Mappa blu</button>
+  </div>
+  <div class="row">
+    <button class="btn small sec" id="pLog" style="flex:1">Cronologia</button>
+    <button class="btn small sec hold" id="pAnnulla" style="flex:1.3"><i class="fill"></i><span>Annulla ultima azione</span></button>
+  </div>
+</main>
+
+<!-- ================= Protezione (prima di ogni schermata riservata) ================= -->
+<section class="stage" id="protezione" hidden>
+  <div class="top"><span class="riservato" id="prRis">RISERVATO</span><button class="link muto" id="prAnnulla">Annulla</button></div>
+  <div class="mid">
+    <div class="sigillo" id="prSigillo"></div>
+    <div class="kick" id="prKick"></div>
+    <div class="big" id="prTitolo"></div>
+    <p class="lede" id="prTesto"></p>
+  </div>
+  <div class="bottom"><button class="btn hold" id="prApri"><i class="fill"></i><span>Tieni premuto per aprire</span></button></div>
+</section>
+
+<!-- ================= Mappa privata ================= -->
+<main class="wrap" id="mappa" hidden>
+  <div class="testa-mappa"><div class="t" id="mTitolo"></div><button class="nascondi" id="mNascondi">Nascondi</button></div>
+  <p class="istruzione" id="mIstruzione"></p>
+  <div class="scan" id="mScan"><div id="mGriglia"></div></div>
+  <div class="legenda" id="mLegenda"></div>
+  <div id="mExtra" style="margin-top:14px"></div>
+  <div class="stack" id="mAzioni" style="margin-top:14px"></div>
+</main>
+
+<!-- ================= Esito dell'indagine ================= -->
+<section class="stage" id="rivelazione" hidden>
+  <div class="top"><span class="riservato" id="rvRis">RISERVATO</span><span></span></div>
+  <div class="mid"><div class="risposta" id="rvBox"></div><p class="lede" id="rvNota"></p></div>
+  <div class="bottom"><button class="btn" id="rvOk">Nascondi e torna alla plancia</button></div>
+</section>
+
+<!-- ================= Messaggio criptato (lettura) ================= -->
+<section class="stage messaggio" id="messaggio" hidden>
+  <div class="top"><span class="riservato" id="msRis">RISERVATO</span><span class="kick">Decrittato</span></div>
+  <div class="mid">
+    <div class="kick" id="msKick"></div>
+    <div class="w mono" id="msParola"></div>
+    <div class="n" id="msNumero"></div>
+    <p class="lede" id="msNota"></p>
+  </div>
+  <div class="bottom"><button class="btn" id="msOk">Chiudi il messaggio</button></div>
+</section>
+
+<!-- ================= Schermata neutra ================= -->
+<section class="stage" id="neutro" hidden>
+  <div class="top"><span class="kick" id="neTop"></span><span></span></div>
+  <div class="mid"><div class="sigillo" id="neSigillo"></div><div class="big" id="neTitolo"></div><p class="lede" id="neTesto"></p></div>
+  <div class="bottom"><button class="btn" id="neOk"></button></div>
+</section>
+
+<!-- ================= Fine partita ================= -->
+<main class="wrap" id="fine" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="link muto" id="fiRegole">Regole</button></div>
+  <div id="fiCorpo"></div>
+  <div class="stack" style="margin-top:12px">
+    <button class="btn" id="fiDeb">Debriefing completo</button>
+    <button class="btn sec" id="fiNuova">Nuova operazione</button>
+    <button class="btn sec hold" id="fiAnnulla"><i class="fill"></i><span>Annulla l’ultima azione</span></button>
+  </div>
+</main>
+
+<!-- ================= Debriefing ================= -->
+<main class="wrap" id="debriefing" hidden>
+  <div class="toprow"><button class="back" id="dbBack">‹ Indietro</button><span class="kick">Debriefing</span></div>
+  <div id="dbCorpo"></div>
+  <button class="btn sec" id="dbBack2" style="margin-top:12px">Indietro</button>
+</main>
+
+<!-- ================= Finestre ================= -->
+<div class="velo" id="indizioVelo" hidden><div class="box">
+  <div class="between"><h2 style="margin:0" id="ivTitolo">Indizio pubblico</h2><button class="link muto" id="ivChiudi">Chiudi</button></div>
+  <p class="sub" style="margin:6px 0 12px">Il capospia dice ad alta voce una parola e un numero. Qui serve almeno il numero; la parola è facoltativa ma resta nella cronologia.</p>
+  <div class="numeri" id="ivNumeri"></div>
+  <input class="in" id="ivParola" placeholder="Parola (facoltativa)" maxlength="24" autocomplete="off" autocapitalize="characters" enterkeyhint="done" style="width:100%">
+  <button class="btn" id="ivOk" style="margin-top:12px" disabled>Registra l’indizio</button>
+</div></div>
+
+<div class="velo centro" id="esitoVelo" hidden><div class="esito" id="esitoBox"></div></div>
+
+<div class="velo" id="infoVelo" hidden><div class="box">
+  <h2 id="ifTitolo"></h2>
+  <div id="ifCorpo" style="color:#D3D9CB;font-size:14.5px;line-height:1.55"></div>
+  <div class="stack" style="margin-top:14px" id="ifBtns"></div>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+/* La pagina: schermate, passaggi del telefono, salvataggio. Le regole stanno tutte in motore.js (DA). */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_CFG = 'gds-codenames', K_P = 'gds-codenames-partita', K_ST = 'gds-codenames-storico';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+const NOME = { R: 'Rossi', B: 'Blu' }, AGG = { R: 'rosso', B: 'blu' }, AGGF = { R: 'rossa', B: 'blu' };
+const COL = { R: 'var(--R)', B: 'var(--B)' }, COL2 = { R: 'var(--R2)', B: 'var(--B2)' };
+const altra = DA.altra, et = DA.etichetta;
+const maiusc = s => String(s).toLocaleUpperCase('it');
+
+/* ---------------- Dati ---------------- */
+let impo = loadJSON(K_CFG, {}); if (!impo || typeof impo !== 'object') impo = {};
+let cfg = DA.configura(impo.cfg);
+let chiInizia = ['caso', 'R', 'B'].includes(impo.primo) ? impo.primo : 'caso';
+const saveImpo = () => saveJSON(K_CFG, { cfg, primo: chiInizia });
+let P = loadJSON(K_P, null), S = null;
+try { if (P) S = DA.stato(P); } catch (e) { P = null; S = null; }
+function salva() { if (!saveJSON(K_P, P)) toast('Attenzione: il telefono non riesce a salvare la partita.'); }
+function fai(ev) {
+  try { P = DA.applica(P, ev); } catch (e) { if (e instanceof DA.ErroreGioco) { toast(e.message); return false; } throw e; }
+  salva(); S = DA.stato(P);
+  if (S.fase === 'finita') registraStorico();
+  return true;
+}
+/* Dopo ogni azione i tasti restano fermi un attimo: un doppio tocco non diventa l'azione dopo */
+let blocco = 0;
+const fermo = () => Date.now() < blocco;
+const ferma = (ms = 600) => { blocco = Date.now() + ms; const t = $('pTurno'); t.classList.add('attendi'); clearTimeout(ferma.t); ferma.t = setTimeout(() => t.classList.remove('attendi'), ms); };
+
+/* ---------------- Schermate ---------------- */
+const SCHERMATE = ['inizio', 'bilanciamento', 'regole', 'preparazione', 'plancia', 'protezione', 'mappa', 'rivelazione', 'messaggio', 'neutro', 'fine', 'debriefing'];
+const RISERVATE = new Set(['protezione', 'mappa', 'rivelazione', 'messaggio']);
+const VELI = ['indizioVelo', 'esitoVelo', 'infoVelo'];
+let corrente = 'inizio';
+function show(id) {
+  SCHERMATE.forEach(s => { $(s).hidden = s !== id; });
+  VELI.forEach(v => { $(v).hidden = true; });
+  corrente = id; window.scrollTo(0, 0); $('toast').hidden = true;
+  if (window.gdsAppare) gdsAppare($(id));
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+function tieniPremuto(el, done, ms = 600) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { if (el.disabled) return; e.preventDefault(); stop(); el._tenuto = false; void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); el._tenuto = true; done(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el._tenuto = true; done(); } });
+  // un tocco breve non fa niente: lo si dice (ma non dopo una pressione riuscita)
+  el.addEventListener('click', e => { if (e.detail === 0 || el._tenuto) return; avvisoTieni(); });
+}
+/* Un tocco breve su un tasto da tenere premuto: lo si dice una volta sola */
+let avvisatoT = 0;
+function avvisoTieni() { if (Date.now() - avvisatoT < 1500) return; avvisatoT = Date.now(); toast('Tieni premuto finché la barra si riempie'); }
+function finestra(titolo, corpo, bottoni) {
+  $('ifTitolo').textContent = titolo; $('ifCorpo').innerHTML = corpo;
+  const box = $('ifBtns'); box.innerHTML = '';
+  (bottoni || [{ t: 'Chiudi', cls: 'sec' }]).forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn' + (b.cls ? ' ' + b.cls : ''); el.textContent = b.t;
+    el.onclick = () => { $('infoVelo').hidden = true; if (b.f) b.f(); };
+    box.appendChild(el);
+  });
+  $('infoVelo').hidden = false;
+}
+$('infoVelo').addEventListener('click', e => { if (e.target.id === 'infoVelo') $('infoVelo').hidden = true; });
+
+/* Icone (disegni originali) */
+const ICONA = {
+  mirino: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>',
+  doppio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg>',
+  lucchetto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.5v2.5"/></svg>',
+  occhio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  antenna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 13v8M8 21h8"/><circle cx="12" cy="11" r="1.6"/><path d="M8.5 7.5a5 5 0 0 0 0 7M15.5 7.5a5 5 0 0 1 0 7M5.6 4.6a9 9 0 0 0 0 12.8M18.4 4.6a9 9 0 0 1 0 12.8"/></svg>',
+  lente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg>',
+  passa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M2 12h3M19 12h3M3.5 10.5 2 12l1.5 1.5M20.5 10.5 22 12l-1.5 1.5"/></svg>'
+};
+
+/* ======================================================================
+   GRIGLIE
+   ====================================================================== */
+/* Classi e contenuto di una cella vista da tutti (vista pubblica) */
+function cellaPubblica(c) {
+  const cls = ['cella'], b = [];
+  let dentro = '';
+  if (c.rivelata) {
+    if (c.rivelata === 'N') cls.push('N');
+    else if (c.rivelata === 'A') { cls.push('A'); dentro = ICONA.mirino; }
+    else { cls.push(c.presa); if (c.rivelata === 'D') { cls.push('dbl'); b.push('2×'); } }
+  } else {
+    cls.push('libera');
+    if (c.nota) { cls.push('nota', 'n' + c.nota); b.push('nota'); }
+  }
+  return { cls, b, dentro };
+}
+/* Vista privata del capospia s */
+function cellaPrivata(c, s) {
+  const cls = ['cella'], b = [];
+  let dentro = '';
+  if (c.rivelata) {
+    if (c.rivelata === 'N') cls.push('N', 'coperta');
+    else if (c.rivelata === 'A') { cls.push('A', 'coperta'); dentro = ICONA.mirino; }
+    else { cls.push(c.presa, 'coperta'); if (c.rivelata === 'D') { cls.push('dbl'); b.push('2×'); } }
+  } else if (c.tipo === 'mio') { cls.push('mio' + s, 'pieno'); }
+  else if (c.tipo === 'assassino') { cls.push('ass'); dentro = ICONA.mirino; }
+  else cls.push('ignoto');
+  if (!c.rivelata && c.nota) { cls.push('nota', 'n' + c.nota); b.push('nota'); }
+  if (c.indagata) b.push(c.indagata === 'doppio' ? 'DOPPIO' : 'ESCL.');
+  return { cls, b, dentro };
+}
+/* Una griglia 5×5 con lettere e numeri. f(i) → { cls, b, dentro }; cliccabile(i) → bool; sel = posizione scelta */
+function grigliaHTML(f, opt = {}) {
+  let h = `<div class="griglia${opt.scelta ? ' scelta' : ''}"><span class="ci"></span>`;
+  for (let c = 0; c < 5; c++) h += `<span class="ci">${'ABCDE'[c]}</span>`;
+  for (let r = 0; r < 5; r++) {
+    h += `<span class="ci">${r + 1}</span>`;
+    for (let c = 0; c < 5; c++) {
+      const i = r * 5 + c, x = f(i), clic = opt.cliccabile ? opt.cliccabile(i) : false;
+      const cls = x.cls.slice(); if (clic) cls.push('cliccabile'); if (opt.sel === i) cls.push('sel');
+      const badge = x.b.length ? `<span class="badge">${esc(x.b.join(' · '))}</span>` : '';
+      const tag = opt.cliccabile ? 'button' : 'div';
+      h += `<${tag} class="${cls.join(' ')}" data-i="${i}"${tag === 'button' ? (clic ? '' : ' disabled') + ` aria-label="${et(i)}"` : ''}>${x.dentro || ''}<span class="lb">${et(i)}</span>${badge}</${tag}>`;
+    }
+  }
+  return h + '</div>';
+}
+const LEG_PUBBLICA = '<span><i style="background:var(--cella)"></i>in gioco</span><span><i style="background:var(--R)"></i>presa dai Rossi</span><span><i style="background:var(--B)"></i>presa dai Blu</span><span><i style="background:var(--neutro)"></i>neutrale</span><span><i style="background:#050605;border-color:var(--R)"></i>assassino</span><span><i style="background:var(--pozzo);border:1px solid var(--ambra)"></i>2× doppio agente</span>';
+
+/* ======================================================================
+   INIZIO E BILANCIAMENTO
+   ====================================================================== */
+function inizialiInt(c, s, primo) { return c.intercettazioni ? c.nInt + (s !== primo ? c.bonusRisposta : 0) : 0; }
+function recapCfg(c) {
+  const parti = [];
+  parti.push(`Soglia <b>${c.soglia}</b> punti`);
+  if (c.intercettazioni) parti.push(`<b>${c.nInt}</b> intercettazioni a testa${c.bonusRisposta ? ` (+${c.bonusRisposta} a chi gioca per secondo)` : ''}`);
+  if (c.criptati) parti.push(`<b>${c.nCripto}</b> messaggi criptati`);
+  if (c.indagine) parti.push('<b>1</b> indagine');
+  if (c.avanzati) parti.push('indizi 0 e ∞');
+  return parti.join(' · ') + '.';
+}
+function renderInizio() {
+  $('oInt').checked = cfg.intercettazioni; $('oCripto').checked = cfg.criptati; $('oInd').checked = cfg.indagine;
+  $('recap').innerHTML = recapCfg(cfg);
+  $('heroSoglia').textContent = cfg.soglia;
+  document.querySelectorAll('#segPrimo button').forEach(b => b.classList.toggle('on', b.dataset.v === chiInizia));
+  $('primoNota').innerHTML = chiInizia === 'caso' ? 'Il telefono sorteggia la squadra che comincia.' : `Comincia la squadra <b>${AGGF[chiInizia]}</b>.`;
+  if (cfg.intercettazioni && cfg.bonusRisposta) $('primoNota').innerHTML += ` L’altra parte con ${cfg.bonusRisposta === 1 ? 'un’intercettazione' : cfg.bonusRisposta + ' intercettazioni'} in più.`;
+  const inCorso = P && S && S.fase !== 'finita';
+  $('resumePan').hidden = !inCorso;
+  if (inCorso) { const V = DA.vistaPubblica(S); $('resumeInfo').innerHTML = `Turno ${V.nTurno}, tocca ai <b>${NOME[V.turno]}</b>. Rossi ${V.punti.R}/${V.soglia}, Blu ${V.punti.B}/${V.soglia}.`; }
+  const finita = P && S && S.fase === 'finita';
+  $('ultimaPan').hidden = !finita;
+  if (finita) $('ultimaInfo').innerHTML = `Hanno vinto i <b>${NOME[S.vincitore]}</b>${S.motivo === 'assassino' ? ' (assassino)' : ''}, ${DA.vistaPubblica(S).punti.R}–${DA.vistaPubblica(S).punti.B}.`;
+  $('playBtn').textContent = inCorso ? 'Riprendi l’operazione' : 'Genera le mappe segrete';
+}
+$('oInt').onchange = e => { cfg.intercettazioni = e.target.checked; saveImpo(); renderInizio(); };
+$('oCripto').onchange = e => { cfg.criptati = e.target.checked; saveImpo(); renderInizio(); };
+$('oInd').onchange = e => { cfg.indagine = e.target.checked; saveImpo(); renderInizio(); };
+$('segPrimo').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; chiInizia = b.dataset.v; saveImpo(); renderInizio(); });
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  cfg = DA.configura(); chiInizia = 'caso'; saveImpo();
+  P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {}
+  renderInizio(); toast('Tutto come all’inizio');
+};
+tieniPremuto($('dropBtn'), () => { P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {} renderInizio(); toast('Operazione chiusa'); }, 900);
+$('resumeBtn').onclick = () => vai();
+$('playBtn').onclick = () => { if (P && S && S.fase !== 'finita') { vai(); return; } nuova(); };
+$('ultimaDeb').onclick = () => apriDebriefing('inizio');
+$('rulesBtn').onclick = () => apriRegole('inizio');
+$('bilBtn').onclick = () => { renderBil(); show('bilanciamento'); };
+function nuova() {
+  P = DA.nuovaPartita({ cfg, primo: chiInizia }, DA.randIntCrypto);
+  P.ui = { pronta: false, creata: Date.now() };
+  salva(); S = DA.stato(P);
+  vai();
+}
+/* Va alla schermata giusta per la partita salvata (mai a una riservata) */
+function vai() {
+  if (!P || !S) { renderInizio(); show('inizio'); return; }
+  if (S.fase === 'finita') { renderFine(); show('fine'); return; }
+  if (P.ui && P.ui.pronta === false && !P.eventi.length) { renderPrep(); show('preparazione'); return; }
+  renderPlancia(); show('plancia');
+}
+
+/* Bilanciamento: configurazioni pronte e parametri. Valgono dalla prossima partita. */
+const PRESET = [
+  { id: 'standard', nome: 'Standard', tag: 'CONSIGLIATA', desc: 'Il regolamento con un correttivo: un’intercettazione in più a chi gioca per secondo, perché nelle simulazioni chi inizia vinceva troppo spesso.', c: { nInt: 3, bonusRisposta: 1, nCripto: 2, soglia: 7 } },
+  { id: 'originale', nome: 'Proposta originale', tag: '', desc: 'Esattamente i valori del progetto: 3 intercettazioni e 2 messaggi per squadra, soglia 7, nessun correttivo per chi inizia.', c: { nInt: 3, bonusRisposta: 0, nCripto: 2, soglia: 7 } },
+  { id: 'contro', nome: 'Controspionaggio duro', tag: 'SPERIMENTALE', desc: 'Più intercettazioni e un solo messaggio criptato: per gruppi che leggono bene gli avversari. Partite un po’ più lunghe.', c: { nInt: 4, bonusRisposta: 1, nCripto: 1, soglia: 7 } },
+  { id: 'rapida', nome: 'Operazione lampo', tag: 'SPERIMENTALE', desc: 'Soglia 6 e 2 intercettazioni: circa un turno in meno a squadra. I doppi agenti pesano di più.', c: { nInt: 2, bonusRisposta: 1, nCripto: 2, soglia: 6 } }
+];
+const PARAMETRI = [
+  { k: 'nInt', nome: 'Intercettazioni per squadra', desc: 'Gettoni per tutta la partita.', dip: 'intercettazioni' },
+  { k: 'bonusRisposta', nome: 'Bonus a chi gioca per secondo', desc: 'Intercettazioni in più per la squadra che non inizia.', dip: 'intercettazioni' },
+  { k: 'nCripto', nome: 'Messaggi criptati per squadra', desc: 'Ognuno vale 1 o 2 e non si intercetta.', dip: 'criptati' },
+  { k: 'soglia', nome: 'Soglia di vittoria', desc: 'Al massimo 7: con i soli 7 esclusivi si deve poter vincere.' }
+];
+function presetAttivo() { return PRESET.find(p => Object.keys(p.c).every(k => cfg[k] === p.c[k])); }
+function renderBil() {
+  const att = presetAttivo();
+  $('presetList').innerHTML = PRESET.map(p => `<button data-p="${p.id}" class="${att && att.id === p.id ? 'on' : ''}"><span class="tag">${p.tag}</span><b>${p.nome}</b><small>${p.desc}</small></button>`).join('');
+  $('parList').innerHTML = PARAMETRI.map(p => {
+    const [lo, hi] = DA.LIMITI[p.k], off = p.dip && !cfg[p.dip];
+    return `<div class="par${off ? ' spento' : ''}"><span><b>${p.nome}</b><small>${off ? 'Meccanica spenta.' : p.desc}</small></span>
+      <span class="stepper"><button data-k="${p.k}" data-d="-1" ${cfg[p.k] <= lo ? 'disabled' : ''} aria-label="Meno">−</button><span class="v num">${p.k === 'bonusRisposta' ? '+' + cfg[p.k] : cfg[p.k]}</span><button data-k="${p.k}" data-d="1" ${cfg[p.k] >= hi ? 'disabled' : ''} aria-label="Più">+</button></span></div>`;
+  }).join('') + `<label class="opt" style="border-top:1px solid var(--linea);padding-top:13px;margin-top:2px"><span><b>Indizi 0 e ∞</b><small>Regole avanzate di Codenames: con 0 o «illimitato» i tentativi non hanno limite. Non valgono per i messaggi criptati.</small></span><input type="checkbox" id="oAvanzati" ${cfg.avanzati ? 'checked' : ''}></label>`;
+  $('oAvanzati').onchange = e => { cfg.avanzati = e.target.checked; saveImpo(); };
+  const st = loadJSON(K_ST, []), lista = Array.isArray(st) ? st : [];
+  const n = lista.length, vp = lista.filter(x => x.vincitore === x.primo).length, ass = lista.filter(x => x.motivo === 'assassino').length;
+  $('storicoInfo').innerHTML = n ? `Partite finite su questo telefono: <b>${n}</b>. Chi inizia ha vinto <b>${vp}</b> volte (${Math.round(100 * vp / n)}%); ${ass} finite con l’assassino. Con poche partite la percentuale oscilla molto: dopo una ventina di partite, se chi inizia vince ancora più di 6 volte su 10, provate il bonus +2.` : 'Ancora nessuna partita finita su questo telefono. Lo storico servirà a capire se chi inizia è avvantaggiato con il vostro gruppo.';
+  $('bilNota').textContent = P && S && S.fase !== 'finita' ? 'L’operazione in corso tiene le regole con cui è cominciata: le modifiche valgono dalla prossima.' : 'Le modifiche valgono dalla prossima operazione.';
+}
+$('presetList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const p = PRESET.find(x => x.id === b.dataset.p); Object.assign(cfg, p.c); cfg = DA.configura(cfg); saveImpo(); renderBil(); });
+$('parList').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; cfg[b.dataset.k] += +b.dataset.d; cfg = DA.configura(cfg); saveImpo(); renderBil(); });
+$('bilBack').onclick = $('bilDone').onclick = () => { renderInizio(); show('inizio'); };
+
+/* ======================================================================
+   PREPARAZIONE
+   ====================================================================== */
+function schemaTavolo() {
+  // la griglia vista dai capispia, con il loro lato in basso
+  const cell = (r, c) => `<rect x="${30 + c * 50}" y="${14 + r * 34}" width="44" height="28" rx="5" fill="#171B19" stroke="rgba(214,226,200,.2)"/><text x="${52 + c * 50}" y="${32 + r * 34}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#8D978A">${'ABCDE'[c]}${r + 1}</text>`;
+  let g = ''; for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) g += cell(r, c);
+  return `<svg viewBox="0 0 300 236" role="img" aria-label="Orientamento della griglia: righe da 1 a 5 dalla più lontana alla più vicina ai capispia">
+    ${g}
+    <rect x="72" y="198" width="156" height="30" rx="8" fill="rgba(183,228,73,.08)" stroke="rgba(183,228,73,.4)"/>
+    <text x="150" y="217" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" letter-spacing="1.5" fill="#B7E449">LATO DEI CAPISPIA</text>
+    <path d="M14 22v150" stroke="rgba(214,226,200,.25)"/><path d="M10 168l4 6 4-6" fill="none" stroke="rgba(214,226,200,.35)"/>
+    <text x="10" y="16" font-family="IBM Plex Mono,monospace" font-size="9" fill="#5C6559">1</text></svg>`;
+}
+function renderPrep() {
+  $('prepPrimo').innerHTML = `Comincia la squadra <b style="color:${COL2[S.primo]}">${AGGF[S.primo]}</b>.` + (S.cfg.intercettazioni && S.cfg.bonusRisposta ? ` I ${NOME[altra(S.primo)]} partono con ${inizialiInt(S.cfg, altra(S.primo), S.primo)} intercettazioni invece di ${S.cfg.nInt}.` : '');
+  $('prepSchema').innerHTML = schemaTavolo();
+}
+$('prepMappaR').onclick = () => apriRiservato('vista', 'R', 'preparazione');
+$('prepMappaB').onclick = () => apriRiservato('vista', 'B', 'preparazione');
+$('prepGo').onclick = () => { P.ui = Object.assign({}, P.ui, { pronta: true }); salva(); renderPlancia(); show('plancia'); };
+
+/* ======================================================================
+   PLANCIA (pubblica)
+   ====================================================================== */
+let selTocco = null;
+function pips(n, tot, cls = '') { let h = `<span class="pips ${cls}">`; for (let i = 0; i < tot; i++) h += `<i class="${i < n ? 'on' : ''}"></i>`; return h + '</span>'; }
+function renderPunti(V) {
+  $('pPunti').innerHTML = ['R', 'B'].map(s => {
+    const p = V.punti[s], d = V.presi[s].d, e = V.presi[s].e, att = V.turno === s && V.fase !== 'finita';
+    let seg = ''; for (let i = 0; i < V.soglia; i++) seg += `<i class="${i < p ? 'on' : ''}"></i>`;
+    const ris = [];
+    if (V.cfg.intercettazioni) { const tot = inizialiInt(V.cfg, s, V.primo); ris.push(`<div><span>INTERC.</span>${pips(V.risorse.int[s], tot)}</div>`); }
+    if (V.cfg.criptati) ris.push(`<div><span>CRIPTATI</span>${pips(V.risorse.cripto[s], V.cfg.nCripto)}</div>`);
+    if (V.cfg.indagine) ris.push(`<div><span>INDAGINE</span>${pips(V.risorse.indagine[s], 1, 'ambra')}</div>`);
+    return `<div class="sq${att ? ' attiva' : ''}" style="--c:${COL[s]};--c2:${COL2[s]}">
+      <div class="nm">${NOME[s].toUpperCase()}<small>${att ? 'IN AZIONE' : ''}</small></div>
+      <div class="pt num">${p}<small>/${V.soglia}</small></div>
+      <div class="seg7" style="--n:${V.soglia}">${seg}</div>
+      <div class="det"><b>${e}</b> agenti · <b>${d}</b> ${d === 1 ? 'doppio' : 'doppi'}${d >= 2 ? ' <span style="color:var(--ambra)">+1 bonus</span>' : ''}</div>
+      ${ris.length ? `<div class="ris">${ris.join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function renderPlancia() {
+  if (!S) return;
+  if (S.fase === 'finita') { renderFine(); show('fine'); return; }
+  const V = DA.vistaPubblica(S), s = V.turno, o = altra(s), az = DA.azioni(S);
+  $('pOp').textContent = P.id.slice(0, 4).toUpperCase() + '-' + P.id.slice(4, 8).toUpperCase();
+  $('pTurnoN').textContent = `Turno ${V.nTurno}`;
+  renderPunti(V);
+  const t = $('pTurno'); t.style.setProperty('--tc', COL[s]); t.style.setProperty('--tc2', COL2[s]);
+  $('pTitolo').textContent = `Turno ${AGG[s]}`;
+  const fasi = [['indizio', 'INDIZIO'], ['controspionaggio', 'CONTROSPIONAGGIO'], ['tocchi', 'AGENTI']];
+  const idx = fasi.findIndex(f => f[0] === V.fase);
+  $('pFasi').innerHTML = fasi.filter(f => f[0] !== 'controspionaggio' || V.cfg.intercettazioni).map(f => { const i = fasi.indexOf(f); return `<i class="${i === idx ? 'on' : i < idx ? 'fatto' : ''}">${f[1]}</i>`; }).join('');
+  let kick = '', linea = '', console_ = '';
+  if (V.fase === 'indizio') {
+    kick = 'Fase A–C · trasmissione';
+    linea = `<b>Capospia ${AGG[s]}</b>: ${az.indagine ? 'se vuoi, prima l’indagine; poi ' : ''}scegli come dare l’indizio.`;
+    if (az.indagine) console_ += `<button class="indagine-btn" id="cIndagine"><span>Indagine segreta<small>Facoltativa · prima dell’indizio · una sola per partita</small></span><span>›</span></button>`;
+    console_ += `<div class="azioni${V.cfg.criptati ? ' due' : ''}"><button class="btn" id="cPubblico"><span class="col">Indizio pubblico<small>parola e numero ad alta voce</small></span></button>`;
+    if (V.cfg.criptati) console_ += `<button class="btn sec" id="cCripto" ${az.criptato ? '' : 'disabled'}><span class="col">Messaggio criptato<small>${V.risorse.cripto[s] ? `ne restano ${V.risorse.cripto[s]}` : 'finiti'}</small></span></button>`;
+    console_ += '</div>';
+  } else if (V.fase === 'controspionaggio') {
+    kick = 'Fase D · controspionaggio';
+    linea = `Indizio registrato. Ora il <b>capospia ${AGG[o]}</b> decide in segreto se intercettare la prima carta che toccheranno i ${NOME[s]}. Gli agenti ${AGG[s] === 'rosso' ? 'rossi' : 'blu'} non parlano ancora.`;
+    console_ += indizioHTML(V) + `<div class="azioni"><button class="btn ${o}" id="cContro"><span class="col">Passate il telefono al capospia ${AGG[o]}<small>decisione segreta · ${V.risorse.int[o]} ${V.risorse.int[o] === 1 ? 'intercettazione' : 'intercettazioni'} disponibili</small></span></button></div>`;
+  } else {
+    kick = 'Fase E · selezione';
+    linea = `<b>Agenti ${AGG[s] === 'rosso' ? 'rossi' : 'blu'}</b>: discutete, scegliete una carta sul tavolo e toccatela qui sotto nella griglia, poi confermate.`;
+    console_ += indizioHTML(V);
+    if (V.indizio && V.indizio.modo === 'criptato') {
+      console_ += `<div class="azioni"><button class="btn sec" id="cLeggi"><span class="col">${V.tentativi ? 'Rileggi' : 'Leggete'} il messaggio<small>solo gli agenti ${AGG[s] === 'rosso' ? 'rossi' : 'blu'}</small></span></button></div>`;
+    }
+  }
+  $('pKick').textContent = kick; $('pLinea').innerHTML = linea; $('pConsole').innerHTML = console_;
+  if ($('cIndagine')) $('cIndagine').onclick = () => { if (!fermo()) apriRiservato('indagine', s); };
+  if ($('cPubblico')) $('cPubblico').onclick = () => { if (!fermo()) apriIndizio(); };
+  if ($('cCripto')) $('cCripto').onclick = () => { if (!fermo()) apriRiservato('cripto', s); };
+  if ($('cContro')) $('cContro').onclick = () => { if (!fermo()) apriRiservato('intercetta', o); };
+  if ($('cLeggi')) $('cLeggi').onclick = () => apriRiservato('leggi', s);
+  // griglia: cliccabile solo nella fase dei tocchi, sulle carte ancora in gioco
+  const inTocchi = V.fase === 'tocchi' && az.tocco;
+  if (selTocco !== null && (!inTocchi || V.celle[selTocco].rivelata)) selTocco = null;
+  $('pGriglia').innerHTML = grigliaHTML(i => cellaPubblica(V.celle[i]), inTocchi ? { cliccabile: i => !V.celle[i].rivelata, sel: selTocco } : {});
+  $('pGrigliaNota').textContent = inTocchi ? 'tocca per scegliere' : 'vista pubblica';
+  $('pTocchiBar').innerHTML = inTocchi ? `<div class="tocchi-bar"><button class="btn ${s}" id="cRivela" ${selTocco === null ? 'disabled' : ''}>${selTocco === null ? 'Scegliete una carta' : 'Rivela ' + et(selTocco)}</button><button class="btn small sec" id="cStop" ${az.stop ? '' : 'disabled'}>Fermatevi</button></div>` : '';
+  $('pLegenda').innerHTML = LEG_PUBBLICA + (V.celle.some(c => c.nota) ? '<span><i style="background:var(--cella);border:2px dashed var(--ambra)"></i>nota: svelata da un tocco annullato</span>' : '');
+  if ($('cRivela')) $('cRivela').onclick = () => { if (!fermo() && selTocco !== null) rivela(selTocco); };
+  if ($('cStop')) $('cStop').onclick = () => { if (fermo()) return; finestra(`I ${NOME[s]} si fermano?`, `<p style="margin:0">Il turno passa ai ${NOME[o]}. Si può annullare con «Annulla ultima azione».</p>`, [{ t: 'Sì, fine del turno', cls: s, f: () => { if (fai({ t: 'stop', s })) passaggio('stop'); } }, { t: 'No, continuiamo', cls: 'sec' }]); };
+  const g = $('pGriglia').querySelector('.griglia');
+  if (inTocchi) g.addEventListener('click', e => { const b = e.target.closest('button.cella'); if (!b || b.disabled) return; const i = +b.dataset.i; selTocco = selTocco === i ? null : i; renderPlancia(); });
+  $('pAnnulla').disabled = !DA.puoAnnullare(P) && !P.eventi.length;
+  // quando tocca agli agenti, indizio e griglia vengono in cima allo schermo (una volta per turno)
+  const chiaveFase = V.nTurno + V.fase;
+  if (inTocchi && chiaveFase !== renderPlancia.ultima) {
+    const el = $('pConsole').querySelector('.indizio');
+    if (el) setTimeout(() => { if (corrente === 'plancia') el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 80);
+  }
+  renderPlancia.ultima = chiaveFase;
+}
+function indizioHTML(V) {
+  const ind = V.indizio; if (!ind) return '';
+  const max = ind.max === Infinity || ind.max == null ? null : ind.max;
+  let nota = '';
+  if (V.esitoIntercetto === 'nessuna') nota = '<div class="nota-int">CONTROSPIONAGGIO: NESSUNA INTERCETTAZIONE</div>';
+  else if (V.esitoIntercetto === 'fallita') nota = '<div class="nota-int ok">INTERCETTAZIONE FALLITA</div>';
+  else if (V.fase === 'tocchi' && ind.modo === 'pubblico' && V.cfg.intercettazioni && V.tentativi === 0 && S.intercetto) nota = '<div class="nota-int">CONTROSPIONAGGIO DECISO · SI SCOPRE AL PRIMO TOCCO</div>';
+  if (ind.modo === 'criptato') return `<div class="indizio cripto"><div class="w"><small>TRASMISSIONE</small>Criptata</div><div class="n">tentativi<b class="num">${V.tentativi}</b>limite segreto</div></div>`;
+  const parola = ind.parola ? esc(maiusc(ind.parola)) : 'Indizio';
+  return `<div class="indizio"><div class="w"><small>INDIZIO ${AGG[V.turno].toUpperCase()}</small>${parola}</div><div class="n">numero<b class="num">${ind.n === 'inf' ? '∞' : ind.n}</b>${V.fase === 'tocchi' ? `tentativi ${V.tentativi}${max ? '/' + max : ''}` : ''}</div></div>${nota}`;
+}
+
+/* Indizio pubblico */
+let ivN = null;
+function apriIndizio() {
+  const s = S.turno; ivN = null; $('ivParola').value = '';
+  $('ivTitolo').innerHTML = `Indizio <span style="color:${COL2[s]}">${AGG[s]}</span>`;
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9].concat(S.cfg.avanzati ? [0, 'inf'] : []);
+  $('ivNumeri').innerHTML = nums.map(n => `<button data-n="${n}">${n === 'inf' ? '∞' : n}</button>`).join('');
+  $('ivOk').disabled = true; $('ivOk').className = 'btn ' + s;
+  $('indizioVelo').hidden = false;
+}
+$('ivNumeri').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; ivN = b.dataset.n === 'inf' ? 'inf' : +b.dataset.n; $('ivNumeri').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('ivOk').disabled = false; });
+$('ivChiudi').onclick = () => { $('indizioVelo').hidden = true; };
+$('ivOk').onclick = () => {
+  if (ivN === null) return;
+  let parola = $('ivParola').value;
+  try { parola = DA.pulisciParola(parola); } catch (e) { toast(e.message); return; }
+  $('indizioVelo').hidden = true;
+  if (fai({ t: 'indizio', s: S.turno, n: ivN, parola })) { ferma(); renderPlancia(); }
+};
+$('ivParola').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('ivParola').blur(); } });
+
+/* Tocco: si rivela solo dopo la conferma */
+function rivela(pos) {
+  const s = S.turno, k = S.tentativi;
+  if (!fai({ t: 'tocco', s, pos, k })) return;
+  selTocco = null; ferma(700);
+  mostraEsito();
+}
+const TESTI = {
+  proprio: s => ({ t: `Agente ${AGG[s]}`, fis: `Coprite la carta con una tessera <b>${AGGF[s]}</b>.` }),
+  doppio: s => ({ t: `Doppio agente catturato — squadra ${AGGF[s]}`, fis: `Era un agente di <b>entrambe</b> le squadre: ora è dei ${NOME[s]} per sempre. Coprite la carta con una tessera <b>${AGGF[s]}</b>.` }),
+  avversario: (s, o) => ({ t: `Agente ${AGG[o]}`, fis: `Punto ai ${NOME[o]}. Coprite la carta con una tessera <b>${AGGF[o]}</b>.` }),
+  neutrale: () => ({ t: 'Neutrale', fis: 'Coprite la carta con una tessera <b>neutrale</b>.' }),
+  assassino: () => ({ t: 'L’assassino', fis: 'Coprite la carta con la tessera dell’<b>assassino</b>.' }),
+  intercettata: (s, o) => ({ t: 'Intercettazione riuscita', fis: `I ${NOME[o]} avevano previsto questa carta. <b>Non coprite niente</b>: la carta resta in gioco e la sua identità resta segreta.` })
+};
+function mostraEsito() {
+  const u = S.ultimo, s = u.s, o = altra(s), V = DA.vistaPubblica(S);
+  const T = TESTI[u.esito](s, o);
+  let col = 'var(--linea-2)', tes = '', tesCls = '';
+  if (u.esito === 'proprio' || u.esito === 'doppio') col = COL[s];
+  if (u.esito === 'avversario') col = COL[o];
+  if (u.esito === 'neutrale') col = 'var(--neutro)';
+  if (u.esito === 'assassino') { col = 'var(--R)'; tesCls = 'A'; tes = ICONA.mirino; }
+  if (u.esito === 'doppio') tesCls = 'vera-D';
+  if (u.esito === 'intercettata') { col = 'var(--ambra)'; tesCls = 'int'; tes = ICONA.antenna; }
+  const coloreTitolo = { proprio: COL2[s], doppio: COL2[s], avversario: COL2[o], neutrale: 'var(--neutro)', assassino: 'var(--R2)', intercettata: 'var(--ambra)' }[u.esito];
+  const guad = ['R', 'B'].filter(x => u.guadagno[x]).map(x => `+${u.guadagno[x]} ai ${NOME[x]}${x === s && u.esito === 'doppio' && u.guadagno[x] === 2 ? ' (bonus di coppia)' : ''}`).join(' · ');
+  let ii = '';
+  if (u.intercetto === 'nessuna') ii = '<div class="ii">Controspionaggio: nessuna intercettazione</div>';
+  else if (u.intercetto === 'fallita') ii = `<div class="ii ok">Intercettazione ${AGG[o]} fallita</div>`;
+  let dopo = '', bottone = 'Continuate';
+  if (S.fase === 'finita') { dopo = S.vincitore === s ? `<b>I ${NOME[s]} vincono!</b>` : `<b>Vincono i ${NOME[S.vincitore]}.</b>`; bottone = 'Vedi il risultato'; }
+  else if (u.fine === 'errore') { dopo = `Turno ${AGG[s]} finito.`; bottone = 'Passa il turno'; }
+  else if (u.fine === 'limite') { dopo = 'Tentativi finiti: turno concluso.'; bottone = 'Passa il turno'; }
+  else if (u.fine === 'intercettazione') { dopo = `Turno ${AGG[s]} finito.`; bottone = 'Passa il turno'; }
+  else { const r = DA.azioni(S).rimasti; dopo = r === Infinity ? 'Potete continuare.' : `Potete continuare: ${r} ${r === 1 ? 'tentativo' : 'tentativi'} ancora, oppure fermarvi.`; }
+  const box = $('esitoBox');
+  box.style.setProperty('--c', col);
+  box.innerHTML = `<div class="kick">${et(u.pos)} · tocco ${u.k + 1}</div>
+    <div class="tes ${tesCls}" style="${tesCls ? '' : `--c:${col}`}">${tes || ''}<span style="position:relative">${et(u.pos)}</span></div>
+    <div class="t" style="color:${coloreTitolo}">${T.t}</div>
+    ${guad ? `<div class="p">${guad}</div>` : ''}
+    ${ii}
+    <div class="fisico">${T.fis}<br>${dopo}</div>
+    <button class="btn" id="esOk">${bottone}</button>`;
+  $('esitoVelo').hidden = false;
+  const ok = $('esOk'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 450);
+  ok.onclick = () => {
+    $('esitoVelo').hidden = true;
+    if (S.fase === 'finita') { renderFine(); show('fine'); }
+    else if (u.fine) passaggio(u.fine);
+    else renderPlancia();
+  };
+}
+/* Schermata neutra di fine turno */
+function passaggio(motivo) {
+  const s = S.turno, prima = altra(s);
+  const perche = { errore: 'Carta sbagliata.', limite: 'Tentativi finiti.', intercettazione: 'Intercettati.', stop: 'Si sono fermati.' }[motivo] || '';
+  neutro({ top: `Fine turno ${AGG[prima]}`, sigillo: ICONA.passa, c: COL[s], titolo: `Tocca ai ${NOME[s]}`, testo: `${perche} Il telefono passa al capospia ${AGG[s]}.`, ok: 'Pronti', f: () => { renderPlancia(); show('plancia'); } });
+}
+function neutro({ top, sigillo, c, titolo, testo, ok, f }) {
+  $('neTop').textContent = top || ''; $('neSigillo').innerHTML = sigillo || ICONA.passa; $('neSigillo').style.setProperty('--c', c || 'var(--acido)');
+  $('neTitolo').textContent = titolo; $('neTesto').innerHTML = testo; $('neOk').textContent = ok;
+  $('neOk').onclick = () => { if (f) f(); };
+  show('neutro');
+}
+
+/* ======================================================================
+   SCHERMATE RISERVATE
+   ====================================================================== */
+let flusso = null, inattivo = null;
+const PROT = {
+  vista: s => ({ kick: 'Canale riservato', titolo: `Mappa ${AGGF[s]}`, testo: `Solo per il <b>capospia ${AGG[s]}</b>. Gli altri distolgano lo sguardo.`, ico: ICONA.occhio }),
+  indagine: s => ({ kick: 'Indagine segreta', titolo: `Indagine ${AGGF[s]}`, testo: `Solo il <b>capospia ${AGG[s]}</b>. Sceglierà una sua parola: il telefono dirà se è un doppio agente.`, ico: ICONA.lente }),
+  intercetta: s => ({ kick: 'Controspionaggio', titolo: `Capospia ${AGG[s]}`, testo: `Solo il <b>capospia ${AGG[s]}</b>. Decide in segreto se intercettare la prima carta dei ${NOME[altra(s)]}.`, ico: ICONA.antenna }),
+  cripto: s => ({ kick: 'Trasmissione criptata', titolo: `Capospia ${AGG[s]}`, testo: `Solo il <b>capospia ${AGG[s]}</b>: scrive l’indizio per i suoi agenti.`, ico: ICONA.lucchetto }),
+  leggi: s => ({ kick: 'Messaggio in arrivo', titolo: `Agenti ${s === 'R' ? 'rossi' : 'blu'}`, testo: `Solo gli <b>agenti ${s === 'R' ? 'rossi' : 'blu'}</b>. Il capospia ${AGG[altra(s)]} e i suoi agenti non guardano.`, ico: ICONA.lucchetto })
+};
+function apriRiservato(tipo, s, ritorno = 'plancia') {
+  flusso = { tipo, s, sel: null, n: null, ritorno };
+  const T = PROT[tipo](s);
+  $('prRis').style.color = COL2[s]; $('prSigillo').style.setProperty('--c', COL[s]); $('prSigillo').innerHTML = T.ico;
+  $('prKick').textContent = T.kick; $('prTitolo').textContent = T.titolo; $('prTitolo').style.color = COL2[s]; $('prTesto').innerHTML = T.testo;
+  $('prApri').className = 'btn hold ' + s; $('prApri').innerHTML = '<i class="fill"></i><span>Tieni premuto per aprire</span>';
+  show('protezione');
+}
+tieniPremuto($('prApri'), () => {
+  if (!flusso) return;
+  if (flusso.tipo === 'leggi') apriMessaggio(); else { renderMappa(true); show('mappa'); }
+}, 600);
+$('prAnnulla').onclick = () => chiudiRiservato();
+/* Torna al pubblico senza lasciare niente di privato sullo schermo */
+function chiudiRiservato(msg) {
+  const r = flusso ? flusso.ritorno : 'plancia';
+  flusso = null; clearTimeout(inattivo);
+  $('mGriglia').innerHTML = ''; $('msParola').textContent = ''; $('rvBox').innerHTML = '';
+  if (r === 'preparazione') { renderPrep(); show('preparazione'); } else vai();
+  if (msg) toast(msg);
+}
+$('mNascondi').onclick = () => chiudiRiservato();
+/* Se il telefono si blocca o si cambia app, tutto ciò che è riservato si chiude */
+document.addEventListener('visibilitychange', () => { if (document.hidden && RISERVATE.has(corrente)) chiudiRiservato(); });
+window.addEventListener('pagehide', () => { if (RISERVATE.has(corrente)) chiudiRiservato(); });
+/* La sola consultazione si chiude da sola dopo 3 minuti senza tocchi */
+function sveglia() { clearTimeout(inattivo); if (flusso && flusso.tipo === 'vista' && corrente === 'mappa') inattivo = setTimeout(() => chiudiRiservato('Mappa nascosta dopo 3 minuti di inattività'), 180000); }
+document.addEventListener('pointerdown', sveglia, true);
+
+function renderMappa(entra) {
+  const { tipo, s } = flusso, V = DA.vistaPrivata(S, s), pubV = DA.vistaPubblica(S);
+  $('mTitolo').innerHTML = `<small>${tipo === 'vista' ? 'MAPPA RISERVATA' : PROT[tipo](s).kick.toUpperCase()}</small>Mappa ${AGGF[s]}`;
+  $('mTitolo').style.setProperty('--c2', COL2[s]);
+  let istr = '', clic = null, extra = '', azioni = '';
+  const mieLibere = V.filter(c => c.tipo === 'mio' && !c.rivelata).length;
+  if (tipo === 'vista') {
+    istr = `Le tue <b>${mieLibere}</b> parole ancora in gioco sono colorate. Tra le 10 iniziali ci sono <b>i 3 doppi agenti</b>, ma sono identiche alle altre.`;
+    azioni = `<button class="btn" id="mFatto">Nascondi la mappa</button>`;
+  } else if (tipo === 'indagine') {
+    istr = `Scegli una <b>tua parola ancora in gioco</b>. Il telefono ti dirà, solo a te, se è un doppio agente. Hai una sola indagine per tutta la partita.`;
+    clic = i => V[i].tipo === 'mio' && !V[i].rivelata;
+    azioni = `<button class="btn hold ${s}" id="mConferma" ${flusso.sel === null ? 'disabled' : ''}><i class="fill"></i><span>${flusso.sel === null ? 'Scegli una tua parola' : 'Tieni premuto: indaga su ' + et(flusso.sel)}</span></button><button class="btn sec" id="mRinuncia">Non indago ora</button>`;
+  } else if (tipo === 'intercetta') {
+    const ind = pubV.indizio;
+    istr = `Indizio ${AGG[altra(s)]}: <b>${ind.parola ? esc(maiusc(ind.parola)) + ' · ' : ''}${ind.n === 'inf' ? '∞' : ind.n}</b>. Quale carta toccheranno <b>per prima</b>? Se indovini, il loro turno finisce subito. Puoi anche rinunciare: nessuno lo saprà fino al primo tocco.`;
+    clic = i => !V[i].rivelata && V[i].tipo !== 'assassino';
+    extra = `<p class="recap" style="margin:0">Intercettazioni disponibili: <b>${S.int[s]}</b>. Sull’assassino non si intercetta. Se ti fermi su una tua parola e la toccano loro, la proteggi: è il modo per difendere un doppio agente.</p>`;
+    azioni = `<button class="btn hold ${s}" id="mConferma" ${flusso.sel === null ? 'disabled' : ''}><i class="fill"></i><span>${flusso.sel === null ? 'Scegli una carta da intercettare' : 'Tieni premuto: intercetta ' + et(flusso.sel)}</span></button><button class="btn sec hold" id="mNessuna"><i class="fill"></i><span>Tieni premuto: nessuna intercettazione</span></button>`;
+  } else if (tipo === 'cripto') {
+    istr = `Scrivi <b>una sola parola</b> e scegli <b>1 o 2</b>. I tuoi agenti potranno fare fino a un tentativo in più del numero. Gli avversari non sapranno né la parola né il numero, e non potranno intercettare.`;
+    extra = `<input class="in" id="mParola" placeholder="Parola dell’indizio" maxlength="24" autocomplete="off" autocapitalize="characters" enterkeyhint="done" style="width:100%" value="${esc(flusso.parola || '')}">
+      <div class="numeri due" id="mNumeri" style="margin-top:10px"><button data-n="1" class="${flusso.n === 1 ? 'on' : ''}">1</button><button data-n="2" class="${flusso.n === 2 ? 'on' : ''}">2</button></div>`;
+    azioni = `<button class="btn hold ${s}" id="mConferma"><i class="fill"></i><span>Tieni premuto: trasmetti</span></button><button class="btn sec" id="mRinuncia">Annulla, niente messaggio</button>`;
+  }
+  $('mIstruzione').innerHTML = istr;
+  $('mGriglia').innerHTML = grigliaHTML(i => cellaPrivata(V[i], s), clic ? { cliccabile: clic, sel: flusso.sel, scelta: true } : {});
+  $('mLegenda').innerHTML = `<span><i style="background:${COL[s]}"></i>tua (esclusivo o doppio)</span><span><i style="background:var(--cella)"></i>sconosciuta</span><span><i style="background:#050605;border-color:var(--R)"></i>assassino</span><span><i style="background:var(--cella);opacity:.5"></i>già coperta</span>` + (S.indagini[s] ? '<span><i style="background:var(--pozzo);border:1px solid var(--ambra)"></i>esito della tua indagine</span>' : '');
+  $('mExtra').innerHTML = extra; $('mAzioni').innerHTML = azioni;
+  const sc = $('mScan'); clearTimeout(renderMappa.t); sc.classList.remove('entra');
+  if (entra) { void sc.offsetWidth; sc.classList.add('entra'); renderMappa.t = setTimeout(() => sc.classList.remove('entra'), 700); }
+  const g = $('mGriglia').querySelector('.griglia');
+  if (clic) g.addEventListener('click', e => { const b = e.target.closest('button.cella'); if (!b || b.disabled) return; const i = +b.dataset.i; flusso.sel = flusso.sel === i ? null : i; renderMappa(false); });
+  if ($('mFatto')) $('mFatto').onclick = () => chiudiRiservato();
+  if ($('mRinuncia')) $('mRinuncia').onclick = () => chiudiRiservato();
+  if (tipo === 'indagine') tieniPremuto($('mConferma'), confermaIndagine, 700);
+  if (tipo === 'intercetta') { tieniPremuto($('mConferma'), () => { if (flusso && flusso.sel !== null) confermaIntercetta(flusso.sel); }, 700); tieniPremuto($('mNessuna'), () => confermaIntercetta(null), 700); }
+  if (tipo === 'cripto') {
+    $('mParola').addEventListener('input', e => { flusso.parola = e.target.value; });
+    $('mParola').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+    $('mNumeri').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; flusso.n = +b.dataset.n; $('mNumeri').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+    tieniPremuto($('mConferma'), confermaCripto, 700);
+  }
+  sveglia();
+}
+function confermaIndagine() {
+  if (!flusso || flusso.sel === null) return;
+  const s = flusso.s, pos = flusso.sel;
+  if (!fai({ t: 'indagine', s, pos })) return;
+  const r = S.indagini[s];
+  const box = $('rvBox');
+  box.style.setProperty('--c', r.doppio ? 'var(--ambra)' : COL[s]);
+  box.innerHTML = `<div class="kick">Indagine su ${et(pos)}</div><div class="sigillo" style="--c:${r.doppio ? 'var(--ambra)' : COL[s]};margin:4px auto">${r.doppio ? ICONA.doppio : ICONA.lente}</div>
+    <div class="t">${r.doppio ? 'Sì — doppio agente' : 'No — agente esclusivo'}</div>
+    <div class="s">${r.doppio ? 'LAVORA ANCHE PER I ' + NOME[altra(s)].toUpperCase() : 'SOLO DEI ' + NOME[s].toUpperCase()}</div>`;
+  $('rvRis').style.color = COL2[s];
+  $('rvNota').innerHTML = r.doppio ? 'Se la prendono prima loro, è persa. Il risultato resta segnato sulla tua mappa. Non dirlo ai tuoi agenti: puoi solo guidarli con indizi validi.' : 'Nessuno può portartela via: puoi lasciarla per dopo. Il risultato resta segnato sulla tua mappa.';
+  flusso.tipo = 'esito';
+  show('rivelazione');
+}
+$('rvOk').onclick = () => chiudiRiservato();
+function confermaIntercetta(pos) {
+  if (!flusso) return;
+  const s = flusso.s, att = altra(s);
+  if (pos === undefined) return;
+  if (!fai({ t: 'intercetta', s, pos })) return;
+  flusso = null; $('mGriglia').innerHTML = '';
+  // schermata identica qualunque sia la decisione
+  neutro({ top: 'Controspionaggio', sigillo: ICONA.passa, c: COL[att], titolo: 'Decisione registrata', testo: `Restituite il telefono agli <b>agenti ${att === 'R' ? 'rossi' : 'blu'}</b>: ora possono discutere.`, ok: 'Agenti pronti', f: () => { renderPlancia(); show('plancia'); } });
+}
+function confermaCripto() {
+  if (!flusso) return;
+  const s = flusso.s;
+  let parola;
+  try { parola = DA.pulisciParola(flusso.parola || ''); } catch (e) { toast(e.message); return; }
+  if (!parola) { toast('Scrivi la parola dell’indizio'); return; }
+  if (flusso.n !== 1 && flusso.n !== 2) { toast('Scegli 1 o 2'); return; }
+  if (!fai({ t: 'criptato', s, n: flusso.n, parola })) return;
+  flusso = null; $('mGriglia').innerHTML = '';
+  neutro({ top: 'Trasmissione criptata', sigillo: ICONA.lucchetto, c: COL[s], titolo: 'Messaggio trasmesso', testo: `Passate il telefono agli <b>agenti ${s === 'R' ? 'rossi' : 'blu'}</b> per la lettura. Nessuno può intercettare questo turno.`, ok: 'Agenti pronti a leggere', f: () => apriRiservato('leggi', s) });
+}
+/* Lettura del messaggio criptato, con una breve decrittazione */
+function apriMessaggio() {
+  const s = flusso.s, m = DA.messaggio(S, s);
+  if (!m) { chiudiRiservato('Nessun messaggio da leggere'); return; }
+  $('msRis').style.color = COL2[s];
+  $('msKick').textContent = `Per gli agenti ${s === 'R' ? 'rossi' : 'blu'}`;
+  $('msNumero').textContent = m.n;
+  $('msNota').innerHTML = `Al massimo <b>${m.max} tentativi</b>. Discutete pure, ma <b>senza pronunciare la parola</b>: gli avversari non devono sentirla. Potete rileggerla dalla plancia.`;
+  show('messaggio');
+  decritta($('msParola'), maiusc(m.parola));
+}
+function decritta(el, finale) {
+  const ridotto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (ridotto) { el.textContent = finale; return; }
+  const segni = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&@';
+  let k = 0; const passi = 14;
+  clearInterval(decritta.t);
+  decritta.t = setInterval(() => {
+    k++;
+    const fissi = Math.floor(finale.length * k / passi);
+    el.textContent = finale.split('').map((c, i) => i < fissi || c === ' ' ? c : segni[Math.floor(Math.random() * segni.length)]).join('');
+    if (k >= passi) { clearInterval(decritta.t); el.textContent = finale; }
+  }, 38);
+}
+$('msOk').onclick = () => { clearInterval(decritta.t); chiudiRiservato(); };
+
+/* Le mappe dalla plancia */
+$('pMappaR').onclick = () => apriRiservato('vista', 'R');
+$('pMappaB').onclick = () => apriRiservato('vista', 'B');
+
+/* ======================================================================
+   ANNULLA, CRONOLOGIA, MENU
+   ====================================================================== */
+function chiediAnnulla() {
+  if (!P || !P.eventi.length) { toast('Non c’è niente da annullare'); return; }
+  if (!DA.puoAnnullare(P)) {
+    const t = P.eventi[P.eventi.length - 1].t;
+    const perche = t === 'indagine' ? 'L’indagine è già stata letta dal capospia: non si annulla.'
+      : t === 'criptato' ? 'Il messaggio criptato è già stato trasmesso e non si recupera.'
+      : 'Il primo tocco contro un’intercettazione ha già mostrato a tutti l’esito: non si annulla.';
+    finestra('Non si può annullare', `<p style="margin:0">${perche}</p>`);
+    return;
+  }
+  const ev = P.eventi[P.eventi.length - 1];
+  const extra = ev.t === 'tocco' ? '<p style="margin:10px 0 0;color:var(--ambra)">Tutti hanno già visto che cosa c’era sotto: annullare corregge punteggio e turno, non il segreto. La carta resterà segnata come «nota» sulla plancia e in cronologia.</p><p style="margin:8px 0 0">Ricordatevi di togliere la tessera dal tavolo.</p>' : '';
+  finestra('Annullare l’ultima azione?', `<p style="margin:0">Si annulla ${esc(DA.descrivi(P))}.</p>${extra}`, [
+    { t: 'Sì, annulla', f: () => { P = DA.annulla(P); salva(); S = DA.stato(P); if (S.fase !== 'finita') togliDaStorico(P.id); toast('Azione annullata'); selTocco = null; vai(); } },
+    { t: 'No', cls: 'sec' }
+  ]);
+}
+tieniPremuto($('pAnnulla'), chiediAnnulla, 1200);
+tieniPremuto($('fiAnnulla'), chiediAnnulla, 1200);
+$('pLog').onclick = () => {
+  const V = DA.vistaPubblica(S);
+  let h = '<ul class="log">', n = 0;
+  V.cronologia.forEach(x => { if (x.n !== n) { n = x.n; h += `<li class="t">TURNO ${n}</li>`; } h += `<li class="${x.s}">${esc(x.testo)}</li>`; });
+  if (!V.cronologia.length) h += '<li>Ancora niente.</li>';
+  h += '</ul>';
+  if (V.annullati) h += `<p class="recap">Azioni annullate finora: <b>${V.annullati}</b>.</p>`;
+  finestra('Cronologia', h);
+};
+$('pRegole').onclick = () => apriRegole('plancia');
+$('fiRegole').onclick = () => apriRegole('fine');
+$('pMenu').onclick = () => {
+  finestra('Menu', `<p style="margin:0 0 6px">Regole di questa operazione:</p><p class="recap" style="margin:0">${recapCfg(S.cfg)}</p>`, [
+    { t: 'Torna all’inizio (la partita resta salvata)', cls: 'sec', f: () => { renderInizio(); show('inizio'); } },
+    { t: 'Chiudi', cls: 'sec' }
+  ]);
+};
+
+/* ======================================================================
+   FINE PARTITA E DEBRIEFING
+   ====================================================================== */
+function registraStorico() {
+  if (!P || !S || S.fase !== 'finita') return;
+  let st = loadJSON(K_ST, []); if (!Array.isArray(st)) st = [];
+  const F = DA.finale(S);
+  const riga = { id: P.id, data: Date.now(), primo: S.primo, vincitore: F.vincitore, motivo: F.motivo, punti: F.punti, presi: F.presi, turni: F.turni,
+    cfg: { nInt: F.cfg.nInt, bonusRisposta: F.cfg.bonusRisposta, nCripto: F.cfg.nCripto, soglia: F.cfg.soglia, intercettazioni: F.cfg.intercettazioni, criptati: F.cfg.criptati, indagine: F.cfg.indagine },
+    int: { riuscite: F.stat.intRiuscite, fallite: F.stat.intFallite }, criptati: F.stat.criptati, indagini: F.stat.indagini };
+  st = st.filter(x => x && x.id !== P.id); st.push(riga);
+  saveJSON(K_ST, st.slice(-200));
+}
+function togliDaStorico(id) { const st = loadJSON(K_ST, []); if (Array.isArray(st) && st.some(x => x && x.id === id)) saveJSON(K_ST, st.filter(x => x && x.id !== id)); }
+function renderFine() {
+  const F = DA.finale(S), v = F.vincitore, p = altra(v), c = F.cfg;
+  const motivo = F.motivo === 'assassino' ? `I ${NOME[p]} hanno toccato l’assassino.` : `I ${NOME[v]} hanno raggiunto ${F.punti[v]} punti intelligence.`;
+  const righe = [
+    ['Punti', F.punti.R, F.punti.B],
+    ['Agenti esclusivi', F.presi.R.e, F.presi.B.e],
+    ['Doppi agenti', F.presi.R.d, F.presi.B.d]
+  ];
+  if (c.intercettazioni) { righe.push(['Intercettazioni riuscite', F.stat.intRiuscite.R, F.stat.intRiuscite.B]); righe.push(['Intercettazioni fallite', F.stat.intFallite.R, F.stat.intFallite.B]); }
+  if (c.criptati) righe.push(['Messaggi criptati usati', F.stat.criptati.R, F.stat.criptati.B]);
+  if (c.indagine) righe.push(['Indagini usate', F.stat.indagini.R, F.stat.indagini.B]);
+  righe.push(['Turni giocati', F.stat.turni.R, F.stat.turni.B]);
+  $('fiCorpo').innerHTML = `<div class="vince" style="--c:${COL[v]};--c2:${COL2[v]}">
+      <div class="kick">Operazione conclusa · ${F.turni} turni</div>
+      <div class="t" style="margin-top:8px">Vincono i ${NOME[v]}</div>
+      <div class="s">${motivo}${F.annullati ? ` Azioni annullate: ${F.annullati}.` : ''}</div>
+      <div class="pp num"><span style="color:var(--R2)">${F.punti.R}</span><span style="color:var(--fioco)">–</span><span style="color:var(--B2)">${F.punti.B}</span></div>
+    </div>
+    <section class="pan"><table class="tab"><thead><tr><th></th><th class="R">ROSSI</th><th class="B">BLU</th></tr></thead>
+      <tbody>${righe.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`).join('')}</tbody></table></section>`;
+  $('fiAnnulla').hidden = !P.eventi.length;
+}
+$('fiDeb').onclick = () => apriDebriefing('fine');
+$('fiNuova').onclick = () => { renderInizio(); show('inizio'); };
+let debRitorno = 'fine';
+function apriDebriefing(ritorno) {
+  if (!P || !S || S.fase !== 'finita') { toast('Il debriefing si apre solo a partita finita'); return; }
+  debRitorno = ritorno; renderDebriefing(); show('debriefing');
+}
+$('dbBack').onclick = $('dbBack2').onclick = () => { if (debRitorno === 'inizio') { renderInizio(); show('inizio'); } else { renderFine(); show('fine'); } };
+function renderDebriefing() {
+  const D = DA.debriefing(P), m = D.mappa, F = D.finale;
+  const intercettate = {}; D.righe.filter(r => r.t === 'intercetta' && r.pos !== null).forEach(r => { (intercettate[r.pos] = intercettate[r.pos] || []).push(r.s); });
+  const indagate = {}; ['R', 'B'].forEach(s => { if (D.indagini[s]) indagate[D.indagini[s].pos] = s; });
+  const vera = i => {
+    const c = m[i], cls = ['cella'], b = []; let dentro = '';
+    if (c === 'D') cls.push('vera-D'); else if (c === 'A') { cls.push('A'); dentro = ICONA.mirino; } else cls.push(c);
+    if (indagate[i]) b.push('IND ' + (indagate[i] === 'R' ? 'R' : 'B'));
+    if (intercettate[i]) b.push('INT ' + intercettate[i].join(''));
+    if (D.svelate.includes(i)) b.push('nota');
+    return { cls, b, dentro };
+  };
+  const priv = s => i => {
+    const c = m[i], cls = ['cella'];
+    if (c === 'A') cls.push('ass'); else if (c === s || c === 'D') cls.push('mio' + s, 'pieno'); else cls.push('ignoto');
+    return { cls, b: [], dentro: c === 'A' ? ICONA.mirino : '' };
+  };
+  // cronologia completa, con tutti i segreti
+  const desc = r => {
+    const N = NOME[r.s], A = AGG[r.s];
+    switch (r.t) {
+      case 'indagine': return `Indagine del capospia ${A} su <span class="mono">${et(r.pos)}</span>: ${r.doppio ? '<b style="color:var(--ambra)">doppio agente</b>' : 'agente esclusivo'}.`;
+      case 'indizio': return `Indizio pubblico ${A}: <b>${r.parola ? esc(maiusc(r.parola)) + ' · ' : ''}${r.num === 'inf' ? '∞' : r.num}</b>.`;
+      case 'criptato': return `Messaggio criptato ${A}: <b>${esc(maiusc(r.parola))} · ${r.num}</b>.`;
+      case 'intercetta': return r.pos === null ? `Controspionaggio ${A}: nessuna intercettazione.` : `Controspionaggio ${A}: intercettazione su <span class="mono">${et(r.pos)}</span>.`;
+      case 'tocco': {
+        const cat = { R: 'agente rosso', B: 'agente blu', D: 'doppio agente', N: 'neutrale', A: 'assassino' }[r.cat];
+        const ii = r.intercetto === 'riuscita' ? ' <b style="color:var(--ambra)">Intercettato!</b> (carta non rivelata)' : r.intercetto === 'fallita' ? ' (intercettazione fallita)' : '';
+        return `I ${N} toccano <span class="mono">${et(r.pos)}</span>: ${cat}.${ii}`;
+      }
+      case 'stop': return `I ${N} si fermano.`;
+      default: return '';
+    }
+  };
+  let log = '<ul class="log">', n = 0;
+  D.righe.forEach(r => { if (r.n !== n) { n = r.n; log += `<li class="t">TURNO ${n} · ${NOME[r.att].toUpperCase()}</li>`; } log += `<li class="${r.s}">${desc(r)}</li>`; });
+  log += '</ul>';
+  const ind = ['R', 'B'].map(s => D.indagini[s] ? `${NOME[s]}: <span class="mono">${et(D.indagini[s].pos)}</span> (${D.indagini[s].doppio ? 'doppio' : 'esclusivo'}, turno ${D.indagini[s].nTurno})` : `${NOME[s]}: nessuna`).join(' · ');
+  const doppi = m.map((c, i) => c === 'D' ? i : -1).filter(i => i >= 0).map(i => `<span class="mono">${et(i)}</span> ${S.presa[i] ? `preso dai ${NOME[S.presa[i]]}` : 'mai preso'}`).join(' · ');
+  $('dbCorpo').innerHTML = `
+    <section class="pan acido" style="margin-top:8px"><div class="kick" style="color:var(--acido)">Declassificato</div>
+      <p class="recap" style="font-size:14.5px">Le carte sono ancora sul tavolo: leggete le parole nelle posizioni indicate. Vittoria dei <b>${NOME[F.vincitore]}</b> ${F.punti.R}–${F.punti.B}${F.motivo === 'assassino' ? ' (assassino)' : ''}.</p></section>
+    <section class="pan"><h2>La mappa vera</h2>
+      ${grigliaHTML(vera)}
+      <div class="legenda"><span><i style="background:var(--R)"></i>solo rosso</span><span><i style="background:var(--B)"></i>solo blu</span><span><i style="background:linear-gradient(135deg,var(--R) 50%,var(--B) 50%);border-color:var(--ambra)"></i>doppio agente</span><span><i style="background:var(--neutro)"></i>neutrale</span><span><i style="background:#050605;border-color:var(--R)"></i>assassino</span><span>IND indagata · INT intercettata</span></div>
+      <p class="recap">Doppi agenti: ${doppi}.</p>
+      <p class="recap">Indagini: ${ind}.</p></section>
+    <section class="pan"><h2>Le due mappe private</h2><p class="sub">Così le vedevano i capispia: i doppi agenti erano identici agli altri.</p>
+      <div class="mappe2"><div><h3 style="color:var(--R2)">MAPPA ROSSA</h3>${grigliaHTML(priv('R'))}</div><div><h3 style="color:var(--B2)">MAPPA BLU</h3>${grigliaHTML(priv('B'))}</div></div></section>
+    <section class="pan"><h2>Cronologia completa</h2>${log}${D.annullati ? `<p class="recap">Azioni annullate durante la partita: <b>${D.annullati}</b>${D.svelate.length ? ' (carte svelate: ' + D.svelate.map(i => et(i)).join(', ') + ')' : ''}.</p>` : ''}</section>`;
+}
+
+/* ======================================================================
+   REGOLAMENTO
+   ====================================================================== */
+let regRitorno = 'inizio';
+function apriRegole(ritorno) { regRitorno = ritorno; renderRegole(); show('regole'); }
+$('regBack').onclick = $('regBack2').onclick = () => { if (regRitorno === 'plancia') { renderPlancia(); show('plancia'); } else if (regRitorno === 'fine') { renderFine(); show('fine'); } else { renderInizio(); show('inizio'); } };
+/* Mappa d'esempio (inventata) per gli schemi del regolamento */
+const ESEMPIO = [...'RBNDR', ...'NRBBA', ...'DRNBN', ...'BNRDB', ...'RNBRN'];
+function grigliaEsempio(vista) {
+  return grigliaHTML(i => {
+    const c = ESEMPIO[i], cls = ['cella']; let dentro = '';
+    if (vista === 'vera') { if (c === 'D') cls.push('vera-D'); else if (c === 'A') { cls.push('A'); dentro = ICONA.mirino; } else cls.push(c); }
+    else { if (c === 'A') { cls.push('ass'); dentro = ICONA.mirino; } else if (c === vista || c === 'D') cls.push('mio' + vista, 'pieno'); else cls.push('ignoto'); }
+    return { cls, b: [], dentro };
+  });
+}
+function renderRegole() {
+  const c = (P && S && S.fase !== 'finita') ? S.cfg : cfg;
+  const capitoli = ['Introduzione', 'Differenze da Codenames', 'Materiale e preparazione', 'Le due mappe private', 'I doppi agenti', 'Punteggio e bonus di coppia', 'Intercettazioni', 'Messaggi criptati', 'Indagini', 'Il turno, fase per fase', 'Vittoria e sconfitta', 'Esempi strategici', 'Scelte di bilanciamento', 'Correggere un errore'];
+  const h3 = (i, t) => `<h3 id="cap${i + 1}"><span class="k">${String(i + 1).padStart(2, '0')}</span>${t}</h3>`;
+  const barre = [[0, 0], [1, 1], [2, 3], [3, 4]].map(([d, p]) => `<span>${d} doppi</span><div class="b${d >= 2 ? ' bonus' : ''}" style="width:${p * 25}%;--x:${d >= 2 ? (100 * (p - 1) / p) + '%' : '100%'}"></div><span>${p} pt</span>`).join('');
+  $('regoleTesto').innerHTML = `
+    <div class="kick" style="color:var(--acido)">Manuale operativo</div>
+    <p style="margin:6px 0 12px">Regolamento completo di <b>Codenames: Double Agents</b>. Si dà per scontato che conosciate Codenames: qui c’è tutto quello che cambia.${P && S && S.fase !== 'finita' ? ' I numeri citati sono quelli dell’operazione in corso.' : ''}</p>
+    <div class="indice">${capitoli.map((t, i) => `<a href="#cap${i + 1}"><span>${String(i + 1).padStart(2, '0')}</span>${t}</a>`).join('')}</div>
+
+    ${h3(0, capitoli[0])}
+    <p>In Codenames i due capispia guardano la <b>stessa</b> carta chiave. In Double Agents no: il telefono genera <b>due mappe diverse</b>, una per capospia. Ognuno vede le sue 10 parole, ma <b>3 di queste compaiono anche sulla mappa avversaria</b>: sono i <span class="Am">doppi agenti</span>, e nessuno dei due sa quali siano.</p>
+    <p>La partita diventa un gioco di informazione incompleta: ogni indizio pubblico può tradire un doppio agente all’avversario, ogni prima scelta può essere intercettata, e per proteggere i segreti ci sono pochi messaggi criptati e una sola indagine. Il cuore resta quello di sempre: <b>una parola e un numero</b>, e i compagni che indovinano sulle carte vere.</p>
+
+    ${h3(1, capitoli[1])}
+    <ul>
+      <li><b>Niente carte chiave</b>: le mappe le genera e le custodisce il telefono.</li>
+      <li><b>Composizione</b>: 7 agenti solo rossi, 7 solo blu, <b>3 doppi agenti</b>, 7 neutrali, 1 assassino.</li>
+      <li><b>Due mappe diverse</b>: ogni capospia vede 10 parole sue (7 esclusive + 3 doppie, indistinguibili), l’assassino e 14 parole sconosciute.</li>
+      <li><b>Punti intelligence</b>: non si devono trovare tutte le proprie parole; vince chi arriva per primo a <b>${c.soglia} punti</b>.</li>
+      <li><b>Tre risorse nuove</b>: intercettazioni, messaggi criptati, indagine (ognuna si può spegnere).</li>
+      <li><b>Il telefono fa da arbitro</b>: registra indizi e tocchi, applica il limite di tentativi, dice che tessera mettere.</li>
+    </ul>
+    <p>Tutto il resto è Codenames: si alternano i turni, il capospia non aggiunge spiegazioni né fa segni, gli agenti discutono liberamente, al massimo <b>numero + 1</b> tentativi, un errore chiude il turno, dopo almeno un tentativo ci si può fermare, l’assassino fa perdere.</p>
+
+    ${h3(2, capitoli[2])}
+    <p><b>Serve:</b> le 25 carte parola, le tessere rosse e blu, le tessere neutrali e la tessera dell’assassino del Codenames normale. Non servono tessere speciali per i doppi agenti: quando qualcuno ne cattura uno, lo copre con una tessera del proprio colore.</p>
+    <ol>
+      <li>Formate due squadre e scegliete un capospia per squadra.</li>
+      <li>Disponete 25 carte in una griglia 5×5.</li>
+      <li>I due capispia si siedono <b>dallo stesso lato</b> del tavolo. Da lì: colonne <b>A–E</b> da sinistra a destra, righe <b>1–5</b> dalla più lontana alla più vicina. Così ogni carta ha un nome, da A1 a E5, che resta lo stesso per tutta la partita.</li>
+      <li>Sul telefono: Genera le mappe segrete. Il telefono sorteggia (o fate scegliere) chi comincia.</li>
+    </ol>
+    <div class="schema picc">${schemaTavolo()}</div>
+    <p class="didas">La griglia vista dai capispia. Gli agenti seduti di fronte la vedono capovolta: per non sbagliare casella, appoggiate il telefono sul tavolo con la parte alta verso la riga 1.</p>
+    ${c.intercettazioni && c.bonusRisposta ? `<div class="box acido"><p><b>Chi gioca per secondo</b> parte con ${c.bonusRisposta === 1 ? 'un’intercettazione' : c.bonusRisposta + ' intercettazioni'} in più (${c.nInt + c.bonusRisposta} invece di ${c.nInt}). Il motivo è nel capitolo 13.</p></div>` : ''}
+
+    ${h3(3, capitoli[3])}
+    <p>Il telefono assegna in segreto una categoria a ogni posizione. Ogni capospia vede solo questo:</p>
+    <ul>
+      <li>le sue <b>10 parole</b>, tutte dello stesso colore: <b>non può distinguere</b> i suoi 7 esclusivi dai 3 doppi agenti;</li>
+      <li>l’<b>assassino</b>;</li>
+      <li>le altre <b>14 parole come sconosciute</b>: non sa quali sono avversarie e quali neutrali.</li>
+    </ul>
+    <div class="schede" id="esSchede"><button data-v="R" class="on">Mappa rossa</button><button data-v="B">Mappa blu</button><button data-v="vera">Verità</button></div>
+    <div class="schema picc" id="esMappa">${grigliaEsempio('R')}</div>
+    <p class="didas" id="esDidas"></p>
+    <h4>Come si consultano</h4>
+    <ul>
+      <li>Dalla plancia: <b>Mappa rossa</b> o <b>Mappa blu</b>. Compare prima una schermata di protezione con il colore della squadra: si apre solo <b>tenendo premuto</b>, così un tocco per sbaglio non mostra niente.</li>
+      <li><b>Nascondi</b> la richiude e torna alla plancia pubblica. Non si possono mai vedere le due mappe insieme.</li>
+      <li>Se il telefono si blocca o si passa a un’altra app, la mappa si chiude da sola; e anche dopo 3 minuti senza tocchi.</li>
+      <li>La plancia pubblica non mostra mai niente di segreto: si può passare il telefono in qualunque momento.</li>
+    </ul>
+
+    ${h3(4, capitoli[4])}
+    <p>Un doppio agente è una parola che lavora per <b>entrambe</b> le squadre. <b>Chi la tocca per primo la cattura per sempre.</b></p>
+    <div class="box"><p><b>Esempio.</b> LUNA è un doppio agente. Il capospia rosso la vede rossa, il blu la vede blu; nessuno dei due sa che è condivisa. Se i Rossi la toccano per primi, il telefono annuncia <b>«Doppio agente catturato — squadra rossa»</b>: la carta si copre con una tessera rossa, vale per i Rossi e i Blu non potranno più prenderla.</p></div>
+    <ul>
+      <li>Per chi la tocca, un doppio agente è sempre una <b>scelta giusta</b>: si continua a indovinare come con un proprio agente.</li>
+      <li>La sua natura diventa pubblica <b>solo quando viene catturato</b>: sulla plancia e su entrambe le mappe compare con il segno <b>2×</b>.</li>
+      <li>Non esiste un momento in cui è di tutte e due: appena toccato è di chi l’ha toccato.</li>
+    </ul>
+    <p>Siccome ogni capospia ha 3 doppi tra le sue 10 parole, circa <b>un indizio su tre</b> passa vicino a una parola che anche l’avversario considera sua. Chi ascolta l’indizio avversario e riconosce una <i>propria</i> parola ha appena scoperto, quasi certamente, un doppio agente.</p>
+
+    ${h3(5, capitoli[5])}
+    <p>Si vince arrivando a <b>${c.soglia} punti intelligence</b>.</p>
+    <table><thead><tr><th>Carta presa</th><th class="r">Punti</th></tr></thead><tbody>
+      <tr><td>Agente esclusivo (proprio, o regalato dall’avversario)</td><td class="r">+1</td></tr>
+      <tr><td>Primo doppio agente</td><td class="r">+1</td></tr>
+      <tr><td>Secondo doppio agente (bonus di coppia)</td><td class="r">+2</td></tr>
+      <tr><td>Terzo doppio agente</td><td class="r">+1</td></tr>
+    </tbody></table>
+    <div class="f">punti = esclusivi + doppi + (1 se doppi ≥ 2)</div>
+    <div class="barre">${barre}</div>
+    <p class="didas">Quanto valgono in tutto i doppi agenti di una squadra. In ambra il bonus di coppia, che si prende una volta sola.</p>
+    <p>Combinazioni vincenti a 7: 7 esclusivi; 6 esclusivi + 1 doppio; 4 esclusivi + 2 doppi; 3 esclusivi + 3 doppi. I doppi fanno risparmiare una carta, ma non sono indispensabili: <b>con i soli 7 esclusivi si vince sempre</b>, anche perdendo tutti i doppi.</p>
+    <div class="box amb"><p><b>Il bonus è un premio di maggioranza.</b> I doppi sono tre: due squadre non possono averne due a testa. Quindi il punto in più va a chi ne cattura la maggioranza, e ogni doppio conteso pesa due volte: uno per chi lo prende, e la possibilità del bonus tolta all’altro.</p></div>
+    <h4>Cattura accidentale</h4>
+    <p>Se i Rossi toccano un agente <b>solo blu</b>, la carta va ai Blu (tessera blu), i Blu prendono il punto e il turno rosso finisce. Se quel punto porta i Blu a ${c.soglia}, <b>vincono subito</b>, anche se non era il loro turno.</p>
+    <p>Sulla plancia i punti non coincidono con il numero di tessere: il secondo doppio vale due.</p>
+
+    ${h3(6, capitoli[6])}
+    ${c.intercettazioni ? `<p>Ogni squadra ha <b>${c.nInt} intercettazioni</b> per tutta la partita${c.bonusRisposta ? ` (+${c.bonusRisposta} a chi gioca per secondo)` : ''}. Un’intercettazione è una scommessa su <b>quale carta gli agenti avversari toccheranno per prima</b>.</p>` : '<div class="box"><p>In questa configurazione le intercettazioni sono <b>spente</b>. Ecco come funzionano quando sono attive.</p></div>'}
+    <ol>
+      <li>Il capospia attivo dà un <b>indizio pubblico</b>, per esempio «Spazio, 3».</li>
+      <li>Prima che gli agenti parlino, il telefono passa al <b>capospia avversario</b>. Sulla sua mappa sceglie in segreto una carta ancora in gioco, oppure rinuncia. Le due scelte richiedono lo stesso gesto e finiscono sulla stessa schermata: nessuno capisce che cosa ha deciso.</li>
+      <li>Il telefono torna agli agenti, che discutono normalmente. <b>Non sanno se c’è un’intercettazione</b> né dove.</li>
+      <li>Al <b>primo tocco</b> il telefono confronta le due posizioni, <b>prima</b> di rivelare la carta.</li>
+    </ol>
+    <div class="bivio">
+      <div style="border-color:rgba(226,169,76,.4)"><b style="color:var(--ambra)">Riuscita</b><small>Stessa carta. La carta <b>non</b> viene rivelata e non si copre; nessun punto; il turno finisce subito. La carta resta in gioco.</small></div>
+      <div><b style="color:var(--salvia)">Fallita</b><small>Carta diversa. Il gettone è consumato comunque; la prima scelta si risolve normalmente e, se giusta, si continua. Si annuncia solo «fallita», senza dire dove era.</small></div>
+    </div>
+    <ul>
+      <li>Al massimo <b>un’intercettazione per turno avversario</b>, e solo sulla <b>prima</b> scelta.</li>
+      <li>Non si intercetta un <b>messaggio criptato</b>.</li>
+      <li>Non si intercetta l’<b>assassino</b> (servirebbe solo a salvare gli avversari).</li>
+      <li>Il numero dell’indizio non conta. Le intercettazioni avanzate non danno punti.</li>
+      <li>Si può intercettare anche una carta che sulla propria mappa è <b>propria</b>: se l’indizio avversario sembra puntarci, è probabilmente un doppio agente, e intercettarla lo difende.</li>
+    </ul>
+
+    ${h3(7, capitoli[7])}
+    ${c.criptati ? `<p>Ogni squadra ha <b>${c.nCripto} messaggi criptati</b> per partita.` : '<div class="box"><p>In questa configurazione i messaggi criptati sono <b>spenti</b>.</p></div><p>Quando sono attivi:'} Invece di dire l’indizio ad alta voce, il capospia lo scrive sul telefono.</p>
+    <ol>
+      <li>Sceglie <b>Messaggio criptato</b> e, dalla sua mappa, scrive <b>una parola</b> e il numero, che può essere solo <b>1 o 2</b>.</li>
+      <li>Trasmette (tenendo premuto). Una schermata neutra dice di passare il telefono ai suoi agenti.</li>
+      <li>Gli agenti aprono il messaggio tenendo premuto e lo leggono. Possono rileggerlo durante il turno.</li>
+      <li>Discutono normalmente, <b>ma senza pronunciare la parola dell’indizio</b>.</li>
+    </ol>
+    <ul>
+      <li>Si fanno al massimo <b>numero + 1</b> tentativi, come sempre.</li>
+      <li>Gli avversari non conoscono né la parola né il numero, e <b>non possono intercettare</b> quel turno.</li>
+      <li>Un messaggio usato non si recupera. Niente frasi, disegni o spiegazioni: una parola e un numero, come in Codenames.</li>
+    </ul>
+    <p>Serve soprattutto a <b>proteggere un doppio agente</b>: un indizio pubblico che lo indica lo rivela anche all’avversario, che al turno dopo potrebbe prenderlo o intercettarlo.</p>
+
+    ${h3(8, capitoli[8])}
+    ${c.indagine ? '<p>Ogni squadra ha <b>una sola indagine</b> per tutta la partita.</p>' : '<div class="box"><p>In questa configurazione l’indagine è <b>spenta</b>: i suoi comandi non compaiono e il telefono non la accetta.</p></div>'}
+    <ol>
+      <li>All’inizio del proprio turno, <b>prima dell’indizio</b>, il capospia sceglie Indagine segreta e apre la sua mappa.</li>
+      <li>Sceglie una <b>sua parola ancora in gioco</b> e conferma tenendo premuto.</li>
+      <li>Il telefono risponde, solo a lui: <b>SÌ — doppio agente</b> oppure <b>NO — agente esclusivo</b>. La risposta è sempre vera.</li>
+      <li>Poi dà normalmente l’indizio: l’indagine non consuma il turno.</li>
+    </ol>
+    <ul>
+      <li>Solo sulle proprie parole: niente indagini su parole sconosciute.</li>
+      <li>La plancia mostra che l’indagine è stata usata, ma non su quale parola né con quale esito. L’esito resta segnato sulla mappa di chi l’ha fatta.</li>
+      <li>Il capospia non può dire ai suoi agenti il risultato: può solo guidarli con indizi validi.</li>
+    </ul>
+
+    ${h3(9, capitoli[9])}
+    <div class="flusso">
+      <div class="p"><span class="l">A</span><span><b>Preparazione</b><small>La plancia dice di chi è il turno e mostra punti, risorse e griglia pubblica.</small></span></div>
+      <div class="p opz"><span class="l">B</span><span><b>Indagine (facoltativa)</b><small>Solo se attiva e ancora disponibile, prima dell’indizio.</small></span></div>
+      <div class="p"><span class="l">C</span><span><b>Trasmissione</b><small>Indizio pubblico (parola e numero ad alta voce, il numero si registra) oppure messaggio criptato.</small></span></div>
+      <div class="p opz"><span class="l">D</span><span><b>Controspionaggio</b><small>Solo dopo un indizio pubblico: il capospia avversario decide in segreto se intercettare.</small></span></div>
+      <div class="p"><span class="l">E</span><span><b>Selezione</b><small>Gli agenti scelgono una carta sul tavolo, la toccano nella griglia e confermano. Il telefono dice che cos’era e quale tessera mettere. Le tessere si mettono <b>solo dopo</b> il verdetto del telefono.</small></span></div>
+      <div class="p"><span class="l">F</span><span><b>Punteggio</b><small>Punti, doppi, bonus e tentativi rimasti si aggiornano a ogni tocco. A ${c.soglia} punti la partita finisce subito.</small></span></div>
+      <div class="p"><span class="l">G</span><span><b>Passaggio</b><small>Errore, tentativi finiti, intercettazione o «Fermatevi»: una schermata neutra passa il turno.</small></span></div>
+    </div>
+    <p>Esiti di un tocco: <b>proprio agente</b> (si continua), <b>doppio agente</b> (catturato, si continua), <b>agente avversario</b> (punto a loro, fine turno), <b>neutrale</b> (fine turno), <b>assassino</b> (sconfitta), <b>intercettazione riuscita</b> (fine turno, carta non rivelata).</p>
+    ${c.avanzati ? '<p>Con le regole avanzate attive si può dare anche <b>0</b> o <b>∞</b> (illimitato): in entrambi i casi gli agenti possono fare tutti i tentativi che vogliono, finché non sbagliano o si fermano.</p>' : ''}
+
+    ${h3(10, capitoli[10])}
+    <ul>
+      <li><b>Vittoria</b>: appena una squadra arriva a ${c.soglia} punti. Vale anche se il punto arriva da un errore avversario, nel turno avversario.</li>
+      <li><b>Sconfitta</b>: chi tocca l’assassino perde subito.</li>
+      <li><b>Niente pareggi</b>: ogni tocco dà punti al più a una squadra, quindi una sola può arrivare per prima alla soglia. E la partita non può bloccarsi: prima o poi una squadra trova i suoi 7 esclusivi.</li>
+    </ul>
+    <p>A fine partita il telefono mostra punti, agenti, doppi, intercettazioni, messaggi, indagini e turni, e apre il <b>debriefing</b>: le due mappe complete, i doppi agenti, ogni indizio (anche i criptati), ogni intercettazione con la sua carta e ogni indagine. Prima della fine il debriefing non si apre.</p>
+
+    ${h3(11, capitoli[11])}
+    <div class="box"><p><b>1. Ascoltare gli indizi avversari.</b> I Blu dicono «Notte, 2». Sulla tua mappa rossa LUNA è tua. Se LUNA c’entra con la notte, probabilmente è un doppio agente che anche il capospia blu vede come suo. Hai tre risposte: intercettare LUNA (se la toccano per prima, la salvi), indicarla al tuo prossimo turno, o usare l’indagine per esserne certo.</p></div>
+    <div class="box"><p><b>2. Nascondere un doppio.</b> La tua indagine dice che STELLA è doppia. Un indizio pubblico che la indica la rivelerebbe ai Blu. Un messaggio criptato «Cometa, 1» la manda ai tuoi agenti senza che nessuno ascolti, e quel turno non si può intercettare.</p></div>
+    <div class="box"><p><b>3. Il gioco del rigore.</b> Gli agenti sanno che l’intercettazione cade di solito sulla parola più ovvia. A volte conviene toccare per prima la seconda più ovvia; ma è più rischiosa. Il capospia avversario sa che lo sapete… Nessuno vede le carte dell’altro: si gioca d’anticipo.</p></div>
+    <div class="box"><p><b>4. Un NO vale quanto un SÌ.</b> Se l’indagine dice «agente esclusivo», quella parola non può portartela via nessuno: lasciala per ultima e concentrati sulle altre, tra cui si nascondono tutti i doppi.</p></div>
+    <div class="box"><p><b>5. Il punto di maggioranza.</b> Siete a 5 con un doppio, i Blu a 4 con un doppio. Il terzo doppio vale 2 per voi (bonus) e toglie il bonus a loro: è l’indizio che conta di più in tutta la partita, e merita il messaggio criptato.</p></div>
+    <div class="box"><p><b>6. Indizi stretti contro intercettazioni.</b> Con «Mare, 1» l’avversario ha più facilità a indovinare la prima carta; con «Mare, 3» deve scegliere tra tre. Gli indizi larghi diluiscono il rischio di intercettazione, ma aumentano quello di sbagliare.</p></div>
+
+    ${h3(12, capitoli[12])}
+    <p>Le regole sono state provate con migliaia di partite simulate (<span class="mono">prove/codenames.bilanciamento.js</span>): le regole sono quelle vere dell’app, mentre indizi e intuizioni sono un modello con probabilità stimate. Le percentuali vanno lette come confronti tra configurazioni, non come previsioni esatte.</p>
+    <ul>
+      <li><b>Chi inizia ha un vantaggio.</b> Con i soli doppi agenti vinceva circa il 62% delle partite; con le regole proposte circa il 59% (tra il 56% e il 61% cambiando il modello). Le partite durano 3–4 turni a squadra, quindi mezzo turno di vantaggio pesa. Correttivo scelto: <b>+1 intercettazione a chi gioca per secondo</b>: nel modello di riferimento chi inizia scende al 56% (tra il 53% e il 59% negli altri modelli). È il cambio più piccolo che aiuta in tutti i modelli; con +2 si scende ancora (tra il 52% e il 58%). Si regola in Bilanciamento, e lo storico delle vostre partite dirà se basta.</li>
+      <li><b>Intercettazioni: 3 restano.</b> Con 2 o 4 cambia poco; senza, le partite si accorciano di un turno e il vantaggio di chi inizia sale al 63%. Nelle simulazioni ne riesce poco meno di due su cinque (dal 29% al 49%, secondo quanto è bravo chi intercetta).</li>
+      <li><b>Messaggi criptati: 2 restano</b>, con numero massimo 2. Non risultano dominanti: tolgono all’avversario l’intercettazione e l’informazione, ma valgono poche carte.</li>
+      <li><b>Indagine: resta attiva.</b> Aumenta di poco i doppi catturati (circa +8%) senza allungare la partita: aggiunge deduzione con un solo gesto.</li>
+      <li><b>Soglia 7 e 3 doppi agenti.</b> Con soglia 6 la partita dura un turno in meno ma chi inizia non è meno avvantaggiato. Tre doppi (dispari) rendono il bonus di coppia un premio di maggioranza e lasciano 7 esclusivi a squadra, quindi la vittoria resta sempre possibile.</li>
+      <li><b>Intercettazione a sorpresa.</b> Gli agenti non sanno se sono intercettati: così non possono semplicemente cambiare carta quando vedono il contatore scendere, e la scelta della prima carta resta un vero dilemma.</li>
+      <li><b>Niente intercettazione sull’assassino</b>: sarebbe solo un regalo per sbaglio agli avversari.</li>
+    </ul>
+    <p>Varianti da provare in Bilanciamento: <b>Controspionaggio duro</b> (4 intercettazioni, 1 messaggio) e <b>Operazione lampo</b> (soglia 6).</p>
+
+    ${h3(13, capitoli[13])}
+    <p><b>Annulla ultima azione</b> (sulla plancia, tenendo premuto, poi confermando) toglie l’ultima azione e ripristina punti, bonus, risorse e turno. Si può ripetere. Ma un annullamento non fa dimenticare quello che si è visto:</p>
+    <ul>
+      <li>Un <b>tocco</b> si annulla, ma la carta era stata rivelata a tutti: resta segnata come <b>nota</b> sulla plancia (bordo tratteggiato del suo colore) e nella cronologia. Togliete la tessera dal tavolo.</li>
+      <li>Il <b>primo tocco contro un’intercettazione</b> non si annulla: l’esito ha già detto a tutti dov’era (o dove non era) l’intercettazione.</li>
+      <li>L’<b>indagine</b> e il <b>messaggio criptato</b> non si annullano: il segreto è già stato letto.</li>
+      <li>Indizio pubblico, decisione del controspionaggio (senza rivelarla) e «Fermatevi» si annullano normalmente.</li>
+    </ul>
+    <p>Per prevenire gli errori: i tocchi si confermano con un secondo tasto, e le azioni riservate si confermano tenendo premuto. Le azioni annullate sono contate e compaiono nel debriefing.</p>
+  `;
+  const didas = { R: 'Mappa rossa: 10 parole rosse tutte uguali, l’assassino, 14 sconosciute. Tre delle rosse sono doppi agenti, ma qui non si vede.', B: 'Mappa blu: altre 10 parole. Le tre in comune con la mappa rossa sono i doppi agenti (D1, A3, D4).', vera: 'La verità, che conosce solo il telefono: rosso, blu, neutrale, assassino e i tre doppi agenti divisi a metà.' };
+  $('esDidas').textContent = didas.R;
+  $('esSchede').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('esSchede').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('esMappa').innerHTML = grigliaEsempio(b.dataset.v); $('esDidas').textContent = didas[b.dataset.v]; });
+  $('regoleTesto').querySelectorAll('.indice a').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' }); }));
+}
+
+/* ---------------- Avvio ---------------- */
+renderInizio();
+if (P && S && S.fase !== 'finita') vai();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

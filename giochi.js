@@ -52,6 +52,7 @@ self.GIOCHI = {
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70', dati: ['giochidisimo:7wonders'] },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0', dati: ['gds-chiinizia'] },
     { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#08E8DE', dati: ['gds-dossier', 'gds-dossier-partita', 'gds-giocatori'] },
-    { categoria: 'expansions', nome: 'Camel Up: Economics', descrizione: 'Piramide digitale, spionaggio sui dadi e Borsa sul vincitore di tappa', link: 'giochi/camelup/', colore: '#C8A273', extra: ['giochi/camelup/motore.js'], dati: ['gds-camelup', 'gds-camelup-partita', 'gds-giocatori'] }
+    { categoria: 'expansions', nome: 'Camel Up: Economics', descrizione: 'Piramide digitale, spionaggio sui dadi e Borsa sul vincitore di tappa', link: 'giochi/camelup/', colore: '#C8A273', extra: ['giochi/camelup/motore.js'], dati: ['gds-camelup', 'gds-camelup-partita', 'gds-giocatori'] },
+    { categoria: 'expansions', nome: 'Codenames: Double Agents', descrizione: 'Due mappe segrete, doppi agenti contesi, intercettazioni e messaggi criptati', link: 'giochi/codenames/', colore: '#B7E449', extra: ['giochi/codenames/motore.js'], dati: ['gds-codenames', 'gds-codenames-partita'] }
   ]
 };

@@ -106,7 +106,7 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
     await t.page.context().close();
   }
 
-  /* 5. Perudo, Conta Monete, Hex, 7 Wonders, Dossier, Chi inizia, Camel Up: tutto via, storici restano */
+  /* 5. Perudo, Conta Monete, Hex, 7 Wonders, Dossier, Chi inizia, Camel Up, Codenames: tutto via, storici restano */
   {
     const t = await telefono();
     await t.vai('giochi/perudo/', 0); await t.page.click('#minusBtn'); await t.ev(() => { S.dadi = '#123456'; save(); });
@@ -116,17 +116,20 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
     await t.vai('giochi/dossier/'); await t.ev(() => localStorage.setItem('gds-dossier-storico', '[{"esito":"x"}]'));
     await t.vai('giochi/chiinizia/'); await t.ev(() => localStorage.setItem('gds-chiinizia', '{"modo":"squadre"}'));
     await t.vai('giochi/camelup/'); await t.ev(() => { localStorage.setItem('gds-camelup', '{"cfg":{"capitale":80},"primo":1}'); localStorage.setItem('gds-camelup-partita', JSON.stringify(CU.nuovaPartita({ nomi: ['Simo', 'Luca'] }, CU.randIntCrypto))); localStorage.setItem('gds-camelup-storico', '[{"n":2}]'); });
+    await t.vai('giochi/codenames/'); await t.ev(() => { localStorage.setItem('gds-codenames', '{"cfg":{"nInt":4},"primo":"B"}'); localStorage.setItem('gds-codenames-partita', JSON.stringify(DA.nuovaPartita({}, DA.randIntCrypto))); localStorage.setItem('gds-codenames-storico', '[{"id":"x"}]'); });
     const prima = await t.ev(() => Object.keys(localStorage).sort());
     await t.vai('', 8);
     const dopo = await t.ev(() => Object.keys(localStorage).sort());
     console.log('     prima:', prima.join(', ')); console.log('     dopo: ', dopo.join(', '));
-    for (const k of ['gds-perudo', 'gds-contamonete', 'gds-hex', 'gds-hex-partita', 'giochidisimo:7wonders', 'gds-dossier', 'gds-dossier-partita', 'gds-chiinizia', 'gds-camelup', 'gds-camelup-partita']) assert.ok(!dopo.includes(k), k + ' cancellata');
-    assert.ok(dopo.includes('giochidisimo:7wonders:storico') && dopo.includes('gds-dossier-storico') && dopo.includes('gds-camelup-storico'), 'storici restano');
+    for (const k of ['gds-perudo', 'gds-contamonete', 'gds-hex', 'gds-hex-partita', 'giochidisimo:7wonders', 'gds-dossier', 'gds-dossier-partita', 'gds-chiinizia', 'gds-camelup', 'gds-camelup-partita', 'gds-codenames', 'gds-codenames-partita']) assert.ok(!dopo.includes(k), k + ' cancellata');
+    assert.ok(dopo.includes('giochidisimo:7wonders:storico') && dopo.includes('gds-dossier-storico') && dopo.includes('gds-camelup-storico') && dopo.includes('gds-codenames-storico'), 'storici restano');
     await t.vai('giochi/perudo/');
     assert.equal((await t.get('gds-perudo')).valori.length, 5); assert.notEqual((await t.get('gds-perudo')).dadi, '#123456');
     await t.vai('giochi/camelup/');
     assert.ok(await t.page.isVisible('#inizio') && await t.page.isHidden('#resumePan'), 'Camel Up riparte senza partita');
-    bene('Perudo, Conta Monete, Hex, 7 Wonders, Dossier, Chi inizia, Camel Up: dopo 8 giorni tutto come nuovo, storici intatti');
+    await t.vai('giochi/codenames/');
+    assert.ok(await t.page.isVisible('#inizio') && await t.page.isHidden('#resumePan'), 'Codenames riparte senza partita');
+    bene('Perudo, Conta Monete, Hex, 7 Wonders, Dossier, Chi inizia, Camel Up, Codenames: dopo 8 giorni tutto come nuovo, storici intatti');
     await t.page.context().close();
   }
 
@@ -178,7 +181,7 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
     const sp = await t.get('segnapunti-prese-v2');
     assert.ok(!sp || (!sp.g1 && !sp.g2 && !sp.g3), 'segnapunti vuoto');
     bene('Pulisci tutto: tocco breve avvisa e basta; tenuto premuto cancella tutto, restano storici e le chiavi di altri siti');
-    for (const p of ['giochi/segnapunti/#pegno', 'giochi/segnapunti/', 'giochi/contamonete/', 'giochi/contapunti/', 'giochi/impostore/', 'giochi/lupus/', 'giochi/perudo/', 'giochi/hex/', 'giochi/poker/', 'giochi/7wonders/', 'giochi/chiinizia/', 'giochi/dossier/', 'giochi/camelup/', '#expansions', '#carte', '']) await t.vai(p);
+    for (const p of ['giochi/segnapunti/#pegno', 'giochi/segnapunti/', 'giochi/contamonete/', 'giochi/contapunti/', 'giochi/impostore/', 'giochi/lupus/', 'giochi/perudo/', 'giochi/hex/', 'giochi/poker/', 'giochi/7wonders/', 'giochi/chiinizia/', 'giochi/dossier/', 'giochi/camelup/', 'giochi/codenames/', '#expansions', '#carte', '']) await t.vai(p);
     bene('tutte le pagine si aprono da pulite');
     await t.page.context().close();
   }
