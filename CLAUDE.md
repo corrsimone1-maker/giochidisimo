@@ -43,7 +43,7 @@ Categorie in `giochi.js`:
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo, Hex ad Aste);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
-- `expansions` (Secret Hitler: Dossier; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
+- `expansions` (Secret Hitler: Dossier, Camel Up: Economics; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
 
@@ -122,7 +122,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
-     Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`);
+     Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -153,11 +153,12 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Niente schermate intermedie** di impostazioni se non le chiede: si entra subito nel gioco, e le impostazioni stanno in un tasto piccolo.
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:
-  - `gds-giocatori` (nomi in comune tra Impostore e Lupus);
+  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier e Camel Up: Economics);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
+  - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
@@ -175,7 +176,7 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
 - **Tasto «Pulisci tutto»** in fondo alla home, a sinistra di Condividi, da tenere premuto 1,2 s: cancella subito i dati
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
-  - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi);
+  - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -206,6 +207,29 @@ l'app sostituisce le buste dei ruoli e dà gli imprevisti.
 - **Opzioni:** rapporti al Presidente a ogni legge liberale, poteri liberali (Voto segreto, Testimone, Inchiesta, Confronto)
   sotto le caselle di `SLOT`, Voltagabbana alla 3ª legge liberale. Tutte si scelgono in Impostazioni prima della partita.
 - Le regole spiegate stanno nella schermata «Come funziona» della pagina: se cambi una meccanica, aggiornala anche lì.
+
+### Camel Up: Economics → `giochi/camelup/`
+
+Espansione di Simo per Camel Up **2ª edizione** (cinque cammelli, due pazzi, dado grigio). Tema «deserto di notte» (sabbia
+`#D9BE90`, bronzo `#A97A4C`, oro spento `#C8AA66`, font Marcellus e Figtree solo in questa pagina); colori vivi solo per i cammelli.
+Si usano tabellone, cammelli, tessere e sterline veri: il telefono sostituisce **solo la piramide**, gestisce asta e spionaggio,
+la Borsa e i crediti virtuali (separati dalle sterline). **Non conosce il tabellone**: non va fatto finta che i prezzi lo seguano.
+- **`motore.js`** (in `extra`): tutta la logica, senza pagina. La partita salvata è `{ id, cfg, nomi, primo, partenza, tappe:
+  { n: { seq, sale, hash } }, eventi }` e lo stato si ricava **rigiocando gli eventi** (`CU.stato`). Eventi: `asta`, `primo`,
+  `dado`, `compra`, `vendi`, `tavolo`, `spia`, `traguardo`, `liquida`, `punteggi` (spiegati in cima al file). Ogni evento cambia
+  saldo, portafoglio e mercato insieme. Gli eventi portano `g` (chi agisce) e il dado anche `k`: un doppio tocco viene rifiutato.
+- **Dadi:** la sequenza di ogni tappa (permutazione dei sei dadi + risultati, `randIntCrypto` con scarto) si fissa una volta in
+  `preparaTappa` e non cambia più, nemmeno annullando. Impegno: `sha256(testoImpegno(...))` (SHA-256 scritto a mano, sincrono).
+- **Annulla:** toglie l'ultimo evento. `asta` e `spia` non si annullano (si vedrebbero offerte o risposte).
+- **Borsa:** LMSR con le forme chiuse `R·b·log1p(p·expm1(±1/b))`; crediti in **centesimi interi**, acquisti per eccesso e
+  vendite per difetto (niente arbitraggio). Prezzi d'apertura `APERTURA` per posto in classifica (prima tappa e dalle altre),
+  stimati con `prove/camelup.bilanciamento.js`. `TIPI_MERCATO.testa` (testa a testa) è pronto nel motore ma spento: per
+  accenderlo servono schermate e scelta delle coppie.
+- **Parametri di base diversi dalla proposta originale** (decisi con le simulazioni, spiegati nella schermata Regole):
+  apertura dalla classifica (non 20% a tutti), capitale 60 (non 40), domande 5/2/2 (non 6/4/2).
+- **Prove:** `node prove/camelup.test.js` (piramide, distribuzioni, impegno, asta, spionaggio, LMSR, limiti, turni, annullamenti,
+  fuzz sui saldi). Se cambi una regola aggiungi un caso. `node prove/camelup.bilanciamento.js` stampa i numeri del bilanciamento.
+- Le regole spiegate stanno in `renderRegole()`: se cambi una meccanica o un parametro di base, aggiornale lì.
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

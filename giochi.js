@@ -51,6 +51,7 @@ self.GIOCHI = {
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A', dati: [{ poker: true }] },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70', dati: ['giochidisimo:7wonders'] },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0', dati: ['gds-chiinizia'] },
-    { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#08E8DE', dati: ['gds-dossier', 'gds-dossier-partita', 'gds-giocatori'] }
+    { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#08E8DE', dati: ['gds-dossier', 'gds-dossier-partita', 'gds-giocatori'] },
+    { categoria: 'expansions', nome: 'Camel Up: Economics', descrizione: 'Piramide digitale, spionaggio sui dadi e Borsa sul vincitore di tappa', link: 'giochi/camelup/', colore: '#C8A273', extra: ['giochi/camelup/motore.js'], dati: ['gds-camelup', 'gds-camelup-partita', 'gds-giocatori'] }
   ]
 };

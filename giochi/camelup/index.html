@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<script src="motore.js"></script>
+<title>Camel Up: Economics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+<style>
+/* Tema «deserto di notte»: cielo quasi nero, tende scure, lampade color sabbia e bronzo.
+   I colori vivi sono solo quelli dei cammelli. */
+:root{
+  --notte:#0E1117; --tenda:#161A22; --tenda-2:#1D222C; --pozzo:#0A0C11;
+  --filo:rgba(217,190,144,.09); --filo-2:rgba(217,190,144,.18);
+  --sabbia:#D9BE90; --sabbia-2:#EAD5AE; --bronzo:#A97A4C; --oro:#C8AA66;
+  --testo:#ECE5D6; --muto:#9D978B; --fioco:#68665F;
+  --display:'Marcellus','Iowan Old Style','Times New Roman',serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;color:var(--testo);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+html{background:var(--notte)}
+body{min-height:100dvh;background:radial-gradient(130% 46% at 50% -14%,rgba(200,170,102,.07),transparent 62%),var(--notte)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--sabbia);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom))}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px}
+.back{display:inline-block;padding:8px 0;color:var(--sabbia);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.link{background:none;border:0;padding:6px 0;color:var(--sabbia);font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.link.muto{color:var(--muto);font-size:14px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muto);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:var(--sabbia-2)}
+
+/* Intestazione della schermata iniziale: il nome, una duna appena accennata e tre stelle */
+.hero{position:relative;margin:10px 0 18px;padding:26px 4px 34px;overflow:hidden}
+.hero .kick{font-size:15px;color:var(--muto);font-weight:600;letter-spacing:.02em}
+.hero h1{font-family:var(--display);font-weight:400;font-size:clamp(50px,15.5vw,76px);line-height:.95;margin:4px 0 12px;color:var(--sabbia-2);letter-spacing:.005em}
+.hero p{margin:0;color:var(--muto);font-size:15.5px;line-height:1.5;max-width:34ch}
+.hero svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:46px;pointer-events:none}
+
+/* Pannelli */
+.pan{background:var(--tenda);border:1px solid var(--filo);border-radius:16px;padding:16px;margin-bottom:12px}
+h2{font-family:var(--display);font-weight:400;font-size:23px;margin:0 0 10px;color:var(--sabbia-2)}
+.sub{margin:-4px 0 12px;color:var(--muto);font-size:14px;line-height:1.45}
+.row{display:flex;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.in{flex:1;min-width:0;height:46px;padding:0 13px;border-radius:11px;border:1px solid var(--filo-2);background:var(--pozzo);font-size:16px}
+.in::placeholder{color:var(--fioco)}
+.in:focus{outline:none;border-color:var(--sabbia)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:13px;border:0;background:var(--sabbia);color:#1C160D;
+  font-weight:700;font-size:16.5px;text-align:center;text-decoration:none}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:transparent;color:var(--testo);border:1px solid var(--filo-2)}
+.btn.bronzo{background:var(--bronzo);color:#FFF4E2}
+.btn.small{width:auto;min-height:44px;padding:0 16px;border-radius:11px;font-size:15px}
+.btn:disabled{opacity:.33;transform:none}
+.btn small{font-weight:600;opacity:.75}
+.stack{display:grid;gap:10px}
+.center{display:block;margin:14px auto 0}
+.warn{margin:10px 0 12px;color:var(--sabbia-2);font-size:14px;font-weight:600}
+
+/* Giocatori */
+.players{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.players li{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;border-radius:12px;background:var(--pozzo);border:1px solid var(--filo)}
+.players .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--tenda-2);color:var(--muto);font-size:12px;font-weight:700;flex:none}
+.players .nm{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.players .st{font-size:12px;color:var(--oro);font-weight:700;margin-right:4px}
+.ico{width:34px;height:34px;border-radius:9px;border:0;background:rgba(255,255,255,.05);color:var(--muto);font-size:15px;line-height:1;flex:none}
+.ico:disabled{opacity:.25}
+
+/* Interruttori e impostazioni */
+.opt{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--filo);cursor:pointer}
+.opt:first-of-type{border-top:0;padding-top:4px}
+.opt b{display:block;font-size:16px}
+.opt small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:3px}
+.opt input[type=checkbox]{flex:0 0 auto;width:24px;height:24px;margin-top:2px;accent-color:var(--sabbia)}
+.par{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--filo)}
+.par:first-of-type{border-top:0}
+.par b{display:block;font-size:15.5px}
+.par small{display:block;color:var(--muto);font-size:13px;line-height:1.4;margin-top:2px}
+.stepper{display:flex;align-items:center;gap:6px;flex:none}
+.stepper button{width:40px;height:40px;border-radius:10px;border:1px solid var(--filo-2);background:var(--pozzo);font-size:20px;font-weight:600;color:var(--sabbia)}
+.stepper .v{min-width:44px;text-align:center;font-family:var(--display);font-size:22px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.seg button{min-height:44px;border-radius:10px;border:1px solid var(--filo-2);background:var(--pozzo);font-weight:600;font-size:14.5px;color:var(--muto)}
+.seg button.on{border-color:var(--sabbia);color:var(--sabbia-2);background:rgba(217,190,144,.08)}
+.recap{margin:4px 0 0;color:var(--muto);font-size:14px;line-height:1.55}
+.recap b{color:var(--testo);font-weight:600}
+
+/* Cammelli e dadi */
+.cm{display:inline-block;width:15px;height:11px;border-radius:4px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.22);vertical-align:-1px;flex:none}
+.cm.b{background:#EEE8DC}.cm.n{background:#26272B;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+.dado{--s:46px;position:relative;width:var(--s);height:var(--s);border-radius:22%;background:var(--c);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:calc(var(--s)*.16);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.22),inset 0 calc(var(--s)*.05) 0 rgba(255,255,255,.22),0 calc(var(--s)*.12) calc(var(--s)*.28) rgba(0,0,0,.35);flex:none}
+.dado i{display:block;width:62%;height:62%;margin:auto;border-radius:50%;background:transparent}
+.dado i.p{background:rgba(18,16,12,.86)}
+.dado.n i.p{background:#F2EDE2}
+.dado.n{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 calc(var(--s)*.12) calc(var(--s)*.28) rgba(0,0,0,.35)}
+.dado.vuoto{background:transparent;box-shadow:inset 0 0 0 1px var(--filo-2)}
+.dado.vuoto::after{content:'';position:absolute;inset:38%;border-radius:50%;background:rgba(217,190,144,.16)}
+
+/* Plancia */
+.phead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 12px}
+.phead .t{font-family:var(--display);font-size:38px;line-height:.95;color:var(--sabbia-2)}
+.phead .s{color:var(--muto);font-size:13px;font-weight:600;text-align:right;line-height:1.4}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--filo-2);font-size:12.5px;font-weight:700;color:var(--sabbia)}
+.badge.off{color:var(--muto);border-color:var(--filo)}
+.badge::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9}
+.turno{padding:16px 16px 14px}
+.turno .lab{color:var(--muto);font-size:14px;font-weight:600}
+.turno .chi{font-family:var(--display);font-size:clamp(38px,12vw,52px);line-height:1.02;margin:2px 0 4px;word-break:break-word}
+.turno .info{color:var(--muto);font-size:14px;margin-bottom:14px}
+.turno .info b{color:var(--testo);font-weight:600}
+.licbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:11px 13px;margin:0 0 12px;border-radius:12px;border:1px dashed var(--oro);background:rgba(200,170,102,.07);color:var(--sabbia-2);font-weight:700;font-size:15px;text-align:left}
+.licbtn small{display:block;font-weight:500;color:var(--muto);font-size:12.5px;margin-top:2px}
+.azioni{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.azioni .btn{min-height:64px;flex-direction:column;gap:2px;line-height:1.15}
+.tavolo{margin-top:12px}
+.tavolo .lab{font-size:13px;color:var(--muto);font-weight:600;margin:0 0 7px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{min-height:40px;padding:0 13px;border-radius:999px;border:1px solid var(--filo-2);background:var(--pozzo);font-weight:600;font-size:14px;color:var(--testo)}
+.chip:active{background:var(--tenda-2)}
+.chip.on{border-color:var(--sabbia);color:var(--sabbia-2);background:rgba(217,190,144,.08)}
+.chip:disabled{opacity:.3}
+.annulla{display:flex;justify-content:center;margin-top:10px}
+.turno.attendi .azioni,.turno.attendi .tavolo,.turno.attendi .licbtn{opacity:.45;pointer-events:none;transition:opacity .15s}
+
+/* Piramide */
+.pir{display:flex;align-items:center;gap:7px;margin:2px 0 10px}
+.pir .dado{--s:38px}
+.pir .sep{width:1px;align-self:stretch;background:var(--filo-2);margin:0 2px}
+.pirtxt{display:flex;justify-content:space-between;gap:10px;align-items:baseline;color:var(--muto);font-size:13.5px}
+.pirtxt .link{white-space:nowrap}
+.hash{background:none;border:0;padding:4px 0;color:var(--muto);font-size:12.5px;text-decoration:underline dotted;text-underline-offset:3px}
+.hash code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--oro)}
+.licline{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;color:var(--muto)}
+.licline b{color:var(--testo);font-weight:600}
+
+/* Schede */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:12px;background:var(--pozzo);border:1px solid var(--filo);margin:16px 0 10px}
+.tabs button{min-height:40px;border-radius:9px;border:0;background:transparent;color:var(--muto);font-weight:600;font-size:14.5px}
+.tabs button.on{background:var(--tenda-2);color:var(--sabbia-2)}
+
+/* Mercato */
+.mkt{display:grid;gap:2px}
+.mrow{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--filo);background:none;border-left:0;border-right:0;border-top:0;text-align:left;width:100%}
+.mrow:last-child{border-bottom:0}
+.mrow .nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.mrow .pr{text-align:right;font-weight:700;font-size:15.5px}
+.mrow .pr small{display:block;font-weight:500;color:var(--muto);font-size:12px}
+.bar{grid-column:1/-1;height:4px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);opacity:.75;border-radius:2px;transition:width .25s ease}
+.delta{font-size:12px;font-weight:700;color:var(--muto)}
+.delta.su{color:var(--oro)}
+.mdet{grid-column:1/-1;display:flex;justify-content:space-between;gap:10px;color:var(--muto);font-size:13px;padding-top:2px}
+.mdet b{color:var(--testo);font-weight:600}
+.grafico{margin-top:12px}
+.grafico svg{display:block;width:100%;height:96px}
+.leg{display:flex;justify-content:space-between;color:var(--fioco);font-size:11.5px;margin-top:4px}
+.nota{color:var(--muto);font-size:12.5px;line-height:1.45;margin:10px 0 0}
+
+/* Portafogli */
+.pf{padding:12px 0;border-bottom:1px solid var(--filo)}
+.pf:last-child{border-bottom:0}
+.pf .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pf .nm{font-weight:700;font-size:16px}
+.pf .cr{font-family:var(--display);font-size:22px;color:var(--sabbia-2)}
+.pf .cr small{font-family:var(--ui);font-size:12px;color:var(--muto);margin-left:3px}
+.pf .meta{color:var(--muto);font-size:13px;margin-top:2px;line-height:1.5}
+.pf .meta b{color:var(--testo);font-weight:600}
+.pos{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:13.5px;color:var(--muto);flex-wrap:wrap}
+.pos b{color:var(--testo);font-weight:600}
+.pos .cm{margin-right:1px}
+
+/* Cronologia */
+.log{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.log li{font-size:14px;line-height:1.45;color:#D9D2C3;padding:7px 10px;border-radius:9px;background:var(--pozzo)}
+.log li.t{background:transparent;color:var(--oro);font-weight:700;font-size:12.5px;padding:10px 2px 2px}
+
+/* Schermate a tutto schermo */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muto);font-weight:600;font-size:14px;min-height:36px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:18px 0}
+.stage .mid.alto{justify-content:flex-start;padding-top:22px}
+.kicker{color:var(--muto);font-weight:600;font-size:15px}
+.who{font-family:var(--display);font-size:clamp(46px,15vw,74px);line-height:1;color:var(--sabbia-2);word-break:break-word}
+.big{font-family:var(--display);font-size:clamp(32px,10vw,46px);line-height:1.05;color:var(--sabbia-2)}
+.lede{margin:2px 0 0;color:var(--muto);font-size:15px;line-height:1.5;max-width:36ch}
+.lede b{color:var(--testo)}
+.bottom{display:grid;gap:10px}
+.prog{display:flex;gap:5px;justify-content:center;margin-top:8px}
+.prog i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.12)}
+.prog i.on{background:var(--sabbia)}
+
+/* Offerta */
+.offerta{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 6px}
+.offerta .v{font-family:var(--display);font-size:84px;line-height:1;min-width:2ch;text-align:center;color:var(--sabbia-2)}
+.offerta button{width:58px;height:58px;border-radius:16px;border:1px solid var(--filo-2);background:var(--tenda);font-size:28px;color:var(--sabbia)}
+.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* Rivelazione del dado */
+.rivela .dado{--s:150px;margin:8px auto 4px}
+.rivela .esito{font-family:var(--display);font-size:clamp(30px,9vw,40px);line-height:1.1;color:var(--testo)}
+.promemoria{width:100%;text-align:left;padding:12px 14px;border-radius:12px;background:var(--tenda);border:1px solid var(--filo);color:#D8D1C3;font-size:13.5px;line-height:1.5;margin-top:6px}
+.promemoria b{color:var(--sabbia-2)}
+.finetappa{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--oro);background:rgba(200,170,102,.08);color:var(--sabbia-2);font-weight:700;font-size:15px}
+
+/* Spionaggio */
+.q{width:100%;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--filo-2);background:var(--tenda);margin-bottom:10px}
+.q.on{border-color:var(--sabbia);background:rgba(217,190,144,.07)}
+.q:disabled{opacity:.4}
+.q .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.q b{font-size:17px}
+.q .c{font-family:var(--display);font-size:20px;color:var(--sabbia)}
+.q small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:4px}
+.q .why{color:var(--sabbia-2);font-weight:600}
+.scelta{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 10px}
+.scelta button{display:flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--filo-2);background:var(--pozzo);font-weight:600}
+.scelta button.on{border-color:var(--sabbia);background:rgba(217,190,144,.1)}
+.risposta{width:100%;padding:22px 16px;border-radius:16px;background:var(--tenda);border:1px solid var(--oro);display:flex;flex-direction:column;align-items:center;gap:10px}
+.risposta .dado{--s:110px}
+.risposta .t{font-family:var(--display);font-size:clamp(28px,8.5vw,38px);line-height:1.15;color:var(--sabbia-2)}
+
+/* Classifica di fine tappa */
+.posti{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;margin:6px 0}
+.posto{aspect-ratio:1/1.15;border-radius:14px;border:1px dashed var(--filo-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--fioco);font-family:var(--display);font-size:20px}
+.posto.pieno{border-style:solid;border-color:var(--filo-2);background:var(--tenda);color:var(--testo)}
+.posto .cm{width:30px;height:22px;border-radius:7px}
+.scegli{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.cbtn{display:flex;align-items:center;gap:12px;min-height:58px;padding:0 14px;border-radius:14px;border:1px solid var(--filo-2);background:var(--tenda);font-weight:700;font-size:17px;text-align:left}
+.cbtn .cm{width:26px;height:19px;border-radius:6px}
+.cbtn:disabled{opacity:.25}
+
+/* Pista (partenza) */
+.pista{width:100%;display:grid;grid-template-columns:repeat(16,1fr);gap:3px;align-items:end;margin:14px 0 4px}
+.cas{display:flex;flex-direction:column-reverse;align-items:center;gap:2px}
+.cas .base{width:100%;height:20px;border-radius:5px;background:var(--tenda);border:1px solid var(--filo);color:var(--fioco);font-size:10px;font-weight:700;display:grid;place-items:center}
+.cas.occ .base{color:var(--sabbia);border-color:var(--filo-2)}
+.cas .cm{width:100%;max-width:18px;height:9px;border-radius:3px}
+.disp{width:100%;text-align:left;margin-top:12px;display:grid;gap:6px}
+.disp div{display:flex;align-items:center;gap:8px;font-size:14.5px;color:#D8D1C3;padding:8px 12px;border-radius:10px;background:var(--tenda)}
+.disp b{color:var(--sabbia-2);font-weight:700;min-width:84px}
+
+/* Riepiloghi e tabelle */
+.tab{width:100%;border-collapse:collapse;font-size:14px}
+.tab th{text-align:left;color:var(--muto);font-weight:600;font-size:12.5px;padding:6px 4px;border-bottom:1px solid var(--filo-2)}
+.tab td{padding:9px 4px;border-bottom:1px solid var(--filo);vertical-align:top}
+.tab td.r,.tab th.r{text-align:right}
+.tab .pos-{color:var(--muto)}
+.tab .up{color:var(--sabbia-2);font-weight:700}
+.seqv{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.seqv .it{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--muto)}
+.seqv .dado{--s:40px}
+.seqv .it.fuori .dado{opacity:.45}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--oro);word-break:break-all;line-height:1.5}
+.ok{color:var(--sabbia-2);font-weight:700}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat div{padding:12px;border-radius:12px;background:var(--pozzo);border:1px solid var(--filo)}
+.stat small{display:block;color:var(--muto);font-size:12.5px;line-height:1.35}
+.stat b{display:block;font-size:15.5px;margin-top:4px}
+.podio{display:grid;gap:8px;margin:6px 0 4px}
+.podio .r{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--tenda);border:1px solid var(--filo)}
+.podio .r.primo{border-color:var(--oro)}
+.podio .pos{margin:0;font-family:var(--display);font-size:22px;color:var(--oro)}
+.podio .nm{font-weight:700;font-size:17px}
+.podio .dett{color:var(--muto);font-size:12.5px;margin-top:2px}
+.podio .tot{font-family:var(--display);font-size:26px;color:var(--sabbia-2);text-align:right}
+.epin{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--filo)}
+.epin input{width:92px;height:46px;border-radius:11px;border:1px solid var(--filo-2);background:var(--pozzo);text-align:center;font-family:var(--display);font-size:22px}
+
+/* Regole */
+.rules h3{font-family:var(--display);font-weight:400;font-size:21px;margin:22px 0 6px;color:var(--sabbia-2)}
+.rules h3:first-child{margin-top:0}
+.rules p,.rules li{font-size:15px;line-height:1.58;color:#D8D1C3}
+.rules p{margin:0 0 8px}
+.rules ul{margin:0 0 8px;padding-left:20px}
+.rules li{margin:3px 0}
+.rules b{color:var(--testo)}
+.rules .f{font-family:var(--display);font-size:16px;color:var(--sabbia-2);background:var(--pozzo);border-radius:10px;padding:10px 12px;margin:6px 0 10px;line-height:1.6}
+
+/* Finestre sopra la pagina */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(4,5,8,.74);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
+.velo .box{width:100%;max-width:544px;max-height:88dvh;overflow:auto;padding:18px 16px 16px;border-radius:18px;background:var(--tenda);border:1px solid var(--filo-2)}
+.brow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--filo)}
+.brow:last-of-type{border-bottom:0}
+.brow .nm{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15.5px}
+.brow .nm small{font-weight:500;color:var(--muto);font-size:12.5px}
+.brow .op{min-height:44px;min-width:86px;padding:0 10px;border-radius:11px;border:1px solid var(--filo-2);background:var(--pozzo);font-weight:700;font-size:14px;line-height:1.1;color:var(--testo)}
+.brow .op small{display:block;font-size:11px;font-weight:600;color:var(--muto)}
+.brow .op.buy:not(:disabled){border-color:var(--sabbia);color:var(--sabbia-2)}
+.brow .op:disabled{opacity:.3}
+.brow .why{grid-column:1/-1;color:var(--fioco);font-size:12px;margin-top:-4px}
+.conf{padding:14px;border-radius:14px;background:var(--pozzo);border:1px solid var(--filo-2);margin:12px 0}
+.conf .t{font-family:var(--display);font-size:24px;color:var(--sabbia-2);display:flex;align-items:center;gap:10px}
+.conf p{margin:8px 0 0;color:var(--muto);font-size:14px;line-height:1.5}
+.conf p b{color:var(--testo)}
+
+/* Tieni premuto */
+.hold{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(28,22,13,.22);pointer-events:none}
+.btn.sec.hold .fill{background:rgba(217,190,144,.18)}
+.hold.going .fill{transition:transform var(--ms,600ms) linear;transform:scaleX(1)}
+.hold span{position:relative}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:92vw;padding:11px 16px;border-radius:12px;background:var(--sabbia-2);color:#1C160D;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.cambio{animation:cambio .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes cambio{from{opacity:.2;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.hold.going .fill{transition:none}.cambio{animation:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= Inizio ================= -->
+<main class="wrap" id="inizio">
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
+  <header class="hero">
+    <div class="kick">Camel Up · espansione</div>
+    <h1>Economics</h1>
+    <p>Spionaggio sui dadi e una Borsa sul vincitore di ogni tappa. Tabellone, cammelli e tessere restano quelli veri: il telefono fa da piramide e da banco.</p>
+    <svg viewBox="0 0 400 46" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 40 C60 26 110 24 170 33 S290 44 330 30 S380 22 400 27" fill="none" stroke="rgba(217,190,144,.22)" stroke-width="1"/>
+      <circle cx="310" cy="8" r="1.1" fill="rgba(234,213,174,.5)"/><circle cx="352" cy="17" r=".8" fill="rgba(234,213,174,.35)"/><circle cx="268" cy="14" r=".7" fill="rgba(234,213,174,.3)"/>
+    </svg>
+  </header>
+
+  <section class="pan" id="resumePan" hidden>
+    <h2>Partita in corso</h2>
+    <p class="sub" id="resumeInfo"></p>
+    <div class="row">
+      <button class="btn small" id="resumeBtn" style="flex:1">Riprendi</button>
+      <button class="btn small sec hold" id="dropBtn" style="flex:1"><i class="fill"></i><span>Tieni premuto: chiudi</span></button>
+    </div>
+  </section>
+
+  <section class="pan">
+    <h2>Giocatori</h2>
+    <p class="sub">Da 2 a 8, <b>nell’ordine in cui siete seduti</b> in senso orario. La stella indica chi comincia (il più giovane).</p>
+    <form class="row" id="addPlayer" autocomplete="off">
+      <input class="in" id="playerName" placeholder="Nome" maxlength="16" enterkeyhint="done">
+      <button class="btn small">Aggiungi</button>
+    </form>
+    <ul class="players" id="players"></ul>
+  </section>
+
+  <section class="pan">
+    <label class="opt"><span><b>Spionaggio</b><small>A inizio tappa un’asta segreta assegna una licenza per sbirciare la piramide.</small></span><input type="checkbox" id="oSpia"></label>
+    <label class="opt"><span><b>Borsa</b><small>Contratti sul vincitore della tappa, comprati e venduti al posto di un’azione.</small></span><input type="checkbox" id="oBorsa"></label>
+    <div class="between" style="border-top:1px solid var(--filo);padding-top:12px;margin-top:2px">
+      <p class="recap" id="recap" style="margin:0"></p>
+      <button class="link" id="avanzateBtn" style="flex:none">Avanzate</button>
+    </div>
+  </section>
+
+  <p class="warn" id="setupWarn" hidden></p>
+  <button class="btn" id="playBtn">Inizia la partita</button>
+  <button class="link center" id="rulesBtn">Come funziona</button>
+</main>
+
+<!-- ================= Impostazioni avanzate ================= -->
+<main class="wrap" id="avanzate" hidden>
+  <div class="toprow"><button class="back" id="avBack">‹ Indietro</button><button class="link muto" id="avDefault">Valori consigliati</button></div>
+  <section class="pan" style="margin-top:8px">
+    <h2>Borsa</h2>
+    <div id="parBorsa"></div>
+    <div class="par" style="display:block"><b>Prezzi d’apertura</b><small>Con la classifica di inizio tappa i prezzi partono da una stima media per posto; uniformi vuol dire 20% a testa, come nella prima proposta (si sfrutta facilmente).</small>
+      <div class="seg" id="segApertura"><button data-v="classifica">Dalla classifica</button><button data-v="uniforme">Uniformi</button></div></div>
+  </section>
+  <section class="pan">
+    <h2>Spionaggio</h2>
+    <div id="parSpia"></div>
+  </section>
+  <button class="btn" id="avDone">Fatto</button>
+</main>
+
+<!-- ================= Regole ================= -->
+<main class="wrap" id="regole" hidden>
+  <div class="toprow"><button class="back" id="regBack">‹ Indietro</button><span></span></div>
+  <section class="pan rules" style="margin-top:8px" id="regoleTesto"></section>
+  <button class="btn sec" id="regBack2">Indietro</button>
+</main>
+
+<!-- ================= Partenza ================= -->
+<section class="stage" id="partenza" hidden>
+  <div class="top"><span>Preparazione</span><button class="link muto" id="partQuit">Inizio</button></div>
+  <div class="mid alto">
+    <div class="big">Disposizione di partenza</div>
+    <p class="lede">I dadi di partenza li ha tirati il telefono. Mettete i cammelli così, dal basso verso l’alto; la piramide vera resta nella scatola.</p>
+    <div class="pista" id="pista"></div>
+    <div class="disp" id="disp"></div>
+  </div>
+  <div class="bottom"><button class="btn" id="partOk">Cammelli al loro posto</button></div>
+</section>
+
+<!-- ================= Asta: introduzione ================= -->
+<section class="stage" id="astaIntro" hidden>
+  <div class="top"><span id="aiTop"></span><a class="back" href="../../" style="color:var(--muto)">‹ Giochi</a></div>
+  <div class="mid alto">
+    <div class="kicker">Prima della prima azione</div>
+    <div class="big">Asta per la licenza</div>
+    <p class="lede">Ognuno offre in segreto dei crediti. Vince l’offerta più alta e paga solo chi vince; chi offre zero non partecipa. La licenza vale per questa tappa: si usa una volta, quando si vuole, all’inizio di un proprio turno.</p>
+    <div class="disp" id="aiInfo"></div>
+  </div>
+  <div class="bottom">
+    <button class="btn" id="aiGo">Comincia l’asta</button>
+    <button class="btn sec" id="aiZero">Nessuno vuole la licenza</button>
+    <div class="annulla" id="aiAnnulla"></div>
+  </div>
+</section>
+
+<!-- ================= Passa il telefono ================= -->
+<section class="stage" id="passa" hidden>
+  <div class="top"><span id="passaTop"></span><button class="link muto" id="passaQuit">Annulla</button></div>
+  <div class="mid">
+    <div class="kicker" id="passaKick">Passa il telefono a</div>
+    <div class="who" id="passaNome"></div>
+    <p class="lede" id="passaNota">Gli altri non guardano.</p>
+    <div class="prog" id="passaProg"></div>
+  </div>
+  <div class="bottom"><button class="btn" id="passaGo"></button></div>
+</section>
+
+<!-- ================= Offerta segreta ================= -->
+<section class="stage" id="offerta" hidden>
+  <div class="top"><span id="offTop"></span><span>Offerta segreta</span></div>
+  <div class="mid">
+    <div class="kicker" id="offChi"></div>
+    <div class="offerta"><button id="offMeno" aria-label="Meno">−</button><div class="v num" id="offV">0</div><button id="offPiu" aria-label="Più">+</button></div>
+    <p class="lede" id="offSaldo"></p>
+    <div class="quick"><button class="chip" data-d="0">Zero</button><button class="chip" data-d="+5">+5</button><button class="chip" data-d="+10">+10</button><button class="chip" data-d="max">Tutto</button></div>
+  </div>
+  <div class="bottom"><button class="btn" id="offOk">Conferma l’offerta</button></div>
+</section>
+
+<!-- ================= Esito dell'asta ================= -->
+<section class="stage" id="esitoAsta" hidden>
+  <div class="top"><span id="eaTop"></span><span></span></div>
+  <div class="mid alto">
+    <div class="kicker" id="eaKick"></div>
+    <div class="big" id="eaTitolo"></div>
+    <p class="lede" id="eaLede"></p>
+    <div class="disp" id="eaLista"></div>
+  </div>
+  <div class="bottom"><button class="btn" id="eaOk">Si gioca</button></div>
+</section>
+
+<!-- ================= Plancia ================= -->
+<main class="wrap" id="plancia" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="link muto" id="pRegole">Regole</button></div>
+  <div class="phead"><div><div class="kicker" style="font-size:13px">Camel Up · Economics</div><div class="t" id="pTappa"></div></div><div class="s" id="pStato"></div></div>
+
+  <section class="pan turno" id="pTurno">
+    <div class="lab">Tocca a</div>
+    <div class="chi" id="pChi"></div>
+    <div class="info" id="pInfo"></div>
+    <button class="licbtn" id="pLic" hidden><span>Usa la licenza di spionaggio<small>Prima di scegliere l’azione: non consuma il turno</small></span><span>›</span></button>
+    <div class="azioni">
+      <button class="btn hold" id="pDado"><i class="fill"></i><span>Estrai un dado</span><small id="pDadoSub">tieni premuto</small></button>
+      <button class="btn sec" id="pBorsa"><span>Borsa</span><small id="pBorsaSub"></small></button>
+    </div>
+    <div class="tavolo">
+      <div class="lab">Oppure un’azione al tavolo (un tocco e passa il turno):</div>
+      <div class="chips" id="pTavolo"></div>
+    </div>
+    <div class="annulla" id="pAnnulla"></div>
+  </section>
+
+  <section class="pan">
+    <div class="between" style="margin-bottom:8px"><h2 style="margin:0">Piramide</h2><button class="hash" id="pHash"></button></div>
+    <div class="pir" id="pPir"></div>
+    <div class="pirtxt"><span id="pPirTxt"></span><button class="link muto" id="pFineCorsa" style="font-size:13px">Fine della corsa</button></div>
+    <div class="licline" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--filo)" id="pLicLine"></div>
+  </section>
+
+  <div class="tabs" id="pTabs"><button data-t="mercato" class="on">Mercato</button><button data-t="portafogli">Portafogli</button><button data-t="cronologia">Cronologia</button></div>
+  <section class="pan" id="tMercato"></section>
+  <section class="pan" id="tPortafogli" hidden></section>
+  <section class="pan" id="tCronologia" hidden></section>
+  <button class="link center muto" id="pRiepiloghi">Tappe precedenti</button>
+</main>
+
+<!-- ================= Rivelazione del dado ================= -->
+<section class="stage rivela" id="rivela" hidden>
+  <div class="top"><span id="rvTop"></span><span id="rvChi"></span></div>
+  <div class="mid">
+    <div class="kicker" id="rvKick"></div>
+    <div id="rvDado"></div>
+    <div class="esito" id="rvEsito"></div>
+    <p class="lede" id="rvLede"></p>
+    <div class="promemoria" id="rvGrigio" hidden></div>
+    <div class="finetappa" id="rvFine" hidden></div>
+  </div>
+  <div class="bottom">
+    <button class="btn" id="rvOk">Fatto: cammello mosso</button>
+    <button class="btn sec" id="rvTraguardo">Ha tagliato il traguardo: fine della corsa</button>
+  </div>
+</section>
+
+<!-- ================= Spionaggio: scelta ================= -->
+<section class="stage" id="domanda" hidden>
+  <div class="top"><span id="dqChi"></span><button class="link muto" id="dqAnnulla">Annulla</button></div>
+  <div class="mid alto" style="align-items:stretch;text-align:left">
+    <div class="big" style="text-align:center">Cosa vuoi sapere?</div>
+    <p class="lede" style="margin:0 auto 10px;text-align:center" id="dqLede"></p>
+    <div id="dqLista"></div>
+    <div id="dqDadi" hidden>
+      <p class="lede" style="margin:4px auto 8px;text-align:center">Scegli due dadi ancora nella piramide.</p>
+      <div class="scelta" id="dqScelta"></div>
+    </div>
+  </div>
+  <div class="bottom"><button class="btn" id="dqOk" disabled>Paga e scopri</button></div>
+</section>
+
+<!-- ================= Spionaggio: risposta ================= -->
+<section class="stage" id="risposta" hidden>
+  <div class="top"><span id="rsChi"></span><span>Solo per te</span></div>
+  <div class="mid"><div class="risposta" id="rsBox"></div><p class="lede" id="rsNota"></p></div>
+  <div class="bottom"><button class="btn" id="rsOk">Ho visto</button></div>
+</section>
+
+<!-- ================= Schermata neutra ================= -->
+<section class="stage" id="neutro" hidden>
+  <div class="top"><span></span><span></span></div>
+  <div class="mid"><div class="big" id="neTitolo">Licenza usata</div><p class="lede" id="neLede"></p></div>
+  <div class="bottom"><button class="btn" id="neOk">Torna alla plancia</button></div>
+</section>
+
+<!-- ================= Classifica di fine tappa ================= -->
+<section class="stage" id="classifica" hidden>
+  <div class="top"><span id="clTop"></span><a class="back" href="../../" style="color:var(--muto)">‹ Giochi</a></div>
+  <div class="mid alto">
+    <div class="big" id="clTitolo"></div>
+    <p class="lede" id="clLede">Toccate i cammelli da corsa dal primo all’ultimo. Sulla stessa casella è davanti quello più in alto; i pazzi non contano.</p>
+    <div class="posti" id="clPosti"></div>
+    <div class="scegli" id="clScegli"></div>
+    <button class="link muto" id="clRifai">Ricomincia la classifica</button>
+  </div>
+  <div class="bottom">
+    <button class="btn" id="clOk" disabled>Liquida la tappa</button>
+    <div class="annulla" id="clAnnulla"></div>
+  </div>
+</section>
+
+<!-- ================= Riepilogo della tappa ================= -->
+<main class="wrap" id="riepilogo" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><span class="kicker" id="riTop" style="font-size:14px"></span></div>
+  <div id="riCorpo"></div>
+  <div class="stack" id="riBtns"></div>
+</main>
+
+<!-- ================= Sterline finali ================= -->
+<main class="wrap" id="punti" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><span></span></div>
+  <section class="pan" style="margin-top:8px">
+    <h2>Sterline egiziane</h2>
+    <p class="sub">Fate al tavolo i conti finali di Camel Up (ultima tappa, scommesse sul vincitore e sul perdente). Poi scrivete le sterline che ha ciascuno.</p>
+    <div id="ptLista"></div>
+  </section>
+  <button class="btn" id="ptOk">Calcola la classifica</button>
+  <div class="annulla" id="ptAnnulla"></div>
+</main>
+
+<!-- ================= Fine partita ================= -->
+<main class="wrap" id="fine" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><span class="badge off">Partita terminata</span></div>
+  <div id="fiCorpo"></div>
+  <div class="stack" style="margin-top:12px">
+    <button class="btn" id="fiNuova">Nuova partita</button>
+    <button class="btn sec" id="fiTappe">Riepiloghi delle tappe</button>
+  </div>
+  <div class="annulla" id="fiAnnulla"></div>
+</main>
+
+<!-- ================= Finestre ================= -->
+<div class="velo" id="borsaVelo" hidden><div class="box">
+  <div class="between"><h2 style="margin:0" id="bvTitolo">Borsa</h2><button class="link muto" id="bvChiudi">Chiudi</button></div>
+  <p class="sub" style="margin:4px 0 6px" id="bvSub"></p>
+  <div id="bvLista"></div>
+  <div id="bvConf" hidden></div>
+</div></div>
+
+<div class="velo" id="infoVelo" hidden><div class="box">
+  <h2 id="ivTitolo"></h2>
+  <div id="ivCorpo" style="color:#D8D1C3;font-size:14.5px;line-height:1.55"></div>
+  <div class="stack" style="margin-top:14px" id="ivBtns"></div>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+/* La pagina: schermate, passaggi del telefono e salvataggio. Tutta la logica sta in motore.js (CU). */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_PL = 'gds-giocatori', K_CFG = 'gds-camelup', K_P = 'gds-camelup-partita', K_ST = 'gds-camelup-storico';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+const norm = s => String(s).trim().replace(/\s+/g, ' ');
+const chiave = s => norm(s).toLocaleLowerCase('it');
+const C5 = CU.CAMMELLI;
+const cr = c => CU.fmt(c);                                  // centesimi → «36,80»
+const crS = c => (c > 0 ? '+' : c < 0 ? '−' : '') + CU.fmt(Math.abs(c));
+const pct = p => (p * 100).toFixed(p < 0.1 ? 1 : 0).replace('.', ',') + '%';
+const tok = (c, cls = '') => `<span class="cm ${cls}" style="--c:${C5[c].colore}"></span>`;
+const tokPazzo = c => `<span class="cm ${c === 'bianco' ? 'b' : 'n'}"></span>`;
+
+/* ---------------- Dati ---------------- */
+let players = loadJSON(K_PL, []); if (!Array.isArray(players)) players = [];
+let impo = loadJSON(K_CFG, {}); if (!impo || typeof impo !== 'object') impo = {};
+let cfg = CU.configura(impo.cfg); let primo = Number.isInteger(impo.primo) ? impo.primo : 0;
+const saveImpo = () => saveJSON(K_CFG, { cfg, primo });
+const savePl = () => saveJSON(K_PL, players);
+let P = loadJSON(K_P, null), S = null;
+try { if (P) S = CU.stato(P); } catch (e) { P = null; S = null; }
+function salva() { if (!saveJSON(K_P, P)) toast('Attenzione: il telefono non riesce a salvare la partita.'); }
+
+/* Esegue un evento: se il motore lo accetta salva subito tutto (un solo salvataggio = niente stati a metà) */
+let blocco = 0;
+function fai(ev) {
+  try { P = CU.applica(P, ev); } catch (e) { if (e instanceof CU.ErroreGioco) { toast(e.message); return false; } throw e; }
+  salva(); S = CU.stato(P);
+  return true;
+}
+/* Dopo ogni cambio di turno i tasti delle azioni restano fermi un attimo: un doppio tocco non diventa l'azione del giocatore dopo */
+const fermo = () => Date.now() < blocco;
+const ferma = () => {
+  blocco = Date.now() + 650;
+  const t = $('pTurno'); t.classList.add('attendi'); clearTimeout(ferma.t); ferma.t = setTimeout(() => t.classList.remove('attendi'), 650);
+};
+/* Dopo un'azione la plancia torna in cima: il prossimo giocatore vede subito il suo nome */
+const inCima = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+/* ---------------- Utilità di pagina ---------------- */
+const SCHERMATE = ['inizio', 'avanzate', 'regole', 'partenza', 'astaIntro', 'passa', 'offerta', 'esitoAsta', 'plancia', 'rivela', 'domanda', 'risposta', 'neutro', 'classifica', 'riepilogo', 'punti', 'fine'];
+let corrente = 'inizio';
+function show(id) {
+  SCHERMATE.forEach(s => { $(s).hidden = s !== id; });
+  ['borsaVelo', 'infoVelo'].forEach(v => { $(v).hidden = true; });
+  corrente = id; window.scrollTo(0, 0); $('toast').hidden = true;
+  if (window.gdsAppare) gdsAppare($(id));
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+function tieniPremuto(el, done, ms = 600) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { if (el.disabled) return; e.preventDefault(); stop(); void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); done(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); done(); } });
+}
+function finestra(titolo, corpo, bottoni) {
+  $('ivTitolo').textContent = titolo; $('ivCorpo').innerHTML = corpo;
+  const box = $('ivBtns'); box.innerHTML = '';
+  (bottoni || [{ t: 'Chiudi', cls: 'sec' }]).forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn' + (b.cls ? ' ' + b.cls : ''); el.textContent = b.t;
+    el.onclick = () => { $('infoVelo').hidden = true; if (b.f) b.f(); };
+    box.appendChild(el);
+  });
+  $('infoVelo').hidden = false;
+}
+$('infoVelo').addEventListener('click', e => { if (e.target.id === 'infoVelo') $('infoVelo').hidden = true; });
+
+/* Disegno di un dado: valore 1–3 con i puntini; col 'b'/'n' per le facce del grigio */
+function dadoHTML(x, size) {
+  const pip = { 1: [4], 2: [0, 8], 3: [0, 4, 8] }[x.v] || [];
+  const grigio = x.d === CU.GRIGIO;
+  const bg = grigio ? (x.col === 'n' ? '#26272B' : '#EEE8DC') : C5[x.d].colore;
+  const cls = grigio && x.col === 'n' ? 'dado n' : 'dado';
+  return `<div class="${cls}" style="--c:${bg}${size ? ';--s:' + size + 'px' : ''}" aria-label="${esc(CU.nomeDado(x.d))} ${x.v}">${Array.from({ length: 9 }, (_, i) => `<i class="${pip.includes(i) ? 'p' : ''}"></i>`).join('')}</div>`;
+}
+/* Dado senza numero (per scegliere i dadi nella piramide) */
+const dadoNome = d => d === CU.GRIGIO ? 'Grigio' : C5[d].nome;
+const coloreDado = d => d === CU.GRIGIO ? 'linear-gradient(90deg,#EEE8DC 50%,#26272B 50%)' : C5[d].colore;
+const tokDado = d => `<span class="cm" style="--c:${coloreDado(d)}"></span>`;
+function testoEsito(x) {
+  if (x.d !== CU.GRIGIO) return `${C5[x.d].nome} avanza di ${x.v}`;
+  return `Grigio ${x.v}, faccia ${x.col === 'n' ? 'nera' : 'bianca'}`;
+}
+const PROMEMORIA_GRIGIO = `<b>Dado grigio.</b> Un cammello pazzo indietreggia del numero uscito: faccia bianca, il pazzo bianco; faccia nera, il pazzo nero. <b>Eccezioni:</b> se uno solo dei due pazzi porta cammelli da corsa sopra di sé, si muove quello, qualunque sia il colore; se un pazzo è direttamente sopra l’altro (senza cammelli da corsa in mezzo), si muove quello sopra.`;
+const hashCorto = h => h.slice(0, 4) + ' ' + h.slice(4, 8) + ' ' + h.slice(8, 12) + '…';
+
+/* ======================================================================
+   INIZIO: giocatori e impostazioni
+   ====================================================================== */
+function renderInizio() {
+  const n = players.length;
+  if (primo >= n) primo = 0;
+  $('players').innerHTML = players.map((p, i) => `<li>
+    <span class="n">${i + 1}</span><span class="nm">${esc(p)}</span>${i === primo ? '<span class="st">★ inizia</span>' : ''}
+    <button class="ico" data-star="${i}" aria-label="Fai iniziare ${esc(p)}">★</button>
+    <button class="ico" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Sposta su">↑</button>
+    <button class="ico" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
+  $('oSpia').checked = cfg.spionaggio; $('oBorsa').checked = cfg.borsa;
+  $('recap').innerHTML = `Capitale <b>${cfg.capitale}</b> crediti, contratto vincente <b>${cfg.R}</b>, ${cfg.tasso} crediti = 1 sterlina. Acquisti fino a ${cfg.finestraAcquisti} dadi, vendite fino a ${cfg.finestraVendite}.`;
+  const warn = n < 2 ? `Servono almeno 2 giocatori (ora ${n}).` : n > 8 ? 'Al massimo 8 giocatori.' : '';
+  $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn; $('playBtn').disabled = !!warn;
+  const inCorso = P && S && S.fase !== 'finita';
+  $('resumePan').hidden = !inCorso;
+  if (inCorso) $('resumeInfo').textContent = `${P.nomi.join(', ')}. Tappa ${S.tappa}${S.fase === 'gioco' ? `, tocca a ${S.nomi[S.turno]}` : ''}.`;
+}
+$('addPlayer').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = norm($('playerName').value); if (!v) return;
+  if (players.some(p => chiave(p) === chiave(v))) { toast(`${v} c’è già`); return; }
+  if (players.length >= 8) { toast('Al massimo 8 giocatori'); return; }
+  players.push(v); savePl(); $('playerName').value = ''; renderInizio();
+});
+$('players').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.del != null) { const i = +b.dataset.del; players.splice(i, 1); if (primo > i) primo--; if (primo >= players.length) primo = 0; }
+  else if (b.dataset.up != null) { const i = +b.dataset.up; [players[i - 1], players[i]] = [players[i], players[i - 1]]; if (primo === i) primo = i - 1; else if (primo === i - 1) primo = i; }
+  else if (b.dataset.star != null) primo = +b.dataset.star;
+  savePl(); saveImpo(); renderInizio();
+});
+$('oSpia').onchange = e => { cfg.spionaggio = e.target.checked; saveImpo(); renderInizio(); };
+$('oBorsa').onchange = e => { cfg.borsa = e.target.checked; saveImpo(); renderInizio(); };
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  players = []; savePl(); cfg = CU.configura(); primo = 0; saveImpo();
+  P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {}
+  renderInizio(); toast('Tutto come all’inizio');
+};
+tieniPremuto($('dropBtn'), () => { P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {} renderInizio(); toast('Partita chiusa'); }, 900);
+$('resumeBtn').onclick = () => vai();
+$('playBtn').onclick = () => {
+  if (P && S && S.fase !== 'finita') { toast('C’è una partita in corso: riprendila o chiudila'); return; }
+  nuova();
+};
+function nuova() {
+  P = CU.nuovaPartita({ nomi: players.slice(), cfg, primo }, CU.randIntCrypto);
+  P.ui = { partenzaVista: false };
+  salva(); S = CU.stato(P);
+  vai();
+}
+
+/* ---------------- Impostazioni avanzate ---------------- */
+const PAR_BORSA = [
+  ['capitale', 'Capitale iniziale', 'Crediti a testa. Il punteggio conta solo il guadagno sopra questa cifra.', 20, 200, 5],
+  ['R', 'Pagamento del contratto', 'Crediti per ogni contratto sul vincitore della tappa.', 10, 200, 5],
+  ['b', 'Liquidità (b)', 'Più è alta, meno un acquisto sposta i prezzi.', 1, 12, 0.5],
+  ['tasso', 'Crediti per sterlina', 'Quanti crediti di guadagno valgono una sterlina egiziana.', 1, 50, 1],
+  ['maxAzioni', 'Operazioni per tappa', 'Compravendite a testa in una tappa.', 1, 6, 1],
+  ['maxContratti', 'Contratti tenuti insieme', '', 1, 5, 1],
+  ['maxPerCammello', 'Contratti per cammello', '', 1, 3, 1],
+  ['finestraAcquisti', 'Acquisti fino a', 'Numero di dadi già usciti oltre il quale non si compra più.', 0, 4, 1],
+  ['finestraVendite', 'Vendite fino a', 'Numero di dadi già usciti oltre il quale non si vende più.', 0, 4, 1]
+];
+const PAR_SPIA = [['A', 'Prossimo dado', 5], ['B', 'Dado escluso', 2], ['C', 'Precedenza', 2]];
+function renderAvanzate() {
+  const v = (k, x) => k === 'finestraAcquisti' || k === 'finestraVendite' ? `${x} dad${x === 1 ? 'o' : 'i'}` : String(x).replace('.', ',');
+  $('parBorsa').innerHTML = PAR_BORSA.map(([k, nome, nota]) => `<div class="par"><span><b>${nome}</b>${nota ? `<small>${nota}</small>` : ''}</span>
+    <div class="stepper"><button data-k="${k}" data-s="-1" aria-label="Meno">−</button><span class="v num" style="font-size:${k.startsWith('finestra') ? 17 : 22}px">${v(k, cfg[k])}</span><button data-k="${k}" data-s="1" aria-label="Più">+</button></div></div>`).join('');
+  $('parSpia').innerHTML = `<p class="sub" style="margin:0 0 6px">Costo di ogni interrogazione, in crediti, oltre al prezzo pagato all’asta.</p>` +
+    PAR_SPIA.map(([k, nome]) => `<div class="par"><span><b>${nome}</b><small>${esc(CU.SPIA[k].desc)}</small></span>
+    <div class="stepper"><button data-q="${k}" data-s="-1" aria-label="Meno">−</button><span class="v num">${cfg.costi[k]}</span><button data-q="${k}" data-s="1" aria-label="Più">+</button></div></div>`).join('');
+  document.querySelectorAll('#segApertura button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg.apertura));
+}
+$('parBorsa').addEventListener('click', e => {
+  const b = e.target.closest('[data-k]'); if (!b) return;
+  const [k, , , min, max, step] = PAR_BORSA.find(x => x[0] === b.dataset.k);
+  cfg[k] = Math.round(Math.min(max, Math.max(min, cfg[k] + step * +b.dataset.s)) * 10) / 10;
+  if (cfg.finestraVendite < cfg.finestraAcquisti) cfg.finestraVendite = cfg.finestraAcquisti;
+  if (cfg.maxContratti < cfg.maxPerCammello) cfg.maxPerCammello = cfg.maxContratti;
+  saveImpo(); renderAvanzate();
+});
+$('parSpia').addEventListener('click', e => {
+  const b = e.target.closest('[data-q]'); if (!b) return;
+  cfg.costi[b.dataset.q] = Math.min(30, Math.max(0, cfg.costi[b.dataset.q] + +b.dataset.s)); saveImpo(); renderAvanzate();
+});
+$('segApertura').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; cfg.apertura = b.dataset.v; saveImpo(); renderAvanzate(); });
+$('avanzateBtn').onclick = () => { renderAvanzate(); show('avanzate'); };
+$('avBack').onclick = $('avDone').onclick = () => { show('inizio'); renderInizio(); };
+$('avDefault').onclick = () => { const sp = cfg.spionaggio, bo = cfg.borsa; cfg = CU.configura({ spionaggio: sp, borsa: bo }); saveImpo(); renderAvanzate(); toast('Valori consigliati'); };
+
+/* ======================================================================
+   NAVIGAZIONE: dalla fase della partita alla schermata giusta
+   ====================================================================== */
+function vai() {
+  if (!P || !S) { show('inizio'); renderInizio(); return; }
+  if (S.fase === 'finita') { renderFine(); show('fine'); return; }
+  if (S.fase === 'punteggi') { renderPunti(); show('punti'); return; }
+  if (S.fase === 'liquidare') { apriClassifica(); return; }
+  if (S.tappa === 1 && !P.eventi.length && !(P.ui && P.ui.partenzaVista)) { renderPartenza(); show('partenza'); return; }
+  if (S.fase === 'asta') { renderAstaIntro(); show('astaIntro'); return; }
+  renderPlancia(); show('plancia');
+}
+
+/* ---------------- Partenza ---------------- */
+function renderPartenza() {
+  const pile = CU.pilePartenza(P.partenza);
+  const t = x => typeof x === 'number' ? tok(x) : tokPazzo(x);
+  $('pista').innerHTML = Array.from({ length: 16 }, (_, i) => { const k = i + 1, s = pile[k] || [];
+    return `<div class="cas ${s.length ? 'occ' : ''}"><div class="base">${k}</div>${s.map(t).join('')}</div>`; }).join('');
+  const nomeX = x => typeof x === 'number' ? C5[x].nome : x === 'bianco' ? 'pazzo bianco' : 'pazzo nero';
+  $('disp').innerHTML = Object.keys(pile).map(Number).sort((a, b) => a - b).map(k => {
+    const s = pile[k];
+    const testo = s.length === 1 ? nomeX(s[0]) : `${nomeX(s[0])} sotto, ${s.length > 2 ? s.slice(1, -1).map(nomeX).join(', ') + ', ' : ''}${nomeX(s[s.length - 1])} in cima`;
+    return `<div><b>Casella ${k}</b>${s.map(t).join('')}<span>${testo}</span></div>`;
+  }).join('');
+}
+$('partOk').onclick = () => { P.ui = Object.assign({}, P.ui, { partenzaVista: true }); salva(); vai(); };
+$('partQuit').onclick = () => { show('inizio'); renderInizio(); };
+
+/* ======================================================================
+   ASTA SEGRETA
+   ====================================================================== */
+function renderAstaIntro() {
+  $('aiTop').textContent = `Tappa ${S.tappa}`;
+  const pri = CU.prioritaAsta(S).map(g => esc(S.nomi[g])).join(', ');
+  const h = P.tappe[S.tappa].hash;
+  $('aiInfo').innerHTML = `
+    <div><b>Inizia</b><span>${esc(S.nomi[S.primo])}${S.tappa > 1 ? ' (a sinistra di chi ha estratto l’ultimo dado)' : ''}</span><button class="link muto" id="aiPrimo" style="margin-left:auto">Cambia</button></div>
+    <div><b>Spareggio</b><span>${pri}</span></div>
+    <div><b>Impegno</b><span class="mono">${hashCorto(h)}</span></div>`;
+  $('aiPrimo').onclick = scegliPrimo;
+  linkAnnulla($('aiAnnulla'));
+}
+function scegliPrimo() {
+  finestra('Chi inizia la tappa?', '<p style="margin:0 0 10px">Di regola il giocatore a sinistra di chi ha preso l’ultima tessera piramide; nella prima tappa il più giovane.</p><div class="chips" id="pmChips"></div>', [{ t: 'Annulla', cls: 'sec' }]);
+  $('pmChips').innerHTML = S.nomi.map((nm, g) => `<button class="chip ${g === S.primo ? 'on' : ''}" data-g="${g}">${esc(nm)}</button>`).join('');
+  $('pmChips').onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; $('infoVelo').hidden = true; if (+b.dataset.g !== S.primo && fai({ t: 'primo', g: +b.dataset.g })) toast(`Inizia ${S.nomi[S.primo]}`); vai(); };
+}
+let ASTA = null;   // offerte in corso: solo in memoria, non si salvano
+$('aiGo').onclick = () => {
+  const ordine = Array.from({ length: S.n }, (_, k) => (S.primo + k) % S.n);
+  ASTA = { ordine, k: 0, offerte: Array(S.n).fill(0) };
+  prossimaOfferta();
+};
+$('aiZero').onclick = () => finestra('Nessuna licenza?', 'Tutti d’accordo che nessuno offre niente: la licenza non viene assegnata in questa tappa.', [
+  { t: 'Sì, si gioca senza', f: () => { if (fai({ t: 'asta', offerte: Array(S.n).fill(0) })) { ferma(); vai(); toast('Niente licenza in questa tappa'); } } }, { t: 'Annulla', cls: 'sec' }]);
+function prossimaOfferta() {
+  // chi ha meno di un credito non può offrire: offre zero senza passare il telefono
+  while (ASTA.k < ASTA.ordine.length && S.crediti[ASTA.ordine[ASTA.k]] < 100) ASTA.k++;
+  if (ASTA.k >= ASTA.ordine.length) { fineOfferte(); return; }
+  const g = ASTA.ordine[ASTA.k], prima = ASTA.k > 0;
+  passa(g, () => apriOfferta(g), {
+    kick: prima ? 'Offerta registrata. Passa il telefono a' : 'Passa il telefono a',
+    top: `Asta · ${ASTA.k + 1} di ${ASTA.ordine.length}`, prog: [ASTA.ordine.length, ASTA.k],
+    btn: `Sono ${S.nomi[g]}: offro`, quit: () => { ASTA = null; vai(); }
+  });
+}
+let offV = 0, offMax = 0, offG = 0;
+function apriOfferta(g) {
+  offG = g; offV = 0; offMax = Math.floor(S.crediti[g] / 100);
+  $('offTop').textContent = `Tappa ${S.tappa}`;
+  $('offChi').textContent = S.nomi[g];
+  $('offSaldo').innerHTML = `Hai <b>${cr(S.crediti[g])}</b> crediti. Zero vuol dire che non partecipi.`;
+  aggiornaOfferta(); show('offerta');
+}
+function aggiornaOfferta() { $('offV').textContent = offV; $('offMeno').disabled = offV <= 0; $('offPiu').disabled = offV >= offMax; }
+$('offMeno').onclick = () => { offV = Math.max(0, offV - 1); aggiornaOfferta(); };
+$('offPiu').onclick = () => { offV = Math.min(offMax, offV + 1); aggiornaOfferta(); };
+document.querySelectorAll('#offerta .quick .chip').forEach(b => b.onclick = () => {
+  const d = b.dataset.d; offV = d === '0' ? 0 : d === 'max' ? offMax : Math.min(offMax, offV + +d); aggiornaOfferta();
+});
+$('offOk').onclick = () => { if (!ASTA) { vai(); return; } ASTA.offerte[offG] = offV; ASTA.k++; prossimaOfferta(); };
+function fineOfferte() {
+  passa(null, () => {
+    const off = ASTA.offerte.slice(); ASTA = null;
+    if (!fai({ t: 'asta', offerte: off })) { vai(); return; }
+    mostraEsitoAsta(); ferma();
+  }, { kick: 'Tutti hanno offerto', nome: 'Asta chiusa', nota: 'Rimettete il telefono al centro del tavolo: le offerte si vedono tutte insieme.', btn: 'Rivela le offerte', top: `Tappa ${S.tappa}`, quit: null });
+}
+function mostraEsitoAsta() {
+  const a = S.asta, pri = a.priorita;
+  $('eaTop').textContent = `Tappa ${S.tappa}`;
+  $('eaKick').textContent = 'Licenza di spionaggio';
+  if (a.vince == null) { $('eaTitolo').textContent = 'Nessuna offerta'; $('eaLede').textContent = 'In questa tappa nessuno ha la licenza.'; }
+  else {
+    const pari = a.offerte.filter(o => o === a.offerte[a.vince]).length > 1;
+    $('eaTitolo').textContent = S.nomi[a.vince];
+    $('eaLede').innerHTML = `Paga <b>${a.offerte[a.vince]}</b> crediti${pari ? ': pareggio, vince chi viene prima nell’ordine di spareggio' : ''}. Gli altri non pagano niente.`;
+  }
+  const ord = pri.slice().sort((x, y) => a.offerte[y] - a.offerte[x] || pri.indexOf(x) - pri.indexOf(y));
+  $('eaLista').innerHTML = ord.map(g => `<div><b class="num">${a.offerte[g]}</b><span>${esc(S.nomi[g])}${g === a.vince ? ' · licenza' : ''}</span></div>`).join('');
+  show('esitoAsta');
+}
+$('eaOk').onclick = () => vai();
+
+/* Passa il telefono (generico) */
+let onPassa = null, onQuit = null;
+function passa(g, then, o = {}) {
+  onPassa = then; onQuit = o.quit;
+  $('passaKick').textContent = o.kick || 'Passa il telefono a';
+  $('passaNome').textContent = o.nome || S.nomi[g];
+  $('passaNota').textContent = o.nota || 'Gli altri non guardano.';
+  $('passaGo').textContent = o.btn || `Sono ${S.nomi[g]}`;
+  $('passaTop').textContent = o.top || '';
+  $('passaProg').innerHTML = o.prog ? Array.from({ length: o.prog[0] }, (_, k) => `<i class="${k <= o.prog[1] ? 'on' : ''}"></i>`).join('') : '';
+  $('passaQuit').hidden = !o.quit;
+  show('passa');
+}
+$('passaGo').onclick = () => { const f = onPassa; onPassa = null; if (f) f(); };
+$('passaQuit').onclick = () => { const f = onQuit; onPassa = null; onQuit = null; if (f) f(); };
+
+/* ======================================================================
+   PLANCIA
+   ====================================================================== */
+let scheda = 'mercato', apertoRiga = null;
+function renderPlancia() {
+  const g = S.turno, sb = CU.statoBorsa(S), cfgS = S.cfg;
+  $('pTappa').textContent = `Tappa ${S.tappa}`;
+  const bLab = { aperta: 'Borsa aperta', vendite: 'Acquisti chiusi', chiusa: 'Borsa chiusa', spenta: 'Borsa spenta' }[sb];
+  $('pStato').innerHTML = `<span class="badge ${sb === 'aperta' ? '' : 'off'}">${bLab}</span>`;
+  // turno
+  const chi = $('pChi'); if (chi.textContent !== S.nomi[g]) { chi.textContent = S.nomi[g]; chi.classList.remove('cambio'); void chi.offsetWidth; chi.classList.add('cambio'); }
+  const nc = CU.totaleContratti(S, g);
+  $('pInfo').innerHTML = cfgS.borsa
+    ? `<b class="num">${cr(S.crediti[g])}</b> crediti · ${nc ? `${nc} contratt${nc === 1 ? 'o' : 'i'}` : 'nessun contratto'} · Borsa ${S.azioniBorsa[g]}/${cfgS.maxAzioni}`
+    : (cfgS.spionaggio ? `<b class="num">${cr(S.crediti[g])}</b> crediti` : 'Scegli l’azione del turno');
+  const lic = S.licenza;
+  $('pLic').hidden = !(lic && lic.di === g && !lic.usata);
+  // azioni
+  $('pDadoSub').textContent = 'tieni premuto';
+  const puo = cfgS.borsa && [0, 1, 2, 3, 4].some(e => CU.puoComprare(S, g, e).ok || CU.puoVendere(S, g, e).ok);
+  $('pBorsa').disabled = !puo;
+  $('pBorsaSub').textContent = !cfgS.borsa ? 'spenta' : puo ? (sb === 'aperta' ? 'compra o vendi' : 'solo vendite') : borsaPerche(g, sb);
+  const az = [['tessera', 'Tessera tappa'], ['spettatore', 'Spettatore'], ['finale', 'Scommessa finale']];
+  if (S.n >= 6) az.push(['partnership', 'Partnership']);
+  $('pTavolo').innerHTML = az.map(([k, t]) => `<button class="chip" data-tipo="${k}">${t}</button>`).join('');
+  linkAnnulla($('pAnnulla'));
+  // piramide
+  const fatti = S.estrazioni.map(x => dadoHTML(x)).join('');
+  const vuoti = Array.from({ length: 6 - S.estratti }, () => '<div class="dado vuoto"></div>').join('');
+  $('pPir').innerHTML = fatti + (S.estratti && S.estratti < 6 ? '<span class="sep"></span>' : '') + vuoti;
+  $('pPirTxt').textContent = S.estratti ? `${S.estratti} estratt${S.estratti === 1 ? 'o' : 'i'}: ne mancano ${5 - S.estratti} alla fine della tappa` : 'Sei dadi nella piramide: ne usciranno cinque';
+  $('pFineCorsa').hidden = !S.estratti;
+  $('pHash').innerHTML = `Impegno <code>${hashCorto(P.tappe[S.tappa].hash)}</code>`;
+  $('pLicLine').innerHTML = !cfgS.spionaggio ? '<span>Spionaggio spento in questa partita</span>'
+    : !lic ? '<span>Licenza di spionaggio</span><b>nessuna in questa tappa</b>'
+    : `<span>Licenza di spionaggio</span><b>${esc(S.nomi[lic.di])}, ${lic.usata ? 'usata' : 'da usare'}</b>`;
+  $('pRiepiloghi').hidden = !S.riepiloghi.length;
+  renderScheda();
+}
+function borsaPerche(g, sb) {
+  if (sb === 'chiusa') return 'chiusa';
+  if (S.azioniBorsa[g] >= S.cfg.maxAzioni) return 'operazioni finite';
+  if (sb === 'vendite') return 'niente da vendere';
+  return 'non puoi operare';
+}
+function renderScheda() {
+  document.querySelectorAll('#pTabs button').forEach(b => b.classList.toggle('on', b.dataset.t === scheda));
+  $('tMercato').hidden = scheda !== 'mercato'; $('tPortafogli').hidden = scheda !== 'portafogli'; $('tCronologia').hidden = scheda !== 'cronologia';
+  if (scheda === 'mercato') renderMercato(); else if (scheda === 'portafogli') renderPortafogli(); else renderCronologia();
+}
+$('pTabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b) return; scheda = b.dataset.t; renderScheda(); });
+
+function renderMercato() {
+  if (!S.cfg.borsa) { $('tMercato').innerHTML = '<p class="sub" style="margin:0">La Borsa è spenta in questa partita.</p>'; return; }
+  const p = CU.prezzi(S), p0 = S.storiaPrezzi[0], R = S.cfg.R;
+  const righe = [0, 1, 2, 3, 4].map(c => {
+    const q = CU.quotazione(S, c), d = (p[c] - p0[c]) * R;
+    const dTxt = Math.abs(d) < 0.005 ? '±0' : (d > 0 ? '▲ ' : '▼ ') + CU.fmt(Math.round(Math.abs(d) * 100));
+    return `<button class="mrow" data-c="${c}" aria-expanded="${apertoRiga === c}">
+      <span class="nm">${tok(c)}${C5[c].nome}</span>
+      <span class="delta ${d > 0.005 ? 'su' : ''} num">${dTxt}</span>
+      <span class="pr num">${CU.fmt(Math.round(q.prezzo * 100))}<small>${pct(q.p)}</small></span>
+      <span class="bar"><i style="--c:${C5[c].colore};width:${(q.p * 100).toFixed(1)}%"></i></span>
+      ${apertoRiga === c ? `<span class="mdet"><span>Comprarne uno: <b class="num">${cr(q.acquisto)}</b></span><span>${q.vendita != null ? `Venderne uno: <b class="num">${cr(q.vendita)}</b>` : 'Nessun contratto in giro'}</span></span>
+        <span class="mdet"><span>Contratti in giro: <b class="num">${q.emessi}</b></span><span>Apertura: <b class="num">${pct(p0[c])}</b></span></span>` : ''}
+    </button>`;
+  }).join('');
+  $('tMercato').innerHTML = `<div class="mkt">${righe}</div>${graficoPrezzi()}
+    <p class="nota">Prezzo marginale e probabilità implicita del mercato: vengono solo dalla classifica di inizio tappa e dalle compravendite, non dal tabellone. Il costo vero di un acquisto è un po’ più alto del prezzo marginale (tocca una riga per vederlo).</p>`;
+}
+$('tMercato').addEventListener('click', e => { const b = e.target.closest('.mrow'); if (!b) return; const c = +b.dataset.c; apertoRiga = apertoRiga === c ? null : c; renderMercato(); });
+function graficoPrezzi() {
+  const H = S.storiaPrezzi; if (H.length < 2) return '<div class="leg" style="margin-top:10px"><span>Il grafico dei prezzi compare con la prima compravendita della tappa.</span></div>';
+  const W = 320, Hh = 90, max = Math.max(0.3, ...H.flat()) * 1.08, x = i => (i / (H.length - 1)) * (W - 8) + 4, y = v => Hh - 4 - (v / max) * (Hh - 8);
+  const linee = [0, 1, 2, 3, 4].map(c => `<polyline fill="none" stroke="${C5[c].colore}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity=".9" points="${H.map((p, i) => x(i).toFixed(1) + ',' + y(p[c]).toFixed(1)).join(' ')}"/>
+    <circle cx="${x(H.length - 1).toFixed(1)}" cy="${y(H[H.length - 1][c]).toFixed(1)}" r="2.6" fill="${C5[c].colore}"/>`).join('');
+  const gr = [0.25, 0.5].filter(v => v < max).map(v => `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(217,190,144,.1)" stroke-dasharray="3 4"/><text x="${W - 2}" y="${y(v) - 3}" fill="#68665F" font-size="9" text-anchor="end">${v * 100}%</text>`).join('');
+  return `<div class="grafico"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none" role="img" aria-label="Andamento delle probabilità implicite nella tappa">${gr}${linee}</svg>
+    <div class="leg"><span>apertura</span><span>${H.length - 1} compravendit${H.length === 2 ? 'a' : 'e'}</span><span>adesso</span></div></div>`;
+}
+function renderPortafogli() {
+  const cfgS = S.cfg, base = cfgS.capitale * 100;
+  $('tPortafogli').innerHTML = S.nomi.map((nm, g) => {
+    const real = S.stat.investimenti.filter(x => x.g === g).reduce((a, x) => a + x.incasso - x.costo, 0);
+    const pos = [];
+    S.port[g].vincitore.forEach((k, c) => {
+      if (!k) return;
+      // ricavo di vendita adesso, anche quando ora non si potrebbe vendere
+      const riv = CU.centVendita(CU.Lmsr.vendita(CU.qDi(S.mercati.vincitore), c, cfgS.b, cfgS.R));
+      pos.push(`<div class="pos">${tok(c)}<b>${C5[c].nome}</b>${k > 1 ? ' ×' + k : ''} · pagato <b class="num">${cr(S.pagato[g].vincitore[c])}</b> · paga <b class="num">${cr(k * cfgS.R * 100)}</b> se vince · rivendita adesso <b class="num">${cr(riv)}</b></div>`);
+    });
+    const prof = S.crediti[g] - base;
+    return `<div class="pf"><div class="hd"><span class="nm">${esc(nm)}${S.licenza && S.licenza.di === g ? ' <span class="badge" style="margin-left:4px">licenza</span>' : ''}</span><span class="cr num">${cr(S.crediti[g])}<small>crediti</small></span></div>
+      <div class="meta">In cassa <b class="num">${crS(prof)}</b> rispetto ai ${cfgS.capitale} iniziali (${crS(Math.round(prof / cfgS.tasso))} sterline, senza i contratti aperti). Realizzato in Borsa <b class="num">${crS(real)}</b>, spionaggio <b class="num">${S.stat.spia[g] ? '−' + cr(S.stat.spia[g]) : '0,00'}</b>. Operazioni in questa tappa ${S.azioniBorsa[g]}/${cfgS.maxAzioni}.</div>
+      ${pos.join('') || '<div class="pos">Nessun contratto in questa tappa.</div>'}</div>`;
+  }).join('') + '<p class="nota">«Rivendita adesso» è quello che il banco darebbe vendendo ora: un valore di mercato, non un guadagno già fatto. «Realizzato» conta solo vendite e liquidazioni concluse.</p>';
+}
+function renderCronologia() {
+  const L = S.cronologia.slice().reverse();
+  let tp = null; const out = [];
+  for (const x of L) { if (x.tappa !== tp) { tp = x.tappa; out.push(`<li class="t">Tappa ${tp}</li>`); } if (x.tipo !== 'tappa' || !/^Inizia la tappa/.test(x.testo)) out.push(`<li>${esc(x.testo)}</li>`); }
+  $('tCronologia').innerHTML = `<p class="sub" style="margin:0 0 8px">Solo fatti pubblici: le risposte dello spionaggio non compaiono mai qui.</p><ul class="log">${out.join('')}</ul>`;
+}
+
+/* ---------------- Azioni del turno ---------------- */
+tieniPremuto($('pDado'), () => {
+  if (fermo() || corrente !== 'plancia') return;
+  const g = S.turno, k = S.estratti;
+  if (!fai({ t: 'dado', g, k })) return;
+  ferma(); mostraDado(S.estrazioni[k], g, k);
+}, 550);
+$('pTavolo').addEventListener('click', e => {
+  const b = e.target.closest('[data-tipo]'); if (!b || fermo()) return;
+  const g = S.turno;
+  if (!fai({ t: 'tavolo', g, tipo: b.dataset.tipo })) return;
+  ferma(); renderPlancia(); inCima(); toast(`${CU.AZIONI_TAVOLO[b.dataset.tipo]} di ${S.nomi[g]}. Tocca a ${S.nomi[S.turno]}.`);
+});
+$('pFineCorsa').onclick = () => chiediTraguardo();
+function chiediTraguardo() {
+  finestra('Fine della corsa', 'Un cammello ha appena tagliato il traguardo? La corsa finisce subito: nessun altro dado viene rivelato, si liquida questa tappa e poi si fanno i conti finali.', [
+    { t: 'Sì, la corsa è finita', f: () => { if (fai({ t: 'traguardo' })) vai(); } }, { t: 'No, si continua', cls: 'sec' }]);
+}
+$('pRegole').onclick = () => apriRegole('plancia');
+$('pHash').onclick = () => finestra('Impegno della tappa', `<p style="margin:0 0 8px">All’inizio della tappa il telefono ha fissato la sequenza dei sei dadi e ne ha calcolato l’impronta SHA-256 insieme a un sale casuale:</p>
+  <p class="mono" style="margin:0 0 10px">${P.tappe[S.tappa].hash}</p>
+  <p style="margin:0">A fine tappa vedrete sequenza e sale e potrete ricalcolare l’impronta: se coincide, i dadi non sono cambiati durante la tappa. Non protegge da chi manomette il telefono: serve a vedere che durante una partita normale i risultati sono rimasti quelli.</p>`);
+$('pRiepiloghi').onclick = () => elencoRiepiloghi();
+
+/* Annulla l'ultima azione (se si può) */
+function linkAnnulla(el) {
+  const c = P ? CU.puoAnnullare(P) : { ok: false };
+  if (!c.ok) { el.innerHTML = ''; return; }
+  el.innerHTML = `<button class="link muto">Annulla ${esc(CU.descrivi(P, c.ev))}</button>`;
+  el.firstChild.onclick = () => {
+    const ev = c.ev;
+    const nota = ev.t === 'dado' ? '<p style="margin:8px 0 0">Il dado torna nella piramide: <b>rimettete il cammello dov’era</b>. Se lo si estrae di nuovo esce uguale, perché la sequenza della tappa è già fissata.</p>'
+      : ev.t === 'liquida' ? '<p style="margin:8px 0 0">I pagamenti della tappa si annullano e si torna alla classifica di fine tappa. I dadi della tappa dopo restano quelli già fissati.</p>' : '';
+    finestra('Annullare?', `<p style="margin:0">Annulli ${esc(CU.descrivi(P, ev))}.</p>${nota}`, [
+      { t: 'Annulla l’azione', f: () => { P = CU.annulla(P); salva(); S = CU.stato(P); ferma(); vai(); toast('Annullato'); } }, { t: 'Lascia così', cls: 'sec' }]);
+  };
+}
+
+/* ---------------- Rivelazione del dado ---------------- */
+function mostraDado(x, g, k) {
+  $('rvTop').textContent = `Tappa ${S.tappa} · estrazione ${k + 1} di 5`;
+  $('rvChi').textContent = '';
+  $('rvKick').textContent = `${S.nomi[g]} prende una tessera piramide`;
+  $('rvDado').innerHTML = dadoHTML(x);
+  $('rvEsito').textContent = testoEsito(x);
+  $('rvLede').innerHTML = x.d === CU.GRIGIO
+    ? `Di solito si muove il <b>pazzo ${x.col === 'n' ? 'nero' : 'bianco'}</b>, all’indietro di ${x.v}, con chi ha sopra.`
+    : `Muovete il cammello ${C5[x.d].nome.toLowerCase()} con tutti quelli che ha sopra. Se finisce su altri cammelli, va in cima.`;
+  $('rvGrigio').hidden = x.d !== CU.GRIGIO; $('rvGrigio').innerHTML = PROMEMORIA_GRIGIO;
+  const ultima = S.fase === 'liquidare';
+  $('rvFine').hidden = !ultima;
+  $('rvFine').textContent = 'Era la quinta estrazione: la tappa è finita. Il sesto dado resta nella piramide.';
+  $('rvOk').textContent = ultima ? 'Cammello mosso: classifica di fine tappa' : `Fatto: tocca a ${S.nomi[S.turno]}`;
+  $('rvTraguardo').hidden = S.fineCorsa;
+  show('rivela');
+}
+$('rvOk').onclick = () => vai();
+$('rvTraguardo').onclick = () => chiediTraguardo();
+
+/* ======================================================================
+   BORSA (per il giocatore di turno)
+   ====================================================================== */
+let bvSel = null;
+$('pBorsa').onclick = () => { if (fermo()) return; bvSel = null; renderBorsa(); $('borsaVelo').hidden = false; };
+$('bvChiudi').onclick = () => { $('borsaVelo').hidden = true; };
+$('borsaVelo').addEventListener('click', e => { if (e.target.id === 'borsaVelo') $('borsaVelo').hidden = true; });
+function renderBorsa() {
+  const g = S.turno, cfgS = S.cfg, p = CU.prezzi(S);
+  $('bvTitolo').textContent = `Borsa · ${S.nomi[g]}`;
+  $('bvSub').innerHTML = `Saldo <b class="num">${cr(S.crediti[g])}</b> · operazioni ${S.azioniBorsa[g]}/${cfgS.maxAzioni} · contratti ${CU.totaleContratti(S, g)}/${cfgS.maxContratti}. Un’operazione è tutta l’azione del turno.`;
+  $('bvConf').hidden = !bvSel; $('bvLista').hidden = !!bvSel;
+  if (bvSel) { renderConferma(); return; }
+  $('bvLista').innerHTML = [0, 1, 2, 3, 4].map(c => {
+    const a = CU.puoComprare(S, g, c), v = CU.puoVendere(S, g, c), ho = S.port[g].vincitore[c];
+    const why = !a.ok && !v.ok ? (ho ? v.motivo : a.motivo) : '';
+    return `<div class="brow"><span class="nm">${tok(c)}<span>${C5[c].nome}<br><small>${pct(p[c])}${ho ? ' · ne hai ' + ho : ''}</small></span></span>
+      <button class="op buy" data-op="compra" data-c="${c}" ${a.ok ? '' : 'disabled'}>Compra<small class="num">${a.cent != null ? cr(a.cent) : '—'}</small></button>
+      <button class="op" data-op="vendi" data-c="${c}" ${v.ok ? '' : 'disabled'}>Vendi<small class="num">${v.ok ? cr(v.cent) : '—'}</small></button>
+      ${why ? `<span class="why">${esc(why)}</span>` : ''}</div>`;
+  }).join('');
+}
+$('bvLista').addEventListener('click', e => { const b = e.target.closest('[data-op]'); if (!b || b.disabled) return; bvSel = { op: b.dataset.op, c: +b.dataset.c }; renderBorsa(); });
+function renderConferma() {
+  const g = S.turno, { op, c } = bvSel, cfgS = S.cfg;
+  const ck = op === 'compra' ? CU.puoComprare(S, g, c) : CU.puoVendere(S, g, c);
+  if (!ck.ok) { bvSel = null; toast(ck.motivo); renderBorsa(); return; }
+  const dopo = op === 'compra' ? S.crediti[g] - ck.cent : S.crediti[g] + ck.cent;
+  const pag = S.pagato[g].vincitore[c];
+  $('bvConf').innerHTML = `<div class="conf"><div class="t">${tok(c)}${op === 'compra' ? 'Compri' : 'Vendi'} ${C5[c].nome}</div>
+    <p>${op === 'compra' ? `Costo <b class="num">${cr(ck.cent)}</b>` : `Ricavo <b class="num">${cr(ck.cent)}</b>`}, saldo dopo <b class="num">${cr(dopo)}</b>.</p>
+    <p>${op === 'compra' ? `Paga <b>${cfgS.R}</b> crediti se ${C5[c].nome} è primo a fine tappa, altrimenti niente.` : `L’avevi pagato <b class="num">${cr(pag)}</b>: ${ck.cent >= pag ? 'guadagni' : 'perdi'} <b class="num">${cr(Math.abs(ck.cent - pag))}</b>.`} Poi tocca a ${esc(S.nomi[(g + 1) % S.n])}.</p></div>
+    <div class="stack"><button class="btn" id="bvOk">${op === 'compra' ? 'Conferma l’acquisto' : 'Conferma la vendita'}</button><button class="btn sec" id="bvIndietro">Indietro</button></div>`;
+  $('bvOk').onclick = () => {
+    const ev = { t: op, g, e: c };
+    if (!fai(ev)) { bvSel = null; renderBorsa(); return; }
+    $('borsaVelo').hidden = true; ferma(); renderPlancia(); inCima();
+    toast(`${S.nomi[g]} ${op === 'compra' ? 'compra' : 'vende'} ${C5[c].nome}. Tocca a ${S.nomi[S.turno]}.`);
+  };
+  $('bvIndietro').onclick = () => { bvSel = null; renderBorsa(); };
+}
+
+/* ======================================================================
+   SPIONAGGIO
+   ====================================================================== */
+let dq = null;
+$('pLic').onclick = () => {
+  if (fermo()) return;
+  const g = S.turno;
+  passa(g, () => apriDomanda(g), { kick: 'Licenza di spionaggio', nota: 'La risposta la vede solo chi ha la licenza. Gli altri guardano altrove.', btn: `Sono ${S.nomi[g]}: continua`, top: `Tappa ${S.tappa}`, quit: () => vai() });
+};
+function apriDomanda(g) {
+  dq = { g, tipo: null, dadi: [] };
+  $('dqChi').textContent = S.nomi[g];
+  $('dqLede').innerHTML = `Hai <b>${cr(S.crediti[g])}</b> crediti. Una sola domanda: poi la licenza è consumata. Dopo scegli comunque la tua azione.`;
+  renderDomanda(); show('domanda');
+}
+function renderDomanda() {
+  const op = CU.opzioniSpia(S, dq.g);
+  $('dqLista').innerHTML = ['A', 'B', 'C'].map(k => `<button class="q ${dq.tipo === k ? 'on' : ''}" data-q="${k}" ${op[k].ok ? '' : 'disabled'}>
+    <span class="hd"><b>${CU.SPIA[k].nome}</b><span class="c num">${S.cfg.costi[k]}</span></span><small>${esc(CU.SPIA[k].desc)}</small>${op[k].ok ? '' : `<small class="why">${esc(op[k].motivo)}</small>`}</button>`).join('');
+  $('dqDadi').hidden = dq.tipo !== 'C';
+  if (dq.tipo === 'C') $('dqScelta').innerHTML = CU.rimasti(S).slice().sort((a, b) => a - b).map(d => `<button data-d="${d}" class="${dq.dadi.includes(d) ? 'on' : ''}">${tokDado(d)}${dadoNome(d)}</button>`).join('');
+  const pronto = dq.tipo && op[dq.tipo].ok && (dq.tipo !== 'C' || dq.dadi.length === 2);
+  $('dqOk').disabled = !pronto;
+  $('dqOk').textContent = dq.tipo ? `Paga ${S.cfg.costi[dq.tipo]} crediti e scopri` : 'Scegli una domanda';
+}
+$('dqLista').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b || b.disabled) return; dq.tipo = b.dataset.q; renderDomanda(); });
+$('dqScelta').addEventListener('click', e => {
+  const b = e.target.closest('[data-d]'); if (!b) return; const d = +b.dataset.d, i = dq.dadi.indexOf(d);
+  if (i >= 0) dq.dadi.splice(i, 1); else { if (dq.dadi.length >= 2) dq.dadi.shift(); dq.dadi.push(d); }
+  renderDomanda();
+});
+$('dqAnnulla').onclick = () => { dq = null; vai(); };
+$('dqOk').onclick = () => {
+  if (!dq || !dq.tipo) return;
+  const { g, tipo } = dq, [a, b] = dq.dadi;
+  const r = CU.risposta(S, tipo, a, b);
+  if (!fai({ t: 'spia', g, tipo, a, b })) return;
+  dq = null; mostraRisposta(g, r);
+};
+function mostraRisposta(g, r) {
+  $('rsChi').textContent = S.nomi[g];
+  let h = '';
+  if (r.tipo === 'A') h = `<div class="kicker">La prossima estrazione sarà</div>${dadoHTML(r.dado)}<div class="t">${esc(testoEsito(r.dado))}</div>`;
+  if (r.tipo === 'B') h = `<div class="kicker">Resterà nella piramide</div><div class="t" style="display:flex;align-items:center;gap:12px"><span class="cm" style="width:34px;height:24px;border-radius:8px;--c:${coloreDado(r.d)}"></span>${dadoNome(r.d)}</div><p class="lede" style="margin:0">Se la tappa arriva alla quinta estrazione, questo dado non esce.</p>`;
+  if (r.tipo === 'C') h = `<div class="kicker">Esce prima</div><div class="t">${dadoNome(r.prima)}</div><div class="kicker">poi, più avanti o mai in questa tappa</div><div class="t" style="font-size:24px;color:var(--muto)">${dadoNome(r.dopo)}</div>`;
+  $('rsBox').innerHTML = h;
+  $('rsNota').textContent = 'Ricordatela: dopo «Ho visto» non si può più rivedere.';
+  show('risposta');
+}
+$('rsOk').onclick = () => {
+  $('rsBox').innerHTML = '';
+  $('neTitolo').textContent = 'Licenza usata';
+  $('neLede').textContent = `Il telefono torna al tavolo. ${S.nomi[S.turno]} sceglie ancora la sua azione del turno.`;
+  show('neutro');
+};
+$('neOk').onclick = () => vai();
+
+/* ======================================================================
+   FINE TAPPA: classifica e liquidazione
+   ====================================================================== */
+let ordine = [];
+function apriClassifica() {
+  ordine = [];
+  $('clTop').textContent = `Tappa ${S.tappa}`;
+  $('clTitolo').textContent = S.fineCorsa ? 'La corsa è finita' : `Fine della tappa ${S.tappa}`;
+  $('clLede').innerHTML = 'Toccate i cammelli da corsa <b>dal primo all’ultimo</b>. Sulla stessa casella è davanti quello più in alto; i pazzi non contano' + (S.fineCorsa ? '. Cammelli da corsa portati oltre il traguardo all’indietro da un pazzo sono ultimi.' : '. Primo e secondo servono anche per le tessere al tavolo.');
+  renderClassifica(); show('classifica');
+}
+function renderClassifica() {
+  $('clPosti').innerHTML = [0, 1, 2, 3, 4].map(i => ordine[i] != null ? `<div class="posto pieno">${tok(ordine[i])}<span>${i + 1}º</span></div>` : `<div class="posto">${i + 1}º</div>`).join('');
+  $('clScegli').innerHTML = [0, 1, 2, 3, 4].map(c => `<button class="cbtn" data-c="${c}" ${ordine.includes(c) ? 'disabled' : ''}>${tok(c)}${C5[c].nome}</button>`).join('');
+  $('clOk').disabled = ordine.length !== 5;
+  $('clRifai').hidden = !ordine.length;
+  linkAnnulla($('clAnnulla'));
+}
+$('clScegli').addEventListener('click', e => {
+  const b = e.target.closest('[data-c]'); if (!b || b.disabled) return;
+  ordine.push(+b.dataset.c);
+  if (ordine.length === 4) ordine.push([0, 1, 2, 3, 4].find(c => !ordine.includes(c)));
+  renderClassifica();
+});
+$('clRifai').onclick = () => { ordine = []; renderClassifica(); };
+$('clOk').onclick = () => {
+  if (ordine.length !== 5) return;
+  const w = ordine[0];
+  const chi = S.nomi.map((nm, g) => S.port[g].vincitore[w] ? nm : null).filter(Boolean);
+  finestra(`Vince ${C5[w].nome}`, `<p style="margin:0 0 8px">Classifica: ${ordine.map((c, i) => `${i + 1}º ${tok(c)} ${C5[c].nome}`).join(', ')}.</p>
+    <p style="margin:0">${S.cfg.borsa ? (chi.length ? `Incassano ${S.cfg.R} crediti per contratto: <b>${chi.map(esc).join(', ')}</b>. Gli altri contratti scadono a zero.` : 'Nessuno ha contratti sul vincitore: tutti i contratti scadono a zero.') : 'Si chiude la tappa.'}</p>`, [
+    { t: 'Conferma e liquida', f: liquida }, { t: 'Correggo la classifica', cls: 'sec' }]);
+};
+function liquida() {
+  if (!S.fineCorsa) CU.preparaTappa(P, S.tappa + 1, CU.randIntCrypto);   // la sequenza della tappa dopo resta fissata anche se si annulla
+  const t = S.tappa;
+  if (!fai({ t: 'liquida', classifica: ordine.slice() })) return;
+  ferma(); mostraRiepilogo(t, true);
+}
+
+/* ---------------- Riepilogo di una tappa ---------------- */
+function mostraRiepilogo(t, appenaChiusa) {
+  const R = S.riepiloghi.find(x => x.tappa === t); if (!R) { vai(); return; }
+  const tp = P.tappe[t], ok = CU.verificaTappa(P, t), cfgS = S.cfg;
+  $('riTop').textContent = `Tappa ${t}`;
+  const righe = S.nomi.map((nm, g) => {
+    const d = R.creditiFine[g] - R.creditiInizio[g];
+    const cont = R.tenuti[g].map(x => `${tok(x.e)}${x.vince ? ' +' + cfgS.R : ''}`).join(' ');
+    const asta = R.asta && R.asta.vince === g ? ` licenza ${R.asta.offerte[g]}` : '';
+    return `<tr><td>${esc(nm)}<div style="color:var(--muto);font-size:12px;margin-top:2px">${cont || ''}${asta}</div></td><td class="r num">${cr(R.creditiInizio[g])}</td><td class="r num">${cr(R.creditiFine[g])}</td><td class="r num ${d > 0 ? 'up' : 'pos-'}">${crS(d)}</td></tr>`;
+  }).join('');
+  const usciti = new Set(R.estrazioni.map(x => x.d));
+  const seq = tp.seq.map((x, i) => `<div class="it ${usciti.has(x.d) ? '' : 'fuori'}">${dadoHTML(x, 40)}<span>${usciti.has(x.d) ? i + 1 + 'º' : 'non uscito'}</span></div>`).join('');
+  const prossimo = S.fase === 'asta' || S.fase === 'gioco';
+  $('riCorpo').innerHTML = `
+    <section class="pan" style="margin-top:8px">
+      <div class="between"><h2 style="margin:0">${R.fineCorsa ? 'Ultima tappa' : `Tappa ${t} liquidata`}</h2><span style="display:flex;gap:4px">${R.classifica.map(c => tok(c)).join('')}</span></div>
+      <p class="sub" style="margin:6px 0 10px">Vince <b style="color:var(--testo)">${C5[R.vince].nome}</b>, secondo ${C5[R.classifica[1]].nome}.${appenaChiusa && !R.fineCorsa ? ' Al tavolo: pagate tessere scommessa (5/3/2 al primo, +1 al secondo, −1 agli altri), tessere piramide (+1) e partnership; via spettatori e tessere.' : ''}</p>
+      ${cfgS.borsa || cfgS.spionaggio ? `<table class="tab"><thead><tr><th>Crediti</th><th class="r">inizio</th><th class="r">fine</th><th class="r">tappa</th></tr></thead><tbody>${righe}</tbody></table>` : ''}
+    </section>
+    <section class="pan">
+      <h2>Dadi della tappa</h2>
+      <div class="seqv">${seq}</div>
+      <p class="sub" style="margin:6px 0 4px">Sale <span class="mono">${tp.sale}</span></p>
+      <p class="sub" style="margin:0 0 8px">Impronta <span class="mono">${tp.hash}</span></p>
+      <p style="margin:0;font-size:14px" class="${ok ? 'ok' : ''}">${ok ? 'L’impronta ricalcolata coincide con quella mostrata a inizio tappa.' : 'L’impronta ricalcolata non coincide: i dati salvati sono stati modificati.'}</p>
+    </section>`;
+  const btns = [];
+  if (appenaChiusa && prossimo) btns.push(`<button class="btn" id="riAvanti">Tappa ${S.tappa}: inizia ${esc(S.nomi[S.primo])}</button>`);
+  else if (appenaChiusa && S.fase === 'punteggi') btns.push('<button class="btn" id="riAvanti">Conti finali</button>');
+  else btns.push('<button class="btn sec" id="riAvanti">Indietro</button>');
+  $('riBtns').innerHTML = btns.join('') + '<div class="annulla" id="riAnnulla"></div>';
+  $('riAvanti').onclick = () => vai();
+  if (appenaChiusa) linkAnnulla($('riAnnulla'));
+  show('riepilogo');
+}
+function elencoRiepiloghi() {
+  finestra('Tappe concluse', `<div class="chips">${S.riepiloghi.map(r => `<button class="chip" data-t="${r.tappa}">Tappa ${r.tappa} ${tok(r.vince)}</button>`).join('')}</div>`, [{ t: 'Chiudi', cls: 'sec' }]);
+  document.querySelectorAll('#ivCorpo [data-t]').forEach(b => b.onclick = () => { $('infoVelo').hidden = true; mostraRiepilogo(+b.dataset.t, false); });
+}
+
+/* ======================================================================
+   FINE PARTITA
+   ====================================================================== */
+function renderPunti() {
+  const prec = P.ui && P.ui.ep;
+  $('ptLista').innerHTML = S.nomi.map((nm, g) => `<div class="epin"><span><b>${esc(nm)}</b><div style="color:var(--muto);font-size:12.5px;margin-top:2px">Borsa ${crS(S.crediti[g] - S.cfg.capitale * 100)} crediti</div></span>
+    <input type="number" inputmode="numeric" min="0" step="1" data-g="${g}" value="${prec && prec[g] != null ? prec[g] : ''}" placeholder="0" aria-label="Sterline di ${esc(nm)}"></div>`).join('');
+  linkAnnulla($('ptAnnulla'));
+}
+$('ptLista').addEventListener('input', () => { const ep = [...document.querySelectorAll('#ptLista input')].map(i => i.value); P.ui = Object.assign({}, P.ui, { ep }); salva(); });
+$('ptOk').onclick = () => {
+  const ins = [...document.querySelectorAll('#ptLista input')];
+  const ep = ins.map(i => i.value.trim() === '' ? NaN : Number(i.value.replace(',', '.')));
+  if (ep.some(x => !Number.isFinite(x) || x < 0)) { toast('Scrivi le sterline di tutti (anche 0)'); return; }
+  if (!fai({ t: 'punteggi', ep })) return;
+  const f = CU.finale(S);
+  const st = loadJSON(K_ST, []); if (Array.isArray(st)) { st.push({ data: new Date().toISOString(), n: S.n, cfg: S.cfg, tappe: S.riepiloghi.length, righe: f.righe.map(r => ({ ep: r.ep, crediti: r.crediti, spia: r.spia, scambi: r.scambi })) }); saveJSON(K_ST, st.slice(-100)); }
+  renderFine(); show('fine');
+};
+/* Punteggio con tutti i decimali che servono (i crediti sono in centesimi: al massimo tre) */
+const esatto = x => { let t = x.toFixed(3); if (t.endsWith('0')) t = x.toFixed(2); return t.replace('.', ','); };
+function renderFine() {
+  const f = CU.finale(S), cfgS = S.cfg;
+  const nm = g => esc(S.nomi[g]);
+  const podio = f.ordine.map((r, i) => `<div class="r ${i === 0 ? 'primo' : ''}"><span class="pos">${i + 1}</span>
+    <span><span class="nm">${esc(r.nome)}</span><div class="dett num">${String(r.ep).replace('.', ',')} sterline ${r.borsa >= 0 ? '+' : '−'} ${esatto(Math.abs(r.borsa))} dalla Borsa (${crS(r.profitto)} crediti)</div></span>
+    <span class="tot num">${esatto(r.totale)}</span></div>`).join('');
+  const maxB = f.righe.reduce((a, b) => b.profitto > a.profitto ? b : a), maxE = f.righe.reduce((a, b) => b.ep > a.ep ? b : a);
+  const inv = x => x ? `${nm(x.g)}: ${C5[x.e].nome} nella tappa ${x.tappa}, ${crS(x.profitto)}` : '—';
+  const spia = f.righe.filter(r => r.spia).map(r => `${esc(r.nome)} ${cr(r.spia)}`).join(', ') || 'nessuno';
+  const scambi = f.righe.reduce((a, r) => a + r.scambi, 0);
+  $('fiCorpo').innerHTML = `
+    <section class="pan" style="margin-top:8px">
+      <h2>Classifica finale</h2>
+      <p class="sub">Sterline egiziane + (crediti − ${cfgS.capitale}) / ${cfgS.tasso}. Conta solo il guadagno in Borsa, non il capitale di partenza.</p>
+      <div class="podio">${podio}</div>
+    </section>
+    <section class="pan">
+      <h2>Com’è andata</h2>
+      <div class="stat">
+        <div><small>Migliore in Borsa</small><b>${esc(maxB.nome)} ${crS(maxB.profitto)}</b></div>
+        <div><small>Più sterline al tavolo</small><b>${esc(maxE.nome)} ${String(maxE.ep).replace('.', ',')}</b></div>
+        <div><small>Miglior investimento</small><b>${inv(f.miglior)}</b></div>
+        <div><small>Peggior investimento</small><b>${f.peggior !== f.miglior ? inv(f.peggior) : '—'}</b></div>
+        <div><small>Crediti nello spionaggio</small><b>${spia}</b></div>
+        <div><small>Compravendite</small><b>${scambi} in ${S.riepiloghi.length} tappe</b></div>
+      </div>
+      <p class="nota">Statistiche e basta: non danno punti.</p>
+    </section>`;
+  linkAnnulla($('fiAnnulla'));
+}
+$('fiNuova').onclick = () => { P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {} players = loadJSON(K_PL, players); show('inizio'); renderInizio(); };
+$('fiTappe').onclick = () => elencoRiepiloghi();
+
+/* ======================================================================
+   REGOLE
+   ====================================================================== */
+let regoleDa = 'inizio';
+function apriRegole(da) { regoleDa = da; renderRegole(); show('regole'); }
+$('rulesBtn').onclick = () => apriRegole('inizio');
+$('regBack').onclick = $('regBack2').onclick = () => { if (regoleDa === 'plancia' && P) vai(); else { show('inizio'); renderInizio(); } };
+function renderRegole() {
+  const c = S ? S.cfg : cfg, A1 = CU.APERTURA;
+  const pc = a => a.map(x => (x * 100).toString().replace('.', ',') + '%').join(' · ');
+  $('regoleTesto').innerHTML = `
+    <h3>L’idea</h3>
+    <p>Si gioca a Camel Up seconda edizione con tabellone, cammelli, tessere e sterline veri. Il telefono sostituisce solo la <b>piramide dei dadi</b>, e aggiunge due cose: una <b>licenza di spionaggio</b> sui dadi futuri e una <b>Borsa</b> sul vincitore della tappa, con crediti virtuali separati dalle sterline.</p>
+    <h3>Il turno</h3>
+    <p>Nel tuo turno fai <b>una</b> di queste azioni:</p>
+    <ul><li>prendi una tessera scommessa di tappa;</li><li>metti o sposti la tessera spettatore;</li><li><b>estrai un dado</b> dalla piramide del telefono (prendi la tessera piramide vera);</li><li>scommetti sul vincitore o sul perdente della corsa;</li><li>con 6 o più giocatori, la partnership;</li><li><b>un’operazione di Borsa</b>: comprare o vendere un contratto.</li></ul>
+    <p>Le azioni al tavolo si segnano con un tocco sulla plancia; il turno passa da solo. Chi ha la licenza può usarla <b>prima</b> dell’azione: non conta come azione.</p>
+    <h3>La piramide</h3>
+    <p>All’inizio di ogni tappa il telefono fissa in segreto l’ordine dei sei dadi e il numero di ciascuno (Web Crypto, senza distorsioni). Ogni estrazione rivela il prossimo; alla quinta la tappa finisce e il sesto resta dentro. I risultati non cambiano mai, nemmeno annullando: chi riestrae trova lo stesso dado.</p>
+    <p>Prima del primo dado il telefono mostra un’<b>impronta SHA-256</b> della sequenza con un sale casuale; a fine tappa mostra sequenza e sale e la ricontrolla. Non protegge da chi manomette il telefono: serve a vedere che durante la partita i dadi sono rimasti quelli.</p>
+    <p>${PROMEMORIA_GRIGIO}</p>
+    <p>Se un cammello taglia il traguardo, toccate «Fine della corsa»: non escono altri dadi.</p>
+    <h3>Spionaggio</h3>
+    <p>A inizio tappa, prima di ogni azione, c’è <b>una</b> asta segreta: il telefono passa di mano, ognuno offre da 0 ai crediti che ha, vince l’offerta più alta e paga solo chi vince. Pareggi: vince chi viene prima nell’ordine di spareggio, che ruota di un posto a ogni tappa.</p>
+    <p>La licenza si usa una volta, all’inizio di un proprio turno, quando si vuole (anche dopo qualche dado); scade a fine tappa. Si sceglie una domanda e se ne paga il costo:</p>
+    <ul><li><b>Prossimo dado</b> (${c.costi.A}): quale dado esce alla prossima estrazione e con che numero.</li><li><b>Dado escluso</b> (${c.costi.B}): quale dado resterà nella piramide. Con due dadi rimasti è spenta, perché la Precedenza dice la stessa cosa.</li><li><b>Precedenza</b> (${c.costi.C}): tra due dadi ancora dentro, quale esce prima. Il secondo potrebbe essere proprio quello escluso.</li></ul>
+    <p>La risposta compare solo dopo una conferma e sparisce con «Ho visto»; in cronologia resta solo che la licenza è stata usata e quanto è costata.</p>
+    <h3>La Borsa</h3>
+    <p>Un contratto su un cammello paga <b>${c.R} crediti</b> se quel cammello è primo a fine tappa, altrimenti niente. Il banco è un market maker LMSR: con q le quantità in circolazione e b = ${String(c.b).replace('.', ',')},</p>
+    <div class="f">C(q) = R · b · log Σ exp(q<sub>i</sub> / b)<br>prezzo<sub>i</sub> = R · exp(q<sub>i</sub>/b) / Σ exp(q<sub>j</sub>/b)<br>costo d’acquisto: C(q + e<sub>i</sub>) − C(q)<br>ricavo di vendita: C(q) − C(q − e<sub>i</sub>)</div>
+    <p>I prezzi si muovono solo con le compravendite: il telefono <b>non</b> conosce il tabellone. Le probabilità implicite sommano sempre al 100%. Chi compra paga arrotondato per eccesso al centesimo, chi vende incassa arrotondato per difetto: comprare e rivendere subito restituisce lo stesso valore, meno al più un centesimo.</p>
+    <p><b>Prezzi d’apertura</b>: ${c.apertura === 'uniforme' ? 'in questa partita tutti al 20%.' : `dalla classifica di inizio tappa. Prima tappa ${pc(A1.prima)}; dalla seconda ${pc(A1.dopo)} (dal primo all’ultimo). Sono la probabilità media di vincere la tappa per posto, stimata simulando migliaia di corse: non guardano le distanze, quindi chi legge bene il tabellone trova prezzi sbagliati.`}</p>
+    <p><b>Limiti</b>: ${c.maxAzioni} operazioni di Borsa a testa per tappa, ${c.maxContratti} contratti tenuti insieme, ${c.maxPerCammello} per cammello, niente vendite allo scoperto, niente saldi negativi. Si compra finché sono usciti al massimo <b>${c.finestraAcquisti}</b> dadi, si vende finché ne sono usciti al massimo <b>${c.finestraVendite}</b>.</p>
+    <h3>Fine tappa</h3>
+    <p>Dopo la quinta estrazione (o la fine della corsa) indicate la classifica dei cinque cammelli. Ogni contratto sul primo incassa ${c.R} crediti, gli altri scadono. Le tessere al tavolo si pagano come sempre. Nella tappa dopo i contratti ripartono da zero, i crediti restano, la licenza sparisce, i dadi sono nuovi e inizia chi sta a sinistra di chi ha estratto l’ultimo dado.</p>
+    <h3>Fine partita</h3>
+    <div class="f">punteggio = sterline + (crediti − ${c.capitale}) / ${c.tasso}</div>
+    <p>Conta solo il guadagno in Borsa: il capitale iniziale non dà punti. I decimali restano.</p>
+    <h3>Perché questi numeri</h3>
+    <p>Rispetto alla prima proposta sono cambiate tre cose, dopo aver simulato migliaia di tappe:</p>
+    <ul><li><b>Apertura dalla classifica</b> invece che al 20% per tutti: a inizio tappa il favorito vince in media una volta su due, quindi con prezzi uniformi il miglior acquisto rendeva in media +19 crediti in ogni tappa, senza pensarci. Così il vantaggio scende a circa +10 e bisogna leggere il tabellone per trovarlo.</li><li><b>Capitale ${DEF_CAP}</b> invece di 40: con i nuovi prezzi il favorito costa circa 37 crediti, e con 40 non resterebbe spazio per un secondo contratto.</li><li><b>Costi delle domande ${CU.DEF.costi.A}/${CU.DEF.costi.B}/${CU.DEF.costi.C}</b> invece di 6/4/2: il dado escluso dava meno informazione della precedenza costando il doppio. Così presto conviene la precedenza, tardi il dado escluso, il prossimo dado sempre ma è il più caro.</li></ul>
+    <p>Acquisti fino a 2 dadi: dopo due estrazioni un acquisto tardivo vale in media quanto una tessera da 3, quindi non domina. Tutti i valori si cambiano in «Avanzate» prima della partita.</p>`;
+}
+const DEF_CAP = CU.DEF.capitale;
+
+/* ---------------- Avvio ---------------- */
+vai();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>
