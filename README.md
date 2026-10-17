@@ -30,6 +30,8 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
    ```html
    <style>@view-transition{navigation:auto}</style>
    <link rel="stylesheet" href="../../comune/app.css">
+   <script src="../../giochi.js"></script>
+   <script src="../../comune/pulizia.js"></script>
    ...
    <a href="../../">‹ Giochi</a>
    ...
@@ -57,7 +59,12 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
     una copia su ogni telefono che ci è entrato;
   - «Chiudi il tavolo» nel menu mostra a tutti la classifica finale e cancella il tavolo dai telefoni, mentre sui
     server resta solo la classifica (meno di 1 KB);
-  - le copie dei tavoli fermi da più di 30 giorni si cancellano da sole.
+  - le copie dei tavoli fermi da più di 7 giorni si cancellano da sole.
+- **Pulizia:**
+  - un gioco non aperto da più di 7 giorni torna come nuovo: via nomi, squadre, impostazioni e partita;
+  - il tasto «Pulisci tutto» in fondo alla home (da tenere premuto) lo fa subito per tutti i giochi;
+  - gli storici di 7 Wonders e Dossier restano;
+  - le chiavi di ogni gioco sono nel campo `dati` di `giochi.js` (vedi `comune/pulizia.js`).
 - **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue
     categorie. Per un pacchetto nuovo si copia un blocco e si cambia `id` e `nome`; `attivo: true` lo accende di base.

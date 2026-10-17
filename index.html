@@ -60,8 +60,15 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,14vw,64px);li
 
 .hint{margin:34px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
 
-/* Condividi: piccolo, in basso a destra; è sempre l'ultima cosa della home e scorre con le carte */
-.sharerow{display:flex;justify-content:flex-end;margin-top:44px}
+/* Condividi: piccolo, in basso a destra; è sempre l'ultima cosa della home e scorre con le carte.
+   Pulisci tutto: uguale, in basso a sinistra; va tenuto premuto finché lo sfondo si riempie */
+.sharerow{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:44px}
+.wipe{position:relative;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+.wipe .fill{position:absolute;inset:3px -7px;border-radius:7px;background:rgba(216,168,74,.3);transform:scaleX(0);transform-origin:left;transition:transform .16s ease-out}
+.wipe.carica .fill{transform:scaleX(1);transition:transform var(--ms,1200ms) linear}
+.wipe.carica{color:var(--text)}
+.wipe svg,.wipe .lbl{position:relative}
+@media (prefers-reduced-motion:reduce){.wipe.carica .fill{transition:none}}
 .share{display:flex;align-items:center;gap:5px;padding:8px 0;border:0;background:none;
   color:var(--muted);font-family:var(--ui);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .share svg{width:15px;height:15px;flex:none}
@@ -93,6 +100,7 @@ ul.games{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
     <nav class="deck" id="deck" aria-label="Categorie"></nav>
     <p class="hint" id="installHint" hidden>Per averla come app: in Safari tocca Condividi e poi «Aggiungi alla schermata Home».</p>
     <div class="sharerow">
+      <button class="share wipe" id="wipeBtn" aria-label="Cancella nomi, squadre, impostazioni e partite di tutti i giochi (tieni premuto)"><span class="fill"></span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7"/><path d="M3.2 2.8v3.4h3.4"/></svg><span class="lbl">Pulisci tutto</span></button>
       <button class="share" id="shareBtn" aria-label="Condividi il link dell’app"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12.5V2.5M6.5 6 10 2.5 13.5 6"/><path d="M6.5 9H5a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 5 18h10a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 15 9h-1.5"/></svg>Condividi</button>
     </div>
   </section>
@@ -104,6 +112,7 @@ ul.games{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
   </section>
 </main>
 <script src="giochi.js"></script>
+<script src="comune/pulizia.js"></script>
 <script>
 'use strict';
 const G = self.GIOCHI || { categorie: [], giochi: [] };
@@ -228,6 +237,31 @@ $('shareBtn').onclick = async () => {
   try { await navigator.clipboard.writeText(LINK); toast('Link copiato'); }
   catch (e) { toast(LINK); }
 };
+/* Pulisci tutto: tenuto premuto, cancella i dati di tutti i giochi (nomi, squadre, impostazioni,
+   partite: comune/pulizia.js). Restano gli storici. Da solo succede ai giochi non aperti da 7 giorni. */
+(function () {
+  const b = $('wipeBtn'), MS = 1200;
+  if (!window.gdsPulizia) { b.hidden = true; return; }
+  let t = null, inizio = 0;
+  const via = () => { clearTimeout(t); t = null; b.classList.remove('carica'); };
+  const parti = () => {
+    via(); inizio = Date.now();
+    b.style.setProperty('--ms', MS + 'ms'); void b.offsetWidth; b.classList.add('carica');
+    t = setTimeout(() => {
+      via(); gdsPulizia.tutto();
+      if (navigator.vibrate) navigator.vibrate(40);
+      toast('Fatto: tutti i giochi sono come nuovi. Gli storici restano');
+    }, MS);
+  };
+  const lascia = () => { if (!t) return; const presto = Date.now() - inizio < MS; via(); if (presto) toast('Tieni premuto per pulire nomi, squadre e partite di tutti i giochi'); };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); if (e.button > 0) return; parti(); });
+  b.addEventListener('pointerup', lascia);
+  b.addEventListener('pointercancel', via);
+  b.addEventListener('pointerleave', lascia);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+  b.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); parti(); } });
+  b.addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') lascia(); });
+})();
 renderHome(); route();
 </script>
 <script src="comune/app.js"></script>

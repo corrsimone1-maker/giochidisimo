@@ -27,11 +27,12 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 
 | File | Cosa fa |
 |---|---|
-| `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e il tastino «Condividi» in basso a destra, che deve restare **l'ultima cosa** della home (scorre con le carte) (foglio di condivisione del telefono, altrimenti copia il link). |
+| `index.html` | Home: quattro carte da gioco (categorie), l'elenco dei giochi di ogni categoria e in basso la riga con «Pulisci tutto» a sinistra (da tenere premuto) e il tastino «Condividi» a destra (foglio di condivisione del telefono, altrimenti copia il link). Quella riga deve restare **l'ultima cosa** della home (scorre con le carte). |
 | `giochi.js` | **Registro unico** di categorie e giochi. La home e la copia offline si costruiscono da qui. |
 | `sw.js` | Service worker: chiede prima alla rete, usa la cache solo offline. Salva le pagine di `giochi.js` e i file `extra`. |
 | `comune/app.js` | Incluso in **ogni** pagina: blocca lo zoom con le dita e il rimbalzo, registra il service worker e offre `gdsAppare(el)` per far entrare una schermata. |
 | `comune/app.css` | Incluso in **ogni** pagina: passaggi morbidi (circa 0,2 s) tra le pagine, tra home e categorie, per le schermate (`.appare`) e le finestre (`.velo`). |
+| `comune/pulizia.js` | Incluso nell'`<head>` di **ogni** pagina, dopo `giochi.js` e prima dello script del gioco. Cancella i dati dei giochi non aperti da più di 7 giorni e dà `gdsPulizia.tutto()` al tasto «Pulisci tutto» della home (vedi «Pulizia dei dati»). |
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
@@ -123,7 +124,9 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
-   - `extra` se la pagina carica altri file, così funzionano anche offline.
+   - `extra` se la pagina carica altri file, così funzionano anche offline;
+   - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
+     storici. Vedi «Pulizia dei dati».
 3. Aggiorna la tabella nel `README.md`.
 
 Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
@@ -132,7 +135,8 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - il **lilla** gli piace;
   - in alto a sinistra il link `‹ Giochi` → `../../`;
   - nell'`<head>` `<style>@view-transition{navigation:auto}</style>` e `<link rel="stylesheet" href="../../comune/app.css">`
-    (la prima riga va scritta nella pagina, non in `app.css`: da lì Chrome a volte la legge tardi e salta il passaggio);
+    (la prima riga va scritta nella pagina, non in `app.css`: da lì Chrome a volte la legge tardi e salta il passaggio),
+    subito dopo `<script src="../../giochi.js"></script>` e `<script src="../../comune/pulizia.js"></script>`;
   - in fondo `<script src="../../comune/app.js"></script>`;
   - viewport `width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover`.
 - **Reset:** dove si imposta una partita c'è un tasto **Reset** piccolo e sottolineato in alto a destra. Riporta tutto a com'era all'inizio e va toccato due volte entro 3 secondi.
@@ -155,10 +159,40 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
-  - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker).
+  - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
+  - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
 
   Non cambiare il formato di una chiave senza convertire i dati vecchi.
 - **Disegni:** solo disegni originali. Niente riproduzioni di disegni protetti: per esempio le facce vere delle monete in euro non si copiano, e infatti le monete di Conta Monete sono inventate.
+
+### Pulizia dei dati → `comune/pulizia.js`
+
+Simo vuole ritrovare tutto se chiude l'app per sbaglio, ma dopo una settimana non gli interessa più niente:
+nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
+- **Automatica:** quando un gioco non viene aperto da più di **7 giorni**, alla prossima apertura di qualunque pagina
+  si cancella tutto quello che salva. Aprire o usare il gioco rinnova i 7 giorni: l'uso si segna all'apertura, al ritorno
+  in primo piano, all'uscita e al cambio di `#`, in `gds-ultimo-uso`.
+- **Tasto «Pulisci tutto»** in fondo alla home, a sinistra di Condividi, da tenere premuto 1,2 s: cancella subito i dati
+  di tutti i giochi, compresi nome e tavoli del poker.
+- **Restano sempre:**
+  - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi);
+  - `fiches:device`;
+  - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
+    Simo, quindi **mai** `localStorage.clear()`.
+- **Cosa cancella:** il campo `dati` di ogni gioco in `giochi.js`, che può essere:
+  - una chiave intera;
+  - alcuni campi di una chiave: il segnapunti tiene `g1`/`g2`/`g3` di Dichiarare, Pegno e Tresette nella stessa chiave;
+  - `{ poker: true }`.
+- **Chiavi in comune:** una chiave in comune (`gds-giocatori`, `tab` del segnapunti) si cancella solo quando sono
+  scaduti tutti i giochi che la elencano.
+- **Prima volta:** i giochi che hanno già dei dati partono da adesso.
+- **Poker:** le copie dei tavoli ferme da più di 7 giorni (ora `t` del tavolo) o chiuse si tolgono anche se il poker si
+  usa, insieme a `fiches:session` / `fiches:last` se puntavano a quelle.
+- **Se un gioco salva una chiave nuova,** aggiungila al suo `dati`, aggiungi un caso in `prove/pulizia.test.js` e lancialo:
+  ```
+  python3 -m http.server 8765 &
+  PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node prove/pulizia.test.js
+  ```
 
 ### Secret Hitler: Dossier → `giochi/dossier/index.html`
 
@@ -207,8 +241,8 @@ Fiches sul telefono, multigiocatore senza server nostro. Ogni tavolo è un messa
   - chi riceve la chiusura la ripubblica anche sui broker rimasti indietro.
   
   **Non** cancellare la lapide con un messaggio vuoto: un telefono rimasto offline ripubblicherebbe il tavolo aperto.
-- **Pulizia:** all'apertura del poker si cancellano le copie locali dei tavoli chiusi o fermi da più di 30 giorni,
-  tranne l'ultimo e quello aperto. Lo spazio del sito (pochi MB) è in comune con tutti i giochi.
+- **Pulizia:** le copie locali dei tavoli chiusi o fermi da più di 7 giorni le toglie `comune/pulizia.js`
+  (vedi «Pulizia dei dati»). Lo spazio del sito (pochi MB) è in comune con tutti i giochi.
 - **Prove:**
   - `node prove/poker.test.js` prova il core: chiusura, telefono addormentato, broker rimasti indietro, chiusura e mossa
     nello stesso istante. Se cambi `better()`, `Sync` o le azioni, rilancialo e aggiungi un caso.

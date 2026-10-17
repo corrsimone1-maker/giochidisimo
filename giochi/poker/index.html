@@ -12,6 +12,8 @@
 <link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
 <style>@view-transition{navigation:auto}</style>
 <link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
 <title>Fiches</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1130,25 +1132,8 @@ async function toggleWake() {
 function releaseWake() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
 async function reacquireWake() { if (wakeLock && wakeLock.released) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch { wakeLock = null; } } }
 
-/* ---------- pulizia ----------
-   Ogni tavolo in cui si entra lascia una copia sul telefono (fiches:st:<codice>, fino a 20-30 KB).
-   Lo spazio del sito è di pochi MB e lo usano tutti i giochi: le copie dei tavoli fermi da più di
-   30 giorni (o chiusi) si cancellano. L'ultimo tavolo e quello aperto restano sempre. */
-const VECCHIO = 30 * 864e5;
-(function pulisci() {
-  try {
-    const tieni = new Set([LS.get('fiches:last'), LS.get('fiches:session')].map(x => x && x.code).filter(Boolean));
-    const chiavi = [];
-    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('fiches:st:')) chiavi.push(k); }
-    for (const k of chiavi) {
-      if (tieni.has(k.slice(10))) continue;
-      const st = LS.get(k);
-      if (!st || st.phase === 'closed' || !(Date.now() - st.t < VECCHIO)) LS.del(k);
-    }
-  } catch {}
-})();
-
-/* ---------- boot ---------- */
+/* ---------- boot ----------
+   Le copie dei tavoli fermi da più di 7 giorni le ha già tolte comune/pulizia.js, nell'<head>. */
 const sess = LS.get('fiches:session');
 const hcode = (location.hash || '').replace('#', '').toUpperCase();
 if (sess && sess.code && (!hcode || hcode === sess.code)) openRoom(sess.code, { pid: sess.pid });
