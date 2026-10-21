@@ -172,7 +172,7 @@ const CLIENT_FINTO = `(() => {
     await t[0].tap('[data-ch="0"]'); await t[0].tap('[data-ch="3"]');
     await t[0].tap('[data-az="versus-fine-round"]'); await t[0].tap('[data-az="vs-passo"]');
     assert.equal(await t[0].ev(() => statoVersus().round), 1, 'il round aspetta gli altri');
-    await t[0].aspetta(() => /Aspettiamo/.test(document.getElementById('vista').textContent));
+    await t[0].aspetta(() => /Aspettiamo/.test(document.getElementById('barra').textContent));
     await scatto(t[0], 'versus-aspetta');
     const sbagliato = sec.map((x, i) => i === 2 ? (x % 5) + 1 : x);
     await t[1].tap('[data-az="versus-fine-round"]'); await t[1].tap('[data-az="vs-voglio-dichiarare"]');
@@ -244,7 +244,7 @@ const CLIENT_FINTO = `(() => {
     // Luca chiude l'app; Simo finisce il round e lo toglie
     await t[1].ctx.close();
     await t[0].tap('[data-az="versus-fine-round"]'); await t[0].tap('[data-az="vs-passo"]');
-    await t[0].aspetta(() => /Aspettiamo/.test(document.getElementById('vista').textContent));
+    await t[0].aspetta(() => /Aspettiamo/.test(document.getElementById('barra').textContent));
     await t[0].tap('[data-az="foglio-stanza"]');
     await t[0].tap('#foglio [data-az="togli"]');
     await t[0].aspetta(() => S.fine && S.fine.tipo === 'versus');

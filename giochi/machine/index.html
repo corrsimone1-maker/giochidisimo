@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0A0E18">
+<meta name="theme-color" content="#191613">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,216 +18,214 @@
 <title>Claude Machine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Martian+Mono:wght@500;700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* Claude Machine: macchina a schede perforate, tema scuro.
-   Il cartoncino delle schede (--scheda) è l'unico colore chiaro: la scheda di prova si punzona,
-   i verificatori hanno la testata di cartoncino, lo storico è un nastro con i fori.
-   Font Saira Stencil One, Martian Mono e Figtree solo in questa pagina. */
+/* Claude Machine, tema «officina di notte»: grafite calda, un solo accento arancione (quello di Claude),
+   i tre colori del codice solo dove indicano una cifra. Niente superfici chiare.
+   Ordine per l'occhio: codice di prova in alto, verificatori (ognuno con i codici già provati su di lui),
+   registro chiuso in fondo; round, domande e pulsanti nella barra in basso.
+   Font Bricolage Grotesque e Figtree, come il resto dell'app. */
 :root{
-  --inchiostro:#0A0E18; --lamiera:#121827; --lamiera-2:#1A2236; --foro:#05080F;
-  --scheda:#E6DAC0; --scheda-2:#CFC2A2; --scheda-ink:#211C12; --scheda-tenue:#7A6E55;
-  --linea:rgba(230,218,192,.12); --linea-forte:rgba(230,218,192,.24);
-  --testo:#ECE6D8; --tenue:#8F99AF; --spento:#58627A;
-  --si:#5BC68E; --no:#E35F4B;
-  --blu:#4F8EF7; --giallo:#F3C53E; --viola:#A97DF5;
-  --stencil:'Saira Stencil One','Arial Narrow',Impact,sans-serif;
+  --fondo:#191613; --piano:#221E1A; --piano-2:#2B2621; --piano-3:#37312A;
+  --linea:rgba(255,240,220,.07); --linea-2:rgba(255,240,220,.14);
+  --testo:#F2EADF; --tenue:#A79C8D; --spento:#70675C;
+  --arancio:#D97757; --arancio-2:#E89478; --arancio-fondo:rgba(217,119,87,.14); --su-arancio:#21140E;
+  --si:#7DC59B; --si-fondo:rgba(125,197,155,.14); --no:#EA6B78; --no-fondo:rgba(234,107,120,.14);
+  --blu:#6AA6FF; --giallo:#F0C75A; --viola:#B591FF; --su-colore:#191613;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
   --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --mono:'Martian Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--inchiostro);color:var(--testo);font-family:var(--ui);font-size:15px;line-height:1.45;
+html,body{margin:0;height:100%;overflow:hidden;background:var(--fondo);color:var(--testo);font-family:var(--ui);font-size:15px;line-height:1.45;
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 button:disabled{cursor:default}
 input{font:inherit;-webkit-user-select:text;user-select:text}
-:focus-visible{outline:2px solid var(--scheda);outline-offset:2px}
-.app{position:fixed;inset:0;display:flex;flex-direction:column;
-  background:radial-gradient(circle at 1px 1px,rgba(230,218,192,.05) 1px,transparent 1.6px) 0 0/18px 18px,var(--inchiostro)}
+:focus-visible{outline:2px solid var(--arancio);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--fondo)}
 
 /* Barra in alto */
-.top{display:flex;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 4px max(14px,env(safe-area-inset-left))}
-.back{flex:none;color:var(--scheda);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
-.title{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;margin:0;font-family:var(--stencil);font-weight:400;font-size:21px;letter-spacing:.02em;white-space:nowrap}
-.title svg{width:22px;height:22px;flex:none}
+.top{display:flex;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 2px max(14px,env(safe-area-inset-left))}
+.back{flex:none;color:var(--arancio-2);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
+.title{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;margin:0;font-family:var(--display);font-weight:800;font-size:20px;white-space:nowrap}
+.title svg{width:21px;height:21px;flex:none}
 .links{flex:none;display:flex;align-items:center;gap:2px}
 .linkbtn{padding:8px 4px;border:0;background:none;color:var(--tenue);font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .gear{display:grid;place-items:center;width:38px;height:38px;margin-right:-8px;border:0;background:none;color:var(--tenue)}
 .gear svg{width:20px;height:20px}
-
-/* Striscia di stato: livello, modalità, stanza */
-.striscia{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:2px max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left));
-  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tenue);border-bottom:1px dashed var(--linea-forte)}
-.striscia .sep{color:var(--spento)}
-.striscia .dx{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--testo)}
-.striscia button{border:1px solid var(--linea-forte);background:var(--lamiera);border-radius:999px;padding:3px 9px;font:inherit;color:var(--scheda);display:inline-flex;align-items:center;gap:6px}
+.striscia{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 max(14px,env(safe-area-inset-right)) 6px max(14px,env(safe-area-inset-left));font-size:13px;color:var(--tenue)}
+.striscia .dx{margin-left:auto}
+.striscia button{border:1px solid var(--linea-2);background:var(--piano);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:700;color:var(--testo);display:inline-flex;align-items:center;gap:7px}
 .punto-rete{width:7px;height:7px;border-radius:50%;background:var(--spento)}
-.punto-rete.on{background:var(--si);box-shadow:0 0 6px var(--si)}
+.punto-rete.on{background:var(--si)}
 
 .scorri{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
-  padding:14px max(14px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
-.colonna{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.sez{display:flex;flex-direction:column;gap:8px}
-.etichetta{margin:0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);display:flex;justify-content:space-between;gap:8px}
-.etichetta span{color:var(--spento)}
-.aiuto{margin:0;font-size:12.5px;color:var(--spento);line-height:1.4}
+  padding:6px max(14px,env(safe-area-inset-right)) 20px max(14px,env(safe-area-inset-left))}
+.colonna{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 
-/* Forme dei tre colori */
+/* Forme e codici */
 .forma{width:.95em;height:.95em;display:inline-block;vertical-align:-.1em;flex:none}
-.f-blu{color:var(--blu)} .f-giallo{color:var(--giallo)} .f-viola{color:var(--viola)}
-.c-blu{color:var(--blu)} .c-giallo{color:var(--giallo)} .c-viola{color:var(--viola)}
-.cod{font-family:var(--mono);font-weight:700;letter-spacing:.08em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.f-blu,.c-blu{color:var(--blu)} .f-giallo,.c-giallo{color:var(--giallo)} .f-viola,.c-viola{color:var(--viola)}
+.cod{font-weight:800;letter-spacing:.07em;white-space:nowrap;font-variant-numeric:tabular-nums}
 
-/* Scheda di prova: cartoncino con l'angolo tagliato, i fori si punzonano */
-.scheda{position:relative;background:var(--scheda);color:var(--scheda-ink);border-radius:6px 12px 12px 12px;padding:12px 12px 10px;
-  clip-path:polygon(18px 0,100% 0,100% 100%,0 100%,0 18px);display:flex;flex-direction:column;gap:7px;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
-.scheda .intesta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-left:12px;
-  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--scheda-tenue)}
-.scheda .intesta b{color:var(--scheda-ink)}
-.riga-fori{display:grid;grid-template-columns:64px repeat(5,1fr);gap:6px;align-items:center}
-.riga-fori .nome{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px}
-.riga-fori .nome .forma{width:15px;height:15px;filter:drop-shadow(0 0 .5px rgba(0,0,0,.6))}
-.fp{height:42px;border-radius:8px;border:1.5px solid var(--scheda-2);background:transparent;color:var(--scheda-ink);
-  font-family:var(--mono);font-weight:700;font-size:15px;display:grid;place-items:center;transition:background .12s,color .12s,border-color .12s}
-.fp[aria-pressed="true"]{background:var(--foro);border-color:var(--foro);color:var(--c);box-shadow:inset 0 0 12px -2px var(--c),0 0 0 2px var(--c)}
-.r-blu .fp{--c:var(--blu)} .r-giallo .fp{--c:var(--giallo)} .r-viola .fp{--c:var(--viola)}
-.scheda.ferma .fp:not([aria-pressed="true"]){opacity:.35}
-.scheda .nota{margin:2px 0 0;padding-left:2px;font-size:12.5px;font-weight:600;color:var(--scheda-tenue);min-height:1.4em}
+/* Codice di prova (e appunti, sulla stessa griglia) */
+.pannello{background:var(--piano);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent}
+.pannello.appunti{border-color:var(--arancio)}
+.capo{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.capo h2{margin:0;font-family:var(--display);font-weight:800;font-size:17px}
+.interr{display:flex;background:var(--fondo);border-radius:999px;padding:3px}
+.interr button{border:0;background:none;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--tenue)}
+.interr button[aria-pressed="true"]{background:var(--piano-3);color:var(--testo)}
+.pannello.appunti .interr button[aria-pressed="true"]{background:var(--arancio);color:var(--su-arancio)}
+.tastiera{display:flex;flex-direction:column;gap:6px}
+.fila{display:grid;grid-template-columns:22px repeat(5,1fr);gap:6px;align-items:center}
+.fila .forma{width:17px;height:17px;justify-self:center}
+.cifra{position:relative;height:42px;border-radius:11px;border:0;background:var(--piano-2);color:var(--testo);font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.cifra.scelta{color:var(--su-colore)}
+.f-0 .cifra.scelta{background:var(--blu)} .f-1 .cifra.scelta{background:var(--giallo)} .f-2 .cifra.scelta{background:var(--viola)}
+.tastiera.ferma .cifra:not(.scelta){opacity:.35}
+.cifra.via{color:var(--spento)}
+.cifra.via::after{content:"";position:absolute;left:30%;right:30%;top:50%;height:2px;border-radius:1px;background:var(--tenue);transform:rotate(-45deg)}
+.cifra.scelta.via::after{background:var(--su-colore)}
+.nota{margin:0;font-size:13px;color:var(--tenue);min-height:1.45em}
 
 /* Verificatori */
-.verificatori{display:flex;flex-direction:column;gap:10px}
-.ver{background:var(--lamiera);border:1px solid var(--linea);border-radius:6px 12px 12px 12px;overflow:hidden;
-  clip-path:polygon(14px 0,100% 0,100% 100%,0 100%,0 14px)}
-.ver-testa{display:flex;align-items:center;gap:10px;background:var(--scheda);color:var(--scheda-ink);padding:6px 8px 6px 18px;min-height:46px}
-.lettera{font-family:var(--stencil);font-size:28px;line-height:1;width:22px;text-align:center}
-.ver-testa .tipo{flex:1;min-width:0;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--scheda-tenue)}
-.fori{display:flex;gap:6px}
-.foro{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--scheda-2);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--scheda-2)}
-.foro.si{background:var(--foro);border-color:var(--foro);color:var(--si);box-shadow:0 0 0 2px var(--si),0 0 12px var(--si)}
-.foro.no{background:var(--foro);border-color:var(--foro);color:var(--no);box-shadow:0 0 0 2px var(--no),0 0 12px var(--no)}
-.chiedi{border:0;border-radius:999px;background:var(--scheda-ink);color:var(--scheda);font-weight:800;font-size:13.5px;padding:8px 14px;white-space:nowrap}
-.chiedi:disabled{background:transparent;color:var(--scheda-tenue);box-shadow:inset 0 0 0 1.5px var(--scheda-2)}
-.ver-corpo{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
-.carta h3{margin:0 0 6px;font-size:14.5px;font-weight:700;line-height:1.3}
-.carta .nota-c{margin:-3px 0 6px;font-size:12px;color:var(--tenue)}
+.verificatori{display:flex;flex-direction:column;gap:8px}
+.ver{background:var(--piano);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.ver-capo{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:start}
+.lett{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--piano-3);font-family:var(--display);font-weight:800;font-size:16px}
+.ver.si .lett{background:var(--si);color:var(--su-colore)}
+.ver.no .lett{background:var(--no);color:var(--su-colore)}
+.ver-corpo{padding-left:40px;display:flex;flex-direction:column;gap:8px}
+.crit{min-width:0;font-weight:700;font-size:15px;line-height:1.3;padding-top:4px}
+.ver-corpo .crit{padding-top:0}
+.crit small{display:block;font-weight:500;font-size:12px;color:var(--tenue);margin-top:2px}
 .regole{display:flex;flex-wrap:wrap;gap:6px}
-.rg{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--linea-forte);background:var(--lamiera-2);border-radius:7px;padding:5px 9px 5px 7px;
-  font-size:13.5px;font-weight:600;line-height:1.25;text-align:left}
-.rg::before{content:"";width:8px;height:12px;border-radius:2px;border:1.5px solid var(--tenue);flex:none}
-.rg.via{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px}
-.rg.via::before{background:var(--tenue)}
-.oppure{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--spento)}
-.oppure::before,.oppure::after{content:"";flex:1;border-top:1px dashed var(--linea-forte)}
-.risposta{margin:0;font-size:13.5px;font-weight:700;line-height:1.35}
-.risposta.si{color:var(--si)} .risposta.no{color:var(--no)}
-.ver.accesa .foro.si,.ver.accesa .foro.no{animation:accendi .5s ease-out}
-@keyframes accendi{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.rg{border:0;background:var(--piano-2);border-radius:8px;padding:6px 10px;font-size:14px;font-weight:600;line-height:1.2;text-align:left;color:var(--testo)}
+.rg.via{opacity:.35;text-decoration:line-through;text-decoration-thickness:2px}
+.oppure{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--spento)}
+.chiedi{border:1.5px solid var(--arancio);background:transparent;color:var(--arancio-2);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px;white-space:nowrap}
+.chiedi:disabled{border-color:var(--linea-2);color:var(--spento)}
+.esito{border-radius:999px;padding:6px 11px;font-weight:800;font-size:13px;white-space:nowrap}
+.esito.si{background:var(--si-fondo);color:var(--si)} .esito.no{background:var(--no-fondo);color:var(--no)}
+.provati{display:flex;flex-wrap:wrap;gap:6px;padding-left:40px}
+.pv{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:3px 8px;font-size:13.5px;background:var(--fondo)}
+.pv b{font-weight:900}
+.pv.si b{color:var(--si)} .pv.no b{color:var(--no)}
+.ver.lampo .lett{animation:lampo .45s ease-out}
+@keyframes lampo{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* Registro per round, chiuso di base */
+.registro{background:var(--piano);border-radius:16px;overflow:hidden}
+.registro summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;font-weight:700;font-size:14.5px}
+.registro summary::-webkit-details-marker{display:none}
+.registro summary::after{content:"Apri";font-size:13px;color:var(--tenue);font-weight:600}
+.registro[open] summary::after{content:"Chiudi"}
+.registro .tab{overflow-x:auto;padding:0 6px 8px}
+table.nastro{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.nastro th,.nastro td{padding:7px 5px;text-align:center;border-top:1px solid var(--linea);font-size:14px;white-space:nowrap}
+.nastro th{font-size:12px;color:var(--tenue);font-weight:700;border-top:0}
+.nastro td.r{color:var(--tenue);font-size:13px}
+.nastro td.chi{text-align:left;max-width:84px;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:var(--tenue);font-size:13px}
+.nastro tr.ora td{background:var(--arancio-fondo)}
+.ok{color:var(--si);font-weight:900} .ko{color:var(--no);font-weight:900} .nulla{color:var(--spento)}
+
+/* Avvisi e giocatori */
+.avviso{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:12px;padding:9px 12px;font-size:14px;background:var(--arancio-fondo);color:var(--testo)}
+.avviso b{color:var(--arancio-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--piano);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600}
+.chip i{width:7px;height:7px;border-radius:50%;background:var(--spento)}
+.chip.gioca i{background:var(--arancio)} .chip.fatto i{background:var(--si)}
+.chip.via{color:var(--spento);text-decoration:line-through}
+
+/* Barra in basso: round, domande, pulsanti */
+.barra{flex:none;display:flex;align-items:center;gap:10px;background:var(--piano);border-top:1px solid var(--linea);
+  padding:10px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.barra-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--tenue);line-height:1.25}
+.barra-info b{font-size:15px;color:var(--testo);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pallini{display:inline-flex;gap:4px}
+.pallini i{width:8px;height:8px;border-radius:50%;background:var(--piano-3)}
+.pallini i.on{background:var(--arancio)}
+.barra-az{flex:none;display:flex;gap:8px}
+.barra .btn{min-height:46px;padding:0 13px;font-size:14.5px}
 
 /* Pulsanti */
+.btn{position:relative;overflow:hidden;min-height:50px;border-radius:13px;border:0;background:var(--piano-2);color:var(--testo);
+  font-weight:800;font-size:15px;padding:10px 14px;line-height:1.2}
+.btn.primo{background:var(--arancio);color:var(--su-arancio)}
+.btn.pericolo{background:var(--no-fondo);color:var(--no)}
+.btn:disabled{opacity:.38}
+.btn small{display:block;font-size:11.5px;font-weight:700;opacity:.75;margin-top:2px}
+.btn .lbl{position:relative}
 .azioni{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .azioni.una{grid-template-columns:1fr}
-.btn{position:relative;overflow:hidden;min-height:50px;border-radius:12px;border:1px solid var(--linea-forte);background:var(--lamiera-2);
-  font-weight:800;font-size:15px;padding:10px 12px;line-height:1.2}
-.btn.primo{background:var(--scheda);color:var(--scheda-ink);border-color:var(--scheda)}
-.btn.pericolo{color:#F3A595;border-color:rgba(227,95,75,.45)}
-.btn:disabled{opacity:.38}
-.btn small{display:block;font-size:11.5px;font-weight:700;opacity:.7;margin-top:2px}
-.btn .lbl{position:relative}
 /* Tasto da tenere premuto: la barra si riempie, se lasci prima torna indietro */
 [data-tieni]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-[data-tieni] .riempi{position:absolute;inset:0;background:rgba(91,198,142,.38);transform:scaleX(0);transform-origin:left;transition:transform .16s ease-out;pointer-events:none}
-.btn.pericolo .riempi{background:rgba(227,95,75,.35)}
-.btn.primo .riempi{background:rgba(33,28,18,.22)}
+[data-tieni] .riempi{position:absolute;inset:0;background:rgba(255,255,255,.22);transform:scaleX(0);transform-origin:left;transition:transform .16s ease-out;pointer-events:none}
+.btn.primo .riempi{background:rgba(33,20,14,.25)}
 [data-tieni].carica .riempi{transform:scaleX(1);transition:transform var(--ms,1000ms) linear}
 
-/* Nastro dello storico */
-.nastro-box{overflow-x:auto;background:var(--lamiera);border:1px solid var(--linea);border-radius:10px;
-  background-image:radial-gradient(circle,var(--foro) 2.2px,transparent 2.8px);background-size:14px 14px;background-position:6px 0;background-repeat:repeat-y}
-table.nastro{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.nastro th,.nastro td{padding:7px 5px;text-align:center;border-bottom:1px dashed var(--linea);font-size:13.5px;white-space:nowrap}
-.nastro tr:last-child td{border-bottom:0}
-.nastro th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--tenue);font-weight:700}
-.nastro th:first-child,.nastro td:first-child{padding-left:20px}
-.nastro td.r{font-family:var(--mono);font-size:11px;color:var(--tenue)}
-.nastro td.chi{text-align:left;max-width:84px;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:var(--tenue);font-size:12.5px}
-.nastro tr.ora td{background:rgba(230,218,192,.05)}
-.h{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-style:normal;font-size:10px;font-weight:800}
-.h.si{background:var(--foro);color:var(--si);box-shadow:0 0 0 1.5px var(--si)}
-.h.no{background:var(--foro);color:var(--no);box-shadow:0 0 0 1.5px var(--no)}
-.h.vuoto{width:6px;height:6px;background:var(--spento)}
-.vuoto-nastro{padding:14px 14px 14px 22px;font-size:13.5px;color:var(--tenue)}
-
-/* Appunti */
-.appunti{background:var(--lamiera);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
-.fa{height:38px;border-radius:50%;width:38px;justify-self:center;border:1.5px solid var(--linea-forte);background:var(--foro);font-family:var(--mono);font-weight:700;font-size:14px;color:var(--testo);position:relative}
-.fa.via{color:var(--spento);border-color:var(--linea)}
-.fa.via::after{content:"";position:absolute;left:18%;right:18%;top:50%;height:2px;background:var(--no);transform:rotate(-40deg)}
-.piede{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;color:var(--spento)}
-
-/* Avvisi dentro la pagina */
-.avviso{border:1px dashed var(--linea-forte);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;color:var(--testo);background:var(--lamiera)}
-.avviso b{color:var(--scheda)}
-.avviso.privato{display:flex;align-items:center;justify-content:space-between;gap:10px}
-
-/* Schermi pieni: passa il telefono, fine del round, cerca stanza */
-.schermo{position:fixed;inset:0;z-index:15;background:var(--inchiostro);display:flex;flex-direction:column;overflow-y:auto;
+/* Schermi pieni: passa il telefono, fine del round */
+.schermo{position:fixed;inset:0;z-index:15;background:var(--fondo);display:flex;flex-direction:column;overflow-y:auto;
   padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
-.schermo .dentro{max-width:480px;width:100%;margin:auto;display:flex;flex-direction:column;gap:16px;text-align:center}
-.occhiello{margin:0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
-.chi-tocca{margin:0;font-family:var(--stencil);font-weight:400;font-size:clamp(40px,13vw,64px);line-height:1;color:var(--scheda);overflow-wrap:anywhere}
+.schermo .dentro{max-width:460px;width:100%;margin:auto;display:flex;flex-direction:column;gap:14px;text-align:center}
+.occhiello{margin:0;font-size:13px;font-weight:700;color:var(--tenue)}
+.chi-tocca{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(40px,13vw,60px);line-height:1.02;color:var(--testo);overflow-wrap:anywhere}
 .schermo p{margin:0;color:var(--tenue);line-height:1.5}
-.btn.grande{min-height:64px;font-size:16px}
-.pubblico{display:flex;flex-direction:column;gap:0;text-align:left;border:1px solid var(--linea);border-radius:12px;background:var(--lamiera);overflow:hidden}
-.pubblico div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px dashed var(--linea);font-size:14px}
-.pubblico div:last-child{border-bottom:0}
-.pubblico span{color:var(--tenue);font-variant-numeric:tabular-nums}
-.pubblico .via{text-decoration:line-through;color:var(--spento)}
+.btn.grande{min-height:62px;font-size:16px}
+.elenco{display:flex;flex-direction:column;text-align:left;background:var(--piano);border-radius:14px;overflow:hidden}
+.elenco div{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--linea);font-size:14.5px}
+.elenco div:first-child{border-top:0}
+.elenco span{color:var(--tenue);font-variant-numeric:tabular-nums}
+.elenco .via{text-decoration:line-through;color:var(--spento)}
 
-/* Fine partita */
-.fine{display:flex;flex-direction:column;gap:14px;text-align:center;padding-top:8px}
-.fine h2{margin:0;font-family:var(--stencil);font-weight:400;font-size:36px;line-height:1.05;color:var(--scheda)}
-.fine .grande-cod{font-size:40px;letter-spacing:.16em}
+/* Fine partita, sala d'attesa, ricerca stanza */
+.fine{display:flex;flex-direction:column;gap:14px;text-align:center;padding-top:10px}
+.fine h2{margin:0;font-family:var(--display);font-weight:800;font-size:32px;line-height:1.08}
+.fine p{margin:0;color:var(--tenue);font-size:14.5px}
+.grande-cod{font-size:44px;line-height:1.1}
 .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
-.stat div{background:var(--lamiera);border:1px solid var(--linea);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center}
-.stat b{font-family:var(--mono);font-size:22px}
-.stat span{font-size:12px;color:var(--tenue)}
+.stat div{background:var(--piano);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center}
+.stat b{font-family:var(--display);font-size:26px;font-weight:800}
+.stat span{font-size:12.5px;color:var(--tenue)}
+.codice-stanza{font-family:var(--display);font-weight:800;font-size:40px;letter-spacing:.18em;color:var(--arancio-2);text-align:center;padding:4px 0}
 
 /* Fogli (impostazioni, regole, soluzione, stanza) */
-.velo{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,12,.76)}
-.foglio{width:min(560px,100%);max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--lamiera);border:1px solid var(--linea);border-bottom:0;
+.velo{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(8,6,4,.72)}
+.foglio{width:min(560px,100%);max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--piano);border-bottom:0;
   border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
   display:flex;flex-direction:column;gap:12px}
 .foglio .hd{position:sticky;top:-18px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  margin:-18px -16px 0;padding:18px 16px 8px;background:var(--lamiera);border-radius:20px 20px 0 0;box-shadow:0 10px 12px -12px rgba(0,0,0,.7)}
-.foglio h2{margin:0;font-family:var(--stencil);font-weight:400;font-size:26px;color:var(--scheda)}
-.foglio h3{margin:8px 0 0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue)}
-.foglio p{margin:0;color:#D6D0C3;line-height:1.5;font-size:14.5px}
+  margin:-18px -16px 0;padding:18px 16px 8px;background:var(--piano);border-radius:20px 20px 0 0}
+.foglio h2{margin:0;font-family:var(--display);font-weight:800;font-size:23px}
+.foglio h3{margin:8px 0 0;font-size:13px;font-weight:700;color:var(--tenue)}
+.foglio p{margin:0;color:#DDD4C8;line-height:1.5;font-size:14.5px}
 .foglio p.nota{color:var(--tenue);font-size:13px}
+.foglio .pannello{background:var(--fondo)}
 .hd .chiudi,.hd .reset{border:0;background:none;color:var(--tenue);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px;padding:6px 0}
 .hd .reset.armato{color:var(--no)}
-.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--foro);border-radius:12px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--fondo);border-radius:12px}
 .seg button{border:0;border-radius:9px;background:transparent;color:var(--tenue);font-weight:700;font-size:14px;padding:10px 6px;line-height:1.15}
-.seg button[aria-pressed="true"]{background:var(--scheda);color:var(--scheda-ink)}
+.seg button[aria-pressed="true"]{background:var(--piano-3);color:var(--testo)}
 .campo{display:flex;gap:8px}
-.campo input{flex:1;min-width:0;height:46px;border-radius:10px;border:1px solid var(--linea-forte);background:var(--foro);color:var(--testo);padding:0 12px;font-size:16px}
-.campo input.codice-in{font-family:var(--mono);font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.campo input{flex:1;min-width:0;height:46px;border-radius:11px;border:1px solid var(--linea-2);background:var(--fondo);color:var(--testo);padding:0 12px;font-size:16px}
+.campo input.codice-in{font-weight:800;letter-spacing:.2em;text-transform:uppercase}
 .campo .btn{min-height:46px;padding:0 16px}
 .lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.lista li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--lamiera-2);border:1px solid var(--linea);border-radius:10px;padding:8px 10px 8px 12px;font-size:14.5px}
-.lista li .n{font-family:var(--mono);font-size:11px;color:var(--spento);margin-right:8px}
+.lista li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--fondo);border-radius:11px;padding:8px 10px 8px 12px;font-size:14.5px}
+.lista li .n{font-size:12px;color:var(--spento);margin-right:8px}
 .lista li .x{border:0;background:none;color:var(--tenue);font-size:20px;line-height:1;padding:4px 6px}
 .lista li .stato{color:var(--tenue);font-size:12.5px;text-align:right}
-.lista .piccoli{display:flex;gap:6px;flex:none}
+.lista .piccoli{display:flex;gap:6px;flex:none;align-items:center}
 .lista .piccoli .btn{min-height:36px;padding:6px 10px;font-size:13px;border-radius:9px}
-.codice-stanza{font-family:var(--mono);font-weight:700;font-size:34px;letter-spacing:.24em;color:var(--scheda);text-align:center;padding:8px 0}
 .regola-blocco{display:flex;flex-direction:column;gap:6px}
-.regola-blocco ul{margin:0;padding-left:18px;color:#D6D0C3;font-size:14.5px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.regola-blocco ul{margin:0;padding-left:18px;color:#DDD4C8;font-size:14.5px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
 
 .toast{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;width:max-content;max-width:92vw;
-  padding:10px 14px;border-radius:10px;background:var(--scheda);color:var(--scheda-ink);font-weight:700;font-size:14px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  padding:10px 14px;border-radius:12px;background:var(--piano-3);color:var(--testo);font-weight:700;font-size:14px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -235,7 +233,7 @@ table.nastro{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nu
 <div class="app" id="app">
   <div class="top">
     <a class="back" href="../../">‹ Giochi</a>
-    <h1 class="title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h15a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7z" fill="#E6DAC0"/><circle cx="8" cy="12" r="2" fill="#4F8EF7"/><circle cx="13" cy="12" r="2" fill="#F3C53E"/><circle cx="18" cy="12" r="2" fill="#A97DF5"/><path d="M6 17h12" stroke="#211C12" stroke-width="1.4" stroke-dasharray="1.6 1.6"/></svg><span>Claude Machine</span></h1>
+    <h1 class="title"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="5" fill="none" stroke="#D97757" stroke-width="2"/><circle cx="8" cy="12" r="1.9" fill="#6AA6FF"/><circle cx="12" cy="12" r="1.9" fill="#F0C75A"/><circle cx="16" cy="12" r="1.9" fill="#B591FF"/></svg><span>Claude Machine</span></h1>
     <div class="links">
       <button class="linkbtn" id="regoleBtn" type="button">Regole</button>
       <button class="gear" id="impBtn" type="button" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
@@ -243,6 +241,7 @@ table.nastro{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nu
   </div>
   <div class="striscia" id="striscia"></div>
   <main class="scorri" id="scorri"><div class="colonna" id="vista"></div></main>
+  <div class="barra" id="barra" hidden></div>
 </div>
 
 <div class="schermo" id="schermo" hidden></div>
@@ -318,6 +317,7 @@ function nuovaPartita() {
   if (cfg.modo === 'versus') {
     S.vs = { r: 1, turno: 0, fase: 'passa', risultati: [], giocatori: nomi.map(n => Object.assign({ nome: n, attivo: true, dich: null }, nuovoBanco())) };
   } else S.loc = nuovoBanco();
+  modoAppunti = false; registroAperto = false;
   salva(); chiudiFoglio(); disegna();
   $('scorri').scrollTop = 0;
 }
@@ -351,81 +351,84 @@ function bancoAttivo() {
 
 /* =====================================================================
    Disegno della plancia
+   Dall'alto: codice di prova (gli appunti stanno sulla stessa griglia, col selettore Prova/Appunti),
+   poi i verificatori, ognuno con le sue regole e i codici già provati su di lui, e in fondo il
+   registro per round, chiuso. Round, domande e pulsanti stanno nella barra in basso.
    ===================================================================== */
-function htmlScheda(valori, attiva, pref, nota, intesta) {
-  return `<div class="scheda ${attiva ? '' : 'ferma'}">
-    <div class="intesta"><span>${intesta || 'Scheda di prova'}</span><b>${valori.map(x => x || '·').join(' ')}</b></div>
-    ${COLORI.map((col, i) => `<div class="riga-fori r-${col}">
-      <span class="nome">${forma(i)}${NOMI_COL[i]}</span>
-      ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="fp" data-${pref}="${i}-${n}" aria-pressed="${valori[i] === n}" aria-label="${col} ${n}" ${attiva ? '' : 'disabled'}>${n}</button>`).join('')}
-    </div>`).join('')}
-    ${nota != null ? `<p class="nota">${nota}</p>` : ''}
-  </div>`;
+let modoAppunti = false, registroAperto = false;
+
+/* Griglia 3×5 delle cifre. o: { attiva, pref: 'cod' | 'sol', cif: cifre barrate negli appunti, appunti } */
+function htmlTastiera(valori, o) {
+  const cif = o.cif || {};
+  return `<div class="tastiera${o.attiva || o.appunti ? '' : ' ferma'}">${COLORI.map((col, i) => `<div class="fila f-${i}">${forma(i)}
+    ${[1, 2, 3, 4, 5].map(n => {
+      const scelta = valori[i] === n, via = !!cif[i + '-' + n];
+      return `<button type="button" class="cifra${scelta ? ' scelta' : ''}${via ? ' via' : ''}" data-${o.pref}="${i}-${n}" aria-pressed="${o.appunti ? via : scelta}" aria-label="${col} ${n}${via ? ', escluso' : ''}" ${o.attiva || o.appunti ? '' : 'disabled'}>${n}</button>`;
+    }).join('')}</div>`).join('')}</div>`;
 }
 
-function htmlVerificatori(b, puoChiedere) {
+function htmlVerificatori(b, puoChiedere, righe) {
   const qui = Object.keys(b.chieste).length;
   return `<div class="verificatori">${S.puzzle.ver.map((v, i) => {
     const r = b.chieste[i];
     const puo = puoChiedere && completo(b.codice) && r === undefined && qui < 3;
+    // il titolo della prima carta sta in testa, accanto alla lettera; le regole occupano tutta la larghezza sotto
     let off = 0;
-    const carte = v.carte.map(id => {
+    const titolo = c => `<div class="crit">${testo(c.nome)}${c.nota ? `<small>${esc(c.nota)}</small>` : ''}</div>`;
+    const carte = v.carte.map((id, q) => {
       const c = CM.PER_ID[id]; const base = off; off += c.regole.length;
-      return `<div class="carta"><h3>${testo(c.nome)}</h3>${c.nota ? `<p class="nota-c">${esc(c.nota)}</p>` : ''}
-        <div class="regole">${c.regole.map((rg, j) => {
-          const k = i + '-' + (base + j), via = !!b.app.reg[k];
-          return `<button type="button" class="rg${via ? ' via' : ''}" data-reg="${k}" aria-pressed="${via}">${testo(rg.t)}</button>`;
-        }).join('')}</div></div>`;
-    }).join('<div class="oppure">oppure</div>');
-    const risposta = r === undefined ? '' :
-      `<p class="risposta ${r ? 'si' : 'no'}">${r ? '✓' : '✗'} ${codHtml(b.codice)} ${r ? 'rispetta' : 'non rispetta'} la regola segreta di ${LETTERE[i]}</p>`;
-    return `<article class="ver${r !== undefined && ultimaChiesta === i ? ' accesa' : ''}">
-      <div class="ver-testa">
-        <span class="lettera">${LETTERE[i]}</span>
-        <span class="tipo">${v.carte.length > 1 ? 'Due carte, una regola' : 'Verificatore'}</span>
-        <span class="fori" aria-label="${r === undefined ? 'non ancora chiesto' : r ? 'rispettata' : 'non rispettata'}"><span class="foro ${r === true ? 'si' : ''}">✓</span><span class="foro ${r === false ? 'no' : ''}">✗</span></span>
-        ${r === undefined ? `<button type="button" class="chiedi" data-ch="${i}" ${puo ? '' : 'disabled'}>Chiedi</button>` : ''}
-      </div>
-      <div class="ver-corpo">${carte}${risposta}</div>
+      return `${q ? '<div class="oppure">oppure</div>' + titolo(c) : ''}<div class="regole">${c.regole.map((rg, j) => {
+        const k = i + '-' + (base + j), via = !!b.app.reg[k];
+        return `<button type="button" class="rg${via ? ' via' : ''}" data-reg="${k}" aria-pressed="${via}">${testo(rg.t)}</button>`;
+      }).join('')}</div>`;
+    }).join('');
+    const destra = r === undefined
+      ? `<button type="button" class="chiedi" data-ch="${i}" ${puo ? '' : 'disabled'}>Chiedi</button>`
+      : `<span class="esito ${r ? 'si' : 'no'}">${r ? '✓ rispetta' : '✗ non rispetta'}</span>`;
+    const provati = righe.filter(x => !x.ora && x.esiti[i] !== undefined)
+      .map(x => `<span class="pv ${x.esiti[i] ? 'si' : 'no'}"><b>${x.esiti[i] ? '✓' : '✗'}</b>${codHtml(x.codice)}</span>`).join('');
+    return `<article class="ver${r === undefined ? '' : r ? ' si' : ' no'}${r !== undefined && ultimaChiesta === i ? ' lampo' : ''}">
+      <div class="ver-capo"><span class="lett">${LETTERE[i]}</span>${titolo(CM.PER_ID[v.carte[0]])}${destra}</div>
+      <div class="ver-corpo">${carte}</div>
+      ${provati ? `<div class="provati">${provati}</div>` : ''}
     </article>`;
   }).join('')}</div>`;
 }
 
 /* righe: [{ chi?, r, codice, esiti, ora? }] */
-function htmlNastro(righe, conChi) {
+function htmlRegistro(righe, conChi) {
+  if (!righe.length) return '';
   const n = S.puzzle.ver.length;
-  if (!righe.length) return `<div class="nastro-box"><div class="vuoto-nastro">Qui si perfora ogni prova: il codice e la risposta di ogni verificatore.</div></div>`;
-  return `<div class="nastro-box"><table class="nastro"><thead><tr>${conChi ? '<th>Chi</th>' : '<th>R</th>'}<th>Codice</th>${LETTERE.slice(0, n).split('').map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+  return `<details class="registro"${registroAperto ? ' open' : ''}><summary>Registro dei round</summary><div class="tab"><table class="nastro">
+    <thead><tr>${conChi ? '<th>Chi</th>' : '<th>R</th>'}<th>Codice</th>${LETTERE.slice(0, n).split('').map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
     ${righe.map(x => `<tr class="${x.ora ? 'ora' : ''}">${conChi ? `<td class="chi">${esc(x.chi)}</td>` : `<td class="r">${x.r}</td>`}<td>${codHtml(x.codice)}</td>${Array.from({ length: n }, (_, i) => {
-      const e = x.esiti[i]; return `<td>${e === undefined ? '<i class="h vuoto"></i>' : e ? '<i class="h si">✓</i>' : '<i class="h no">✗</i>'}</td>`;
+      const e = x.esiti[i]; return `<td>${e === undefined ? '<span class="nulla">·</span>' : e ? '<span class="ok">✓</span>' : '<span class="ko">✗</span>'}</td>`;
     }).join('')}</tr>`).join('')}
-  </tbody></table></div>`;
+  </tbody></table></div></details>`;
 }
 
-function htmlAppunti(b) {
-  return `<div class="appunti">${COLORI.map((col, i) => `<div class="riga-fori">
-    <span class="nome">${forma(i)}${NOMI_COL[i]}</span>
-    ${[1, 2, 3, 4, 5].map(n => { const via = !!b.app.cif[i + '-' + n]; return `<button type="button" class="fa${via ? ' via' : ''}" data-cif="${i}-${n}" aria-pressed="${via}" aria-label="escludi ${col} ${n}">${n}</button>`; }).join('')}
-  </div>`).join('')}</div>`;
-}
-
-/* La plancia completa. o: { puo, intesta, nota, azioni, righe, conChi, sopra } */
+/* La plancia completa. o: { puo, righe, conChi, sopra } */
 function htmlPlancia(b, o) {
-  const qui = Object.keys(b.chieste).length;
-  const nota = o.nota != null ? o.nota : (!o.puo ? '' : fissato(b) ? `Scheda fissata: ${qui} di 3 domande in questo round.` : completo(b.codice) ? 'Ora chiedi ai verificatori.' : 'Punzona una cifra per ogni colore.');
+  const nota = modoAppunti ? 'Tocca le cifre che hai escluso. <button type="button" class="linkbtn" data-az="pulisci-app" style="padding:0 2px">Cancella appunti</button>'
+    : !o.puo ? '' : fissato(b) ? 'Codice fissato per questo round.' : completo(b.codice) ? 'Ora chiedi ai verificatori.' : 'Scegli una cifra per ogni colore.';
   return `${o.sopra || ''}
-    <section class="sez">${htmlScheda(b.codice, o.puo && !fissato(b), 'cod', nota, o.intesta)}</section>
-    <section class="sez">
-      <h2 class="etichetta">Verificatori <span>${qui} di 3</span></h2>
-      <p class="aiuto">Ogni verificatore controlla in segreto una sola delle regole scritte sulla sua carta${S.puzzle.ver[0].carte.length > 1 ? ' (una sola, da una delle due carte)' : ''}. Tocca una regola per barrarla.</p>
-      ${htmlVerificatori(b, o.puo)}
+    <section class="pannello${modoAppunti ? ' appunti' : ''}">
+      <div class="capo"><h2>${modoAppunti ? 'Appunti' : 'Codice di prova'}</h2>
+        <div class="interr"><button type="button" data-modo="prova" aria-pressed="${!modoAppunti}">Prova</button><button type="button" data-modo="appunti" aria-pressed="${modoAppunti}">Appunti</button></div></div>
+      ${htmlTastiera(b.codice, { attiva: o.puo && !fissato(b), pref: 'cod', cif: b.app.cif, appunti: modoAppunti })}
+      <p class="nota">${nota}</p>
     </section>
-    ${o.azioni || ''}
-    <section class="sez"><h2 class="etichetta">Nastro <span>✓ rispetta · ✗ non rispetta</span></h2>${htmlNastro(o.righe, o.conChi)}</section>
-    <section class="sez"><h2 class="etichetta">Appunti <span><button type="button" class="linkbtn" data-az="pulisci-app" style="padding:0">Cancella</button></span></h2>${htmlAppunti(b)}
-      <p class="aiuto">Tocca una cifra per escluderla.</p></section>`;
+    ${htmlVerificatori(b, o.puo, o.righe)}
+    ${htmlRegistro(o.righe, o.conChi)}`;
 }
 const righeBanco = b => b.storico.map(x => ({ r: x.r, codice: x.codice, esiti: x.esiti })).concat(fissato(b) ? [{ r: b.r, codice: b.codice, esiti: b.chieste, ora: true }] : []);
+const pallini = n => `<span class="pallini" aria-label="${n} di 3 domande in questo round">${[0, 1, 2].map(k => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
+function barra(info, bottoni) {
+  const el = $('barra');
+  if (!info && !bottoni) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="barra-info">${info || ''}</div><div class="barra-az">${bottoni || ''}</div>`;
+}
 
 /* =====================================================================
    Disegno generale
@@ -437,47 +440,49 @@ function striscia() {
     if (S.vs) parti.push(pl(S.vs.giocatori.length, 'giocatore', 'giocatori'));
   }
   let dx = '';
-  if (S && S.loc && !S.fine) dx = `R${S.loc.r} · ${pl(S.loc.domande, 'domanda', 'domande')}`;
-  if (S && S.vs && !S.fine) dx = `Round ${S.vs.r}`;
+  if (S && !S.fine && S.loc) dx = pl(S.loc.domande, 'domanda', 'domande');
+  if (S && !S.fine && S.vs && S.vs.fase === 'privato') { const g = S.vs.giocatori[S.vs.turno]; dx = `Round ${S.vs.r} · ${pl(g.domande, 'domanda', 'domande')}`; }
   if (S && S.st) {
     const on = R ? R.links.filter(l => l.ok).length : 0;
     dx = `<button type="button" data-az="foglio-stanza"><i class="punto-rete ${on ? 'on' : ''}"></i>Stanza ${esc(S.st.c)}</button>`;
   }
-  $('striscia').innerHTML = parti.map(esc).join('<span class="sep">·</span>') + (dx ? `<span class="dx">${dx}</span>` : '');
+  $('striscia').innerHTML = `<span>${parti.map(esc).join(' · ')}</span>` + (dx ? `<span class="dx">${dx}</span>` : '');
+  if (S && S.st && S.st.modo === 'coop' && R && R.meta && !S.fine) { const t = totaliSquadra(); $('striscia').querySelector('span').textContent += ` · ${pl(t.domande, 'domanda', 'domande')} di squadra`; }
 }
 
 function disegna() {
   if (!S) return;
   striscia();
+  barra('', '');
   const v = $('vista');
   $('schermo').hidden = true;
   if (S.fine) { v.innerHTML = htmlFine(); return; }
-  if (S.loc) { v.innerHTML = vistaLocale(); }
-  else if (S.vs) { vistaVersusUno(); }
-  else if (S.st) { vistaStanza(); }
+  if (S.loc) vistaLocale();
+  else if (S.vs) vistaVersusUno();
+  else if (S.st) vistaStanza();
   ultimaChiesta = null;
 }
 
 /* ---------- Collaborativa (o da solo) sul telefono ---------- */
 function vistaLocale() {
-  const b = S.loc;
-  return htmlPlancia(b, {
-    puo: true, intesta: `Scheda di prova · round ${b.r}`, righe: righeBanco(b),
-    azioni: `<div class="azioni">
-      <button type="button" class="btn" data-az="nuovo-round" ${fissato(b) ? '' : 'disabled'}>Nuovo round</button>
-      <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button></div>`
-  });
+  const b = S.loc, qui = Object.keys(b.chieste).length;
+  $('vista').innerHTML = htmlPlancia(b, { puo: true, righe: righeBanco(b) });
+  barra(`<b>Round ${b.r}</b>${pallini(qui)}`,
+    `<button type="button" class="btn" data-az="nuovo-round" ${fissato(b) ? '' : 'disabled'}>Nuovo round</button>
+     <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button>`);
 }
 
 /* ---------- Versus, un telefono che gira ---------- */
 function vistaVersusUno() {
   const V = S.vs, g = V.giocatori[V.turno];
   if (V.fase === 'privato') {
+    const qui = Object.keys(g.chieste).length;
     $('vista').innerHTML = htmlPlancia(g, {
-      puo: true, intesta: `Schede di ${esc(g.nome)} · round ${V.r}`, righe: righeBanco(g),
-      sopra: `<div class="avviso privato"><span>Schede di <b>${esc(g.nome)}</b>: solo tu le guardi.</span><button type="button" class="linkbtn" data-az="vs-nascondi">Nascondi</button></div>`,
-      azioni: `<div class="azioni una"><button type="button" class="btn primo" data-az="vs-fine-turno">Fine turno<small>${fissato(g) ? pl(Object.keys(g.chieste).length, 'domanda', 'domande') + ' in questo round' : 'Nessuna domanda in questo round'}</small></button></div>`
+      puo: true, righe: righeBanco(g),
+      sopra: `<div class="avviso"><span>Schede di <b>${esc(g.nome)}</b>: guardi solo tu.</span><button type="button" class="linkbtn" data-az="vs-nascondi">Nascondi</button></div>`
     });
+    barra(`<b>${esc(g.nome)}</b>${pallini(qui)}`,
+      `<button type="button" class="btn primo" data-az="vs-fine-turno">Fine turno</button>`);
     return;
   }
   $('vista').innerHTML = '';
@@ -489,18 +494,17 @@ function vistaVersusUno() {
       <p class="occhiello">Round ${V.r} · ${LIV[S.cfg.livello].nome}</p>
       <p>${prima ? 'Si comincia da' : 'Passa il telefono a destra, a'}</p>
       <h2 class="chi-tocca">${esc(g.nome)}</h2>
-      <p>Gli altri non guardano lo schermo.</p>
       <button type="button" class="btn primo grande" data-tieni="vs-apri" data-ms="600"><span class="riempi"></span><span class="lbl">Tieni premuto per vedere le tue schede</span></button>
+      <p>Gli altri non guardano lo schermo.</p>
       ${htmlPubblico()}
     </div>`;
   } else if (V.fase === 'fineRound') {
     const ultimo = V.risultati[V.risultati.length - 1];
-    const righe = ultimo.dich.length ? ultimo.dich.map(d => `<div><b>${esc(V.giocatori[d.g].nome)}</b><span>ha dichiarato: sbagliato, eliminato</span></div>`).join('')
-      : '<div>Nessuno ha dichiarato il codice.</div>';
+    const eliminati = ultimo.dich.map(d => esc(V.giocatori[d.g].nome));
     sch.innerHTML = `<div class="dentro">
       <p class="occhiello">Fine del round ${ultimo.r}</p>
-      <h2 class="chi-tocca" style="font-size:44px">Si continua</h2>
-      <div class="pubblico">${righe}</div>
+      <h2 class="chi-tocca" style="font-size:40px">${eliminati.length ? (eliminati.length === 1 ? `${eliminati[0]} è eliminato` : `${eliminati.join(' e ')} sono eliminati`) : 'Nessuno ha dichiarato'}</h2>
+      <p>${eliminati.length ? 'Hanno dichiarato un codice sbagliato. Gli altri continuano.' : 'Si continua con un altro round.'}</p>
       ${htmlPubblico()}
       <button type="button" class="btn primo grande" data-az="vs-avanti">Inizia il round ${V.r}</button>
     </div>`;
@@ -509,7 +513,7 @@ function vistaVersusUno() {
 }
 function htmlPubblico() {
   const V = S.vs;
-  return `<div class="pubblico">${V.giocatori.map(g => `<div><b class="${g.attivo ? '' : 'via'}">${esc(g.nome)}</b><span>${g.attivo ? pl(g.domande, 'domanda', 'domande') : 'eliminato'}</span></div>`).join('')}</div>`;
+  return `<div class="elenco">${V.giocatori.map(g => `<div><b class="${g.attivo ? '' : 'via'}">${esc(g.nome)}</b><span>${g.attivo ? pl(g.domande, 'domanda', 'domande') : 'eliminato'}</span></div>`).join('')}</div>`;
 }
 function vsPassaAlProssimo() {
   const V = S.vs;
@@ -544,16 +548,16 @@ function htmlFine() {
     const tit = F.vincitori.length === 0 ? 'Nessun vincitore' : F.vincitori.length === 1 ? `Vince ${esc(F.vincitori[0])}` : `Vincono ${F.vincitori.map(esc).join(' e ')}`;
     const sotto = F.vincitori.length === 0 ? 'Avete dichiarato tutti un codice sbagliato.' : F.ultimo ? 'Unico rimasto in gara: gli altri hanno sbagliato il codice.'
       : F.vincitori.length > 1 ? `Codice trovato al round ${F.r}, a pari domande.` : `Codice trovato al round ${F.r}.`;
-    return `<div class="fine">${occh}<h2>${tit}</h2><p class="aiuto" style="font-size:14px;color:var(--tenue)">${sotto}</p>
+    return `<div class="fine">${occh}<h2>${tit}</h2><p>${sotto}</p>
       <div class="grande-cod">${cod}</div>
-      <div class="pubblico">${F.righe.map(x => `<div><b class="${x.stato === 'eliminato' ? 'via' : ''}">${esc(x.nome)}</b><span>${pl(x.domande, 'domanda', 'domande')} · ${x.stato}</span></div>`).join('')}</div>
+      <div class="elenco">${F.righe.map(x => `<div><b class="${x.stato === 'eliminato' ? 'via' : ''}">${esc(x.nome)}</b><span>${pl(x.domande, 'domanda', 'domande')} · ${x.stato}</span></div>`).join('')}</div>
       ${bottoni}</div>`;
   }
   const vinto = F.tipo === 'vinto';
   return `<div class="fine">${occh}<h2>${vinto ? 'Codice trovato' : 'Codice sbagliato'}</h2>
-    ${vinto ? '' : `<p class="aiuto" style="font-size:14px;color:var(--tenue)">Avevate dichiarato ${codHtml(F.dichiarato)}. Il codice era:</p>`}
+    ${vinto ? '' : `<p>Avevate dichiarato ${codHtml(F.dichiarato)}. Il codice era:</p>`}
     <div class="grande-cod">${cod}</div>
-    <div class="stat">${F.round != null ? `<div><b>${F.round}</b><span>${F.round === 1 ? 'round' : 'round'}</span></div>` : ''}<div><b>${F.domande}</b><span>${F.domande === 1 ? 'domanda' : 'domande'}</span></div>${F.prove != null ? `<div><b>${F.prove}</b><span>${F.prove === 1 ? 'prova' : 'prove'}</span></div>` : ''}</div>
+    <div class="stat">${F.round != null ? `<div><b>${F.round}</b><span>round</span></div>` : ''}<div><b>${F.domande}</b><span>${F.domande === 1 ? 'domanda' : 'domande'}</span></div>${F.prove != null ? `<div><b>${F.prove}</b><span>${F.prove === 1 ? 'prova' : 'prove'}</span></div>` : ''}</div>
     ${bottoni}</div>`;
 }
 
@@ -577,7 +581,7 @@ function disegnaFoglio() {
       return;
     }
     f.innerHTML = `${hd(titolo)}
-      ${htmlScheda(foglio.cod, true, 'sol', null, 'Codice da dichiarare')}
+      <div class="pannello">${htmlTastiera(foglio.cod, { attiva: true, pref: 'sol', cif: (bancoAppunti() || { app: { cif: {} } }).app.cif })}</div>
       <p class="nota">${foglio.versus ? 'Il codice resta sigillato fino a fine round.' : 'Se è sbagliato la partita è persa.'}</p>
       <button type="button" class="btn primo" data-tieni="${foglio.versus ? 'sigilla' : 'verifica'}" data-ms="900" ${completo(foglio.cod) ? '' : 'disabled'}><span class="riempi"></span><span class="lbl">${foglio.versus ? 'Tieni premuto per sigillare' : 'Tieni premuto per verificare'}</span></button>`;
     return;
@@ -640,11 +644,12 @@ function htmlRegole() {
   return `<div class="regola-blocco"><h3>Lo scopo</h3>
     <p>La macchina nasconde un codice di tre cifre da 1 a 5: ${forma(0)} blu, ${forma(1)} giallo, ${forma(2)} viola. Bisogna scoprirlo facendo meno domande possibile.</p></div>
   <div class="regola-blocco"><h3>I verificatori</h3>
-    <p>Ogni verificatore (A, B, C…) ha una carta con alcune regole possibili, per esempio «${forma(0)} &lt; 3», «${forma(0)} = 3», «${forma(0)} &gt; 3». In segreto ne controlla <b>una sola</b>. Non sai quale: lo deduci dalle risposte.</p></div>
+    <p>Ogni verificatore (A, B, C…) ha una carta con alcune regole possibili: per esempio la carta «${forma(0)} rispetto a 3» ha le regole «&lt; 3», «= 3», «&gt; 3». In segreto ne controlla <b>una sola</b>. Non sai quale: lo deduci dalle risposte. Tocca una regola per barrarla quando l’hai esclusa.</p></div>
   <div class="regola-blocco"><h3>Un round</h3>
-    <ul><li>Punzoni sulla scheda un codice di prova.</li>
+    <ul><li>Scegli un codice di prova: una cifra per colore.</li>
     <li>Lo sottoponi a <b>fino a 3</b> verificatori diversi. Ognuno risponde ✓ se il codice rispetta la sua regola segreta, ✗ se non la rispetta.</li>
-    <li>Ogni risposta finisce sul nastro. Poi si passa al round dopo, con un codice nuovo.</li></ul></div>
+    <li>Sotto ogni verificatore restano i codici già provati su di lui, con ✓ o ✗. Il registro completo per round è in fondo.</li>
+    <li>Con «Appunti», sopra la griglia, tocchi le cifre che hai escluso: restano barrate anche quando dichiari il codice.</li></ul></div>
   <div class="regola-blocco"><h3>Due garanzie</h3>
     <ul><li>Il codice che rispetta tutte le regole segrete è <b>uno solo</b>.</li>
     <li><b>Nessun verificatore è inutile</b>: senza uno qualsiasi di loro, il codice non sarebbe più unico. Serve a scartare regole: se una regola renderebbe inutile un verificatore, non è quella giusta.</li></ul></div>
@@ -671,7 +676,11 @@ document.addEventListener('click', e => {
   if (!t || t.disabled) return;
   const d = t.dataset;
   if (d.tieni) return;                                   // si attivano tenendo premuto
-  if (d.cod) { const b = bancoAttivo(); if (!b) return; const [i, n] = d.cod.split('-').map(Number); scegli(b, i, n); dopoMossa(b); return; }
+  if (d.modo) { modoAppunti = d.modo === 'appunti'; const y = $('scorri').scrollTop; disegna(); $('scorri').scrollTop = y; return; }
+  if (d.cod) {
+    if (modoAppunti) { const b = bancoAppunti(); if (!b) return; b.app.cif[d.cod] = !b.app.cif[d.cod]; dopoMossa(b); return; }
+    const b = bancoAttivo(); if (!b) return; const [i, n] = d.cod.split('-').map(Number); scegli(b, i, n); dopoMossa(b); return;
+  }
   if (d.sol) { const [i, n] = d.sol.split('-').map(Number); foglio.cod[i] = n; disegnaFoglio(); return; }
   if (d.ch !== undefined) { const b = bancoAttivo(); if (!b) return; if (chiedi(b, +d.ch)) dopoMossa(b, true); return; }
   if (d.reg) { const b = bancoAppunti(); if (!b) return; b.app.reg[d.reg] = !b.app.reg[d.reg]; dopoMossa(b); return; }
@@ -740,7 +749,7 @@ function azioneTenuta(a, el) {
     case 'nuova': leggiCampi(); if (cfg.modo === 'versus' && cfg.telefoni === 'uno' && nomi.length < 2) { toast('Servono almeno 2 giocatori'); return; } nuovaPartita(); return;
     case 'verifica': dichiaraCoop(foglio.cod.slice()); return;
     case 'sigilla': if (S.vs) vsFineTurno(foglio.cod.slice()); else if (S.st) versusStanzaFineRound(foglio.cod.slice()); return;
-    case 'vs-apri': S.vs.fase = 'privato'; salva(); disegna(); $('scorri').scrollTop = 0; return;
+    case 'vs-apri': S.vs.fase = 'privato'; modoAppunti = false; registroAperto = false; salva(); disegna(); $('scorri').scrollTop = 0; return;
     case 'chiudi-stanza': chiudiECancella(); return;
     case 'cancella-lista': cancellaDaLista(el.dataset.c); return;
   }
@@ -762,6 +771,7 @@ const molla = e => { if (!tieni || (e.type === 'pointerleave' && e.target !== ti
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, molla, true));
 document.addEventListener('contextmenu', e => { if (e.target.closest('[data-tieni]')) e.preventDefault(); });
 
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('registro')) registroAperto = e.target.open; }, true);
 $('impBtn').addEventListener('click', () => apriFoglio('imp'));
 $('regoleBtn').addEventListener('click', () => apriFoglio('regole'));
 $('velo').addEventListener('click', e => { if (e.target === $('velo')) chiudiFoglio(); });
@@ -1194,53 +1204,54 @@ function vistaStanza() {
   if (!R || !R.meta || !S.puzzle) {
     const lungo = R && Date.now() - R.cercaDal > 9000;
     v.innerHTML = `<div class="fine"><p class="occhiello">Stanza</p><div class="codice-stanza">${esc(S.st.c)}</div>
-      <p class="aiuto" style="font-size:14.5px;color:var(--tenue)">${lungo ? 'Non trovo la stanza. Controlla il codice e la connessione: continuo a cercarla.' : 'Mi collego alla stanza…'}</p>
+      <p>${lungo ? 'Non trovo la stanza. Controlla il codice e la connessione: continuo a cercarla.' : 'Mi collego alla stanza…'}</p>
       <div class="azioni una"><button type="button" class="btn" data-az="esci-stanza">Lascia perdere</button></div></div>`;
     return;
   }
-  const b = S.st.banco;
+  const b = S.st.banco, qui = Object.keys(b.chieste).length;
   if (S.st.modo === 'coop') {
     const altri = elencoGiocatori();
     const righe = altri.flatMap(g => (g.pid === S.st.pid ? righeBanco(b).map(x => ({ t: x.ora ? Date.now() : (b.storico.find(y => y.r === x.r) || {}).t || 0, chi: 'Tu', codice: x.codice, esiti: x.esiti, ora: x.ora })) :
       (g.prove || []).map(p => ({ t: p.t, chi: g.nome, codice: p.codice, esiti: p.esiti, ora: p.aperta })))).sort((a, c) => a.t - c.t);
+    // le prove in corso degli altri contano come già fatte per i codici provati sui verificatori
+    const perVer = righe.map(x => Object.assign({}, x, { ora: x.ora && x.chi === 'Tu' }));
     const tot = totaliSquadra();
-    v.innerHTML = htmlPlancia(b, {
-      puo: true, intesta: `La tua prova · squadra: ${pl(tot.prove, 'prova', 'prove')}`, righe, conChi: true,
-      sopra: `<div class="avviso">Squadra: <b>${altri.map(g => esc(g.pid === S.st.pid ? 'tu' : g.nome)).join(', ')}</b> · ${pl(tot.domande, 'domanda', 'domande')} in tutto.</div>`,
-      azioni: `<div class="azioni">
-        <button type="button" class="btn" data-az="coop-nuova-prova" ${fissato(b) ? '' : 'disabled'}>Nuova prova</button>
-        <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button></div>`
-    });
+    v.innerHTML = htmlPlancia(b, { puo: true, righe: perVer, conChi: true,
+      sopra: `<div class="chips">${altri.map(g => `<span class="chip">${esc(g.pid === S.st.pid ? 'Tu' : g.nome)}</span>`).join('')}</div>` });
+    barra(`<b>La tua prova</b>${pallini(qui)}`,
+      `<button type="button" class="btn" data-az="coop-nuova-prova" ${fissato(b) ? '' : 'disabled'}>Nuova prova</button>
+       <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button>`);
     return;
   }
   const V = statoVersus();
   if (V.fase === 'attesa') {
     const tutti = V.tutti;
     v.innerHTML = `<div class="fine"><p class="occhiello">Versus · ${LIV[S.cfg.livello].nome}</p>
-      <p class="aiuto" style="font-size:14.5px;color:var(--tenue)">Codice della stanza da dire agli altri:</p>
+      <p>Codice della stanza da dire agli altri</p>
       <div class="codice-stanza">${esc(S.st.c)}</div>
-      <div class="pubblico">${tutti.map(g => `<div><b>${esc(g.pid === S.st.pid ? g.nome + ' (tu)' : g.nome)}</b><span>${R.meta.host === g.pid ? 'ha creato la stanza' : 'pronto'}</span></div>`).join('')}</div>
-      ${S.st.host ? `<div class="azioni una"><button type="button" class="btn primo" data-az="stanza-inizia" ${tutti.length >= 2 ? '' : 'disabled'}>Inizia la partita<small>${tutti.length >= 2 ? pl(tutti.length, 'giocatore', 'giocatori') : 'aspetta almeno un altro'}</small></button></div>`
-        : `<p class="aiuto" style="font-size:14px">Aspettiamo che ${esc((tutti.find(g => g.pid === R.meta.host) || {}).nome || 'chi ha creato la stanza')} inizi la partita.</p>`}
+      <div class="elenco">${tutti.map(g => `<div><b>${esc(g.pid === S.st.pid ? g.nome + ' (tu)' : g.nome)}</b><span>${R.meta.host === g.pid ? 'ha creato la stanza' : 'pronto'}</span></div>`).join('')}</div>
+      ${S.st.host ? '' : `<p>Aspettiamo che ${esc((tutti.find(g => g.pid === R.meta.host) || {}).nome || 'chi ha creato la stanza')} inizi la partita.</p>`}
       </div>`;
+    if (S.st.host) barra(`<b>${pl(tutti.length, 'giocatore', 'giocatori')}</b>${tutti.length >= 2 ? 'Si può iniziare' : 'Aspetta almeno un altro'}`,
+      `<button type="button" class="btn primo" data-az="stanza-inizia" ${tutti.length >= 2 ? '' : 'disabled'}>Inizia la partita</button>`);
     return;
   }
   if (!V.dentro) {
-    v.innerHTML = `<div class="fine"><h2>Partita già iniziata</h2><p class="aiuto" style="font-size:14.5px;color:var(--tenue)">In questa stanza si gioca senza di te. Aspetta la prossima.</p>
+    v.innerHTML = `<div class="fine"><h2>Partita già iniziata</h2><p>In questa stanza si gioca senza di te. Aspetta la prossima.</p>
       <div class="azioni una"><button type="button" class="btn" data-az="esci-stanza">Esci dalla stanza</button></div></div>`;
     S.st.fuori = true;
     return;
   }
-  const io = S.st.io;
-  let sopra = '', puo = V.attivo && !io.fatto;
-  if (!V.attivo) sopra = `<div class="avviso">Hai dichiarato un codice sbagliato: sei <b>eliminato</b>. Puoi guardare come finisce.</div>`;
-  else if (io.fatto) sopra = `<div class="avviso">Round ${V.round} finito per te. Aspettiamo <b>${V.mancano.map(g => esc(g.nome)).join(', ')}</b>.</div>`;
-  sopra += `<div class="pubblico">${V.gioc.map(g => `<div><b class="${V.attivi.has(g.pid) ? '' : 'via'}">${esc(g.pid === S.st.pid ? 'Tu' : g.nome)}</b><span>${V.attivi.has(g.pid) ? (V.mancano.some(x => x.pid === g.pid) ? 'gioca il round ' + V.round : 'ha finito il round') + ' · ' + pl(g.domande || 0, 'domanda', 'domande') : 'eliminato'}</span></div>`).join('')}</div>`;
-  v.innerHTML = htmlPlancia(b, {
-    puo, intesta: `Le tue schede · round ${V.round}`, righe: righeBanco(b), sopra,
-    nota: puo ? null : '',
-    azioni: puo ? `<div class="azioni una"><button type="button" class="btn primo" data-az="versus-fine-round">Fine round<small>${fissato(b) ? pl(Object.keys(b.chieste).length, 'domanda', 'domande') + ' in questo round' : 'nessuna domanda in questo round'}</small></button></div>` : ''
-  });
+  const io = S.st.io, puo = V.attivo && !io.fatto;
+  const sopra = `<div class="chips">${V.gioc.map(g => {
+    const dentro = V.attivi.has(g.pid), gioca = V.mancano.some(x => x.pid === g.pid);
+    return `<span class="chip ${!dentro ? 'via' : gioca ? 'gioca' : 'fatto'}"><i></i>${esc(g.pid === S.st.pid ? 'Tu' : g.nome)} · ${g.domande || 0}</span>`;
+  }).join('')}</div>`;
+  v.innerHTML = htmlPlancia(b, { puo, righe: righeBanco(b), sopra });
+  if (!V.attivo) barra('<b>Sei eliminato</b>Hai dichiarato un codice sbagliato: guardi come finisce', '');
+  else if (io.fatto) barra(`<b>Round ${V.round} finito</b>Aspettiamo ${V.mancano.map(g => esc(g.nome)).join(', ')}`, '');
+  else barra(`<b>Round ${V.round}</b>${pallini(qui)}`,
+    `<button type="button" class="btn primo" data-az="versus-fine-round">Fine round</button>`);
 }
 function htmlFoglioStanza() {
   const tutti = elencoGiocatori();

@@ -123,7 +123,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
-     Nome in Codice: Double Agents verde acido `#B7E449`, Claude Machine cartoncino `#E6DAC0`);
+     Nome in Codice: Double Agents verde acido `#B7E449`, Claude Machine arancione Claude `#D97757`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -284,9 +284,13 @@ da sola chi muove; dopo ogni pedina torna su «Chi ha vinto l'asta?».
 
 ### Claude Machine → `giochi/machine/`
 
-Gioco di deduzione ispirato a Turing Machine, nome scelto da Simo. Tema «schede perforate» scuro (cartoncino `#E6DAC0` per
-la scheda di prova e le testate dei verificatori, nastro con i fori per lo storico; font Saira Stencil One, Martian Mono e
-Figtree solo in questa pagina). Codice segreto di tre cifre da 1 a 5: blu ▲, giallo ■, viola ●.
+Gioco di deduzione ispirato a Turing Machine, nome scelto da Simo. Tema «officina di notte»: grafite calda (`#191613`,
+piani `#221E1A`/`#2B2621`), un solo accento arancione Claude `#D97757`, niente superfici chiare (Simo non vuole il bianco),
+font Bricolage Grotesque e Figtree. Codice segreto di tre cifre da 1 a 5: blu ▲, giallo ■, viola ●.
+- **Plancia** (Simo la vuole leggera per gli occhi, poche informazioni a schermo): in alto il codice di prova, con gli appunti
+  sulla stessa griglia (selettore Prova/Appunti); poi i verificatori, ognuno con le sue regole (si barrano toccandole) e i
+  codici già provati su di lui; in fondo il registro per round, chiuso. Round, domande del round (tre pallini) e pulsanti
+  stanno nella barra fissa in basso (`barra()`). Niente spiegazioni a fine partita: solo codice e statistiche.
 - **`motore.js`** (in `extra`): carte, generatore, regole del round, senza pagina (`self.CM`, o `require` da node).
   - Carta = criterio con le sue regole; `tipo` `classico` o `malato`; due carte dello stesso `gruppo` non stanno mai nello
     stesso puzzle (dicono quasi la stessa cosa, per esempio «somma multipla di 3» e «numero multiplo di 3»). Gli `id` finiscono

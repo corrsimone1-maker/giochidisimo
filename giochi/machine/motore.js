@@ -44,7 +44,8 @@
 
   /* Carta che confronta un valore con una soglia: tre regole <, =, >. */
   function cartaConfronto(id, nome, etichetta, valore, k, extra) {
-    return Object.assign({ id, nome, regole: [0, 1, 2].map(j => ({ t: `${etichetta} ${CMP[j]} ${k}`, f: c => confronto(valore(c), k)[j] })) }, extra);
+    // il titolo della carta dice già cosa si confronta: la regola è solo «< k», «= k», «> k»
+    return Object.assign({ id, nome, regole: [0, 1, 2].map(j => ({ t: `${CMP[j]} ${k}`, f: c => confronto(valore(c), k)[j] })) }, extra);
   }
   function cartaConta(id, nome, valore, testi, extra) {
     return Object.assign({ id, nome, regole: testi.map((t, j) => ({ t, f: c => valore(c) === j })) }, extra);
@@ -59,11 +60,11 @@
 
   // Classici
   aggiungi({ id: 'b1', nome: '{b} rispetto a 1', regole: [
-    { t: '{b} = 1', f: c => c[0] === 1 }, { t: '{b} > 1', f: c => c[0] > 1 }] }, 'classico', 'b1');
+    { t: '= 1', f: c => c[0] === 1 }, { t: '> 1', f: c => c[0] > 1 }] }, 'classico', 'b1');
   [3, 4].forEach(k => [0, 1, 2].forEach(i => aggiungi(
     cartaConfronto('cv' + i + k, `${NOMI[i]} rispetto a ${k}`, NOMI[i], c => c[i], k), 'classico')));
   [0, 1, 2].forEach(i => aggiungi({ id: 'p' + i, nome: `Parità di ${NOMI[i]}`, regole: [
-    { t: `${NOMI[i]} pari`, f: c => c[i] % 2 === 0 }, { t: `${NOMI[i]} dispari`, f: c => c[i] % 2 === 1 }] }, 'classico'));
+    { t: 'pari', f: c => c[i] % 2 === 0 }, { t: 'dispari', f: c => c[i] % 2 === 1 }] }, 'classico'));
   [1, 3, 4].forEach(k => aggiungi(cartaConta('n' + k, `Quanti ${k} ci sono`, c => quanti(c, k),
     [`nessun ${k}`, `un solo ${k}`, `due ${k}`]), 'classico', 'n' + k));
   aggiungi(cartaConfronto('s6', 'Somma delle tre cifre rispetto a 6', 'somma', somma, 6), 'classico');
@@ -102,7 +103,7 @@
     ['nessuna', 'una', 'due', 'tre']), 'malato');
   aggiungi(cartaConfronto('pit', '{b}² + {g}² rispetto a {v}²', '{b}² + {g}²', c => c[0] * c[0] + c[1] * c[1] - c[2] * c[2], 0, {}), 'malato');
   // la carta pitagorica confronta la differenza con 0: si riscrive il testo delle regole
-  CARTE[CARTE.length - 1].regole.forEach((r, j) => r.t = `{b}² + {g}² ${CMP[j]} {v}²`);
+  CARTE[CARTE.length - 1].regole.forEach((r, j) => r.t = `${CMP[j]} {v}²`);
   aggiungi(cartaConfronto('pr20', 'Prodotto delle tre cifre rispetto a 20', 'prodotto', c => c[0] * c[1] * c[2], 20), 'malato');
   aggiungi(cartaConfronto('pot', '{b} elevato alla {g} rispetto a 16', '{b} alla {g}', c => Math.pow(c[0], c[1]), 16), 'malato');
   aggiungi({ id: 'm7', nome: 'Il numero {b}{g}{v} diviso per 7', regole: [
@@ -113,11 +114,11 @@
     ['nessuna', 'una', 'due', 'tre']), 'malato', 'ordine');
   aggiungi(cartaConta('fis', 'Cifre al loro posto ({b} = 1, {g} = 2, {v} = 3)', c => (c[0] === 1) + (c[1] === 2) + (c[2] === 3),
     ['nessuna', 'una', 'due', 'tre']), 'malato');
-  aggiungi({ id: 'pa', nome: '{b}, {g}, {v} in progressione aritmetica', regole: [
-    { t: 'sì: {g} − {b} = {v} − {g}', f: c => c[1] - c[0] === c[2] - c[1] },
+  aggiungi({ id: 'pa', nome: '{b}, {g}, {v} in progressione aritmetica ({g} − {b} = {v} − {g})?', regole: [
+    { t: 'sì', f: c => c[1] - c[0] === c[2] - c[1] },
     { t: 'no', f: c => c[1] - c[0] !== c[2] - c[1] }] }, 'malato');
-  aggiungi({ id: 'div', nome: '{b} divide {v}', regole: [
-    { t: 'sì, {v} è multiplo di {b}', f: c => c[2] % c[0] === 0 },
+  aggiungi({ id: 'div', nome: '{b} divide {v}?', regole: [
+    { t: 'sì', f: c => c[2] % c[0] === 0 },
     { t: 'no', f: c => c[2] % c[0] !== 0 }] }, 'malato');
   aggiungi({ id: 'amp', nome: 'Cifra più alta meno cifra più bassa', regole: [
     { t: '0 o 1', f: c => Math.max(...c) - Math.min(...c) <= 1 },
@@ -133,13 +134,13 @@
     c => (Math.abs(c[0] - c[1]) === 1) + (Math.abs(c[1] - c[2]) === 1), ['nessuna coppia', 'una coppia', 'tutte e due']), 'malato');
   aggiungi(cartaConta('sop', 'Cifre sopra la media delle tre', c => c.filter(x => 3 * x > somma(c)).length,
     ['nessuna', 'una', 'due']), 'malato');
-  aggiungi({ id: 'bxg', nome: '{b} × {g} rispetto a {v}', regole: [0, 1, 2].map(j => ({ t: `{b} × {g} ${CMP[j]} {v}`, f: c => confronto(c[0] * c[1], c[2])[j] })) }, 'malato');
+  aggiungi({ id: 'bxg', nome: '{b} × {g} rispetto a {v}', regole: [0, 1, 2].map(j => ({ t: `${CMP[j]} {v}`, f: c => confronto(c[0] * c[1], c[2])[j] })) }, 'malato');
   aggiungi(cartaConfronto('q30', 'Somma dei quadrati delle cifre rispetto a 30', 'quadrati', c => c[0] * c[0] + c[1] * c[1] + c[2] * c[2], 30), 'malato');
   aggiungi(cartaConta('fib', 'Quante cifre sono numeri di Fibonacci', c => c.filter(x => [1, 2, 3, 5].includes(x)).length,
     ['nessuna', 'una', 'due', 'tre']), 'malato', 'n4');
-  aggiungi({ id: 'aut', nome: '{b} e il numero di cifre dispari', regole: [
-    { t: '{b} = numero di cifre dispari', f: c => c[0] === 3 - pari(c) },
-    { t: '{b} ≠ numero di cifre dispari', f: c => c[0] !== 3 - pari(c) }] }, 'malato');
+  aggiungi({ id: 'aut', nome: '{b} è uguale al numero di cifre dispari?', regole: [
+    { t: 'sì', f: c => c[0] === 3 - pari(c) },
+    { t: 'no', f: c => c[0] !== 3 - pari(c) }] }, 'malato');
 
   const PER_ID = Object.fromEntries(CARTE.map(c => [c.id, c]));
   CARTE.forEach(c => c.regole.forEach(r => { r.m = maschera(r.f); }));

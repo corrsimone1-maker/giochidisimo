@@ -35,8 +35,8 @@ for (let b = 1; b <= 5; b++) for (let g = 1; g <= 5; g++) for (let v = 1; v <= 5
 /* 2. Significato di alcune regole malate, a mano */
 {
   const vale = (id, t, c) => CM.PER_ID[id].regole.find(r => r.t === t).f(c);
-  assert.ok(vale('pit', '{b}² + {g}² = {v}²', [3, 4, 5]));
-  assert.ok(vale('pit', '{b}² + {g}² > {v}²', [3, 4, 4]));
+  assert.ok(vale('pit', '= {v}²', [3, 4, 5]));
+  assert.ok(vale('pit', '> {v}²', [3, 4, 4]));
   assert.ok(vale('num3', 'è primo', [1, 1, 3]));                // 113
   assert.ok(vale('num3', 'è multiplo di 3', [1, 2, 3]));        // 123
   assert.ok(vale('num3', 'né primo né multiplo di 3', [1, 2, 5])); // 125
@@ -44,9 +44,9 @@ for (let b = 1; b <= 5; b++) for (let g = 1; g <= 5; g++) for (let v = 1; v <= 5
   assert.ok(vale('m7', 'resto da 4 a 6', [1, 2, 4]));          // 124 = 7·17 + 5
   assert.ok(vale('fis', 'tre', [1, 2, 3]));
   assert.ok(vale('inv', 'tre', [5, 3, 1]));
-  assert.ok(vale('pot', '{b} alla {g} = 16', [2, 4, 1]) && vale('pot', '{b} alla {g} = 16', [4, 2, 5]));
+  assert.ok(vale('pot', '= 16', [2, 4, 1]) && vale('pot', '= 16', [4, 2, 5]));
   assert.ok(vale('spq', 'un quadrato perfetto', [2, 3, 4]));  // 9
-  assert.ok(vale('aut', '{b} = numero di cifre dispari', [1, 2, 4]));
+  assert.ok(vale('aut', 'sì', [1, 2, 4]) && vale('aut', 'no', [2, 2, 4]));
   assert.ok(vale('med', '{g} in mezzo', [1, 3, 5]) && !vale('med', '{g} in mezzo', [3, 3, 5]));
   assert.ok(vale('mcd', 'MCD > 1', [2, 4, 4]) && vale('mcd', 'MCD = 1', [2, 3, 4]));
   bene('regole malate: Pitagora, primi, resti, potenze, punti fissi, inversioni, MCD fanno quello che dicono');
