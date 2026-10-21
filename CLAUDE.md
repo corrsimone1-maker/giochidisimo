@@ -43,7 +43,7 @@ Categorie in `giochi.js`:
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
-- `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
+- `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
 
@@ -123,7 +123,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
-     Nome in Codice: Double Agents verde acido `#B7E449`, Claude Machine arancione Claude `#D97757`);
+     Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -154,13 +154,14 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Niente schermate intermedie** di impostazioni se non le chiede: si entra subito nel gioco, e le impostazioni stanno in un tasto piccolo.
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:
-  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics e il versus a un telefono di Claude Machine);
+  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics, Secret Societies e il versus a un telefono di Claude Machine);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
   - `gds-codenames` (`cfg` e `primo`), `gds-codenames-partita` (partita: mappa segreta ed eventi), `gds-codenames-storico` (risultati, per bilanciare);
+  - `gds-societa` (`cfg`), `gds-societa-partita` (partita: società, decreti, eventi, schede segrete comprese, e `ui`), `gds-societa-storico` (riassunti, per bilanciare);
   - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
@@ -182,7 +183,7 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
   - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`,
-    `gds-codenames-storico`);
+    `gds-codenames-storico`, `gds-societa-storico`);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -264,6 +265,33 @@ Espansione di Simo per il Codenames fisico (25 carte parola e tessere vere, nien
   indagine, turni, annullamenti, 5.000 partite casuali). `node prove/codenames.bilanciamento.js` stampa le simulazioni.
   Nel browser: `prove/codenames.pagina.test.js` (serve `python3 -m http.server 8765`). Se cambi una regola aggiungi un caso.
 - Il regolamento sta in `renderRegole()` (14 capitoli con schemi): se cambi una meccanica o un parametro di base, aggiornalo lì.
+
+### 7 Wonders: Secret Societies → `giochi/societa/`
+
+Espansione di Simo per il 7 Wonders fisico, da un progetto scritto con un'altra IA e ribilanciato. Tema «Concilio a lume di candela»
+(prugna notte `#110D14`, foglia d'oro `#D4AF6A` per le azioni, porpora `#A068D6` per ciò che è segreto, ceralacca `#C8473F` per tradimenti
+e avvisi, alloro `#8FB06A` per la lealtà; colori delle carte di 7 Wonders solo nei requisiti; font Cinzel e Figtree solo in questa pagina).
+Il gioco vero resta intatto: carte, monete, conflitti e punteggio sono quelli fisici. Un solo telefono al centro.
+- **`motore.js`** (in `extra`, `self.SS`): tutta la logica. Partita `{ v, id, cfg, nomi, soc, decreti: { 2, 3 }, spareggio, eventi, ui }`; tutto il
+  caso si estrae in `nuovaPartita` (società, tre decreti per Conclave uno per famiglia e mai ripetuti, ordine di spareggio), poi lo stato si
+  ricava **rigiocando gli eventi** (`SS.stato`). Eventi: `fineEra`, `relazione`, `urne`, `scheda`, `apriEra`, `verifica`, `missioni` (spiegati in cima
+  al file). Fasi: Era I → Conclave II (mercato, cabina, esito) → Era II → verifica → Conclave III → Era III → verifica → missioni → fine.
+- **Requisiti** come stringhe (`col:v:2`, `stadi:1`, `colori:3`, `vinci`, `norosse`, …) con testi in `requisito()`/`breve()`. A fine Era il telefono
+  chiede solo le domande sì/no che servono (`domande()`), sempre **tutti** gli obblighi, anche dei traditori, così le domande non svelano niente.
+- **Privacy:** lo schermo condiviso usa solo `SS.vistaPubblica(S)`; le prove controllano che non cambi con voti, Sigilli, intenzioni, scommesse
+  e poteri. La cabina passa di mano con una schermata neutra che si apre tenendo premuto; le schermate riservate si coprono con
+  `visibilitychange`. Una scheda sigillata non si annulla; le azioni pubbliche sì. Lo Scrutinio guardato resta usato anche se si copre la cabina
+  (`P.ui.scrut`).
+- **Parametri di base diversi dalla proposta** (spiegati nel capitolo «Scelte di bilanciamento» del regolamento e in
+  `prove/societa.bilanciamento.js`): Patto +4/+4, tradito −1 (con i numeri originali Δ = 1 − c non dipendeva dalla fiducia nel partner),
+  obblighi da 2 carte, Agente Libero +1 con 3 colori, scommesse senza moneta (pagarla in pubblico svelava chi scommetteva), decreti da 2 carte e
+  Tregua Sacra, società che non dipendono da moduli spenti (Velo solo con le scommesse). Preset in `SS.PRESET` (Consigliata, Numeri della
+  proposta, Alta posta).
+- **Fine partita:** «Porta i punti nel conteggio di 7 Wonders» somma i punti nella riga Extra di `giochidisimo:7wonders` (aggiunge i nomi
+  mancanti, accende Extra) e segna 7 Wonders come usato in `gds-ultimo-uso`, se no `pulizia.js` cancellerebbe subito i punti scritti.
+- **Prove:** `node prove/societa.test.js` (generazione, fasi, validazioni, elezione, matrice dei Patti, poteri, missioni, privacy, annullamenti,
+  5.000 partite casuali); nel browser `prove/societa.pagina.test.js` (serve `python3 -m http.server 8765`). Se cambi una regola aggiungi un caso.
+- Il regolamento sta in `htmlRegole()` (12 capitoli): se cambi una meccanica o un parametro, aggiornalo lì.
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

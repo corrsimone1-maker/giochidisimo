@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#110D14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<script src="motore.js"></script>
+<title>7 Wonders: Secret Societies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tema «Concilio a lume di candela»: notte color prugna, foglia d'oro per le azioni, porpora per ciò
+   che è segreto, ceralacca per tradimenti e avvisi, alloro per la lealtà. I colori delle carte di
+   7 Wonders compaiono solo nei requisiti. */
+:root{
+  --notte:#110D14; --pannello:#1A1420; --pannello-2:#221A29; --pozzo:#0D0A10;
+  --linea:rgba(237,227,209,.08); --linea-2:rgba(237,227,209,.15); --linea-oro:rgba(212,175,106,.32); --linea-viola:rgba(160,104,214,.4);
+  --oro:#D4AF6A; --oro-2:#EBCF92; --oro-ombra:rgba(212,175,106,.09);
+  --viola:#A068D6; --viola-2:#C9A2EE; --viola-ombra:rgba(160,104,214,.1);
+  --cera:#C8473F; --cera-2:#EC877F; --cera-ombra:rgba(200,71,63,.12);
+  --alloro:#8FB06A; --alloro-2:#B9D396; --alloro-ombra:rgba(143,176,106,.1);
+  --testo:#EDE3D1; --muto:#A49888; --fioco:#6D6356;
+  --cv:#5FA36A; --cb:#4F86C6; --cr:#C9483F; --cg:#D9AE45; --cm:#8B5E3C; --cs:#8E8A84; --cp:#8B5CC8;
+  --disp:'Cinzel','Trajan Pro',Georgia,serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;color:var(--testo);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+html{background:var(--notte)}
+body{min-height:100dvh;background:radial-gradient(110% 46% at 50% -10%,rgba(212,175,106,.07),transparent 62%),radial-gradient(80% 40% at 100% 100%,rgba(160,104,214,.05),transparent 70%),var(--notte)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--oro);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px}
+.back{display:inline-block;padding:8px 0;color:var(--oro);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.link{background:none;border:0;padding:6px 0;color:var(--oro);font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.link.muto{color:var(--muto);font-size:14px}
+.links{display:flex;gap:16px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muto);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:var(--cera-2)}
+.kick{font-family:var(--disp);font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muto)}
+
+/* Intestazione */
+.hero{position:relative;margin:10px 0 16px;padding:22px 18px 18px;border:1px solid var(--linea-oro);border-radius:18px;overflow:hidden;
+  background:radial-gradient(90% 70% at 85% 0%,rgba(160,104,214,.12),transparent 60%),linear-gradient(180deg,rgba(212,175,106,.05),transparent 70%),var(--pannello)}
+.hero .kick{color:var(--oro)}
+.hero h1{position:relative;font-family:var(--disp);font-weight:700;font-size:clamp(34px,10.6vw,50px);line-height:.98;letter-spacing:.03em;margin:10px 0 12px;color:var(--oro-2)}
+.hero h1 small{display:block;font-size:.5em;letter-spacing:.24em;color:var(--viola-2);margin-bottom:4px}
+.hero p{position:relative;margin:0;color:var(--muto);font-size:15px;line-height:1.5;max-width:34ch}
+.hero .emblema{position:absolute;right:-18px;top:-10px;width:150px;height:150px;opacity:.16;color:var(--oro);pointer-events:none}
+
+/* Pannelli */
+.pan{background:var(--pannello);border:1px solid var(--linea);border-radius:16px;padding:16px;margin-bottom:12px}
+.pan.oro{border-color:var(--linea-oro)}
+.pan.viola{border-color:var(--linea-viola)}
+h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.06em;margin:0 0 10px;color:var(--oro-2)}
+.sub{margin:-4px 0 12px;color:var(--muto);font-size:14px;line-height:1.45}
+.sub b{color:var(--testo)}
+.row{display:flex;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.in{flex:1;min-width:0;height:48px;padding:0 14px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-size:17px}
+.in::placeholder{color:var(--fioco)}
+.in:focus{outline:none;border-color:var(--oro)}
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:13px;border:0;background:var(--oro);color:#1E150A;
+  font-weight:700;font-size:16.5px;text-align:center;text-decoration:none;overflow:hidden}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:transparent;color:var(--testo);border:1px solid var(--linea-2)}
+.btn.viola{background:var(--viola);color:#170C22}
+.btn.small{width:auto;min-height:44px;padding:0 16px;border-radius:11px;font-size:15px}
+.btn:disabled{opacity:.33;transform:none}
+.btn small{display:block;font-weight:600;opacity:.75;font-size:12.5px}
+.btn .col{display:flex;flex-direction:column;line-height:1.2}
+.stack{display:grid;gap:10px}
+.center{display:block;margin:14px auto 0}
+.warn{margin:10px 0 12px;color:var(--cera-2);font-size:14px;font-weight:600}
+.recap{margin:4px 0 0;color:var(--muto);font-size:13.5px;line-height:1.55}
+.recap b{color:var(--testo);font-weight:600}
+
+/* Giocatori */
+.players{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.players li{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea)}
+.players .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--linea-oro);color:var(--oro);font-size:12px;font-weight:700;flex:none;font-family:var(--disp)}
+.players .nm{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.players .st{font-size:11.5px;color:var(--oro);font-weight:700;margin-right:4px;white-space:nowrap}
+.ico{width:34px;height:34px;border-radius:9px;border:0;background:rgba(255,255,255,.05);color:var(--muto);font-size:15px;line-height:1;flex:none}
+.ico:disabled{opacity:.25}
+
+/* Interruttori, parametri */
+.opt{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--linea);cursor:pointer}
+.opt:first-of-type{border-top:0;padding-top:4px}
+.opt b{display:block;font-size:16px}
+.opt small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:3px}
+.opt input[type=checkbox]{flex:0 0 auto;-webkit-appearance:none;appearance:none;width:26px;height:26px;margin:1px 0 0;border-radius:7px;border:1.5px solid var(--fioco);background:var(--pozzo);display:grid;place-items:center;cursor:pointer}
+.opt input[type=checkbox]:checked{background:var(--oro);border-color:var(--oro)}
+.opt input[type=checkbox]:checked::after{content:'';width:7px;height:12px;border:solid #1E150A;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.par{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--linea)}
+.par:first-of-type{border-top:0}
+.par b{display:block;font-size:15px}
+.par small{display:block;color:var(--muto);font-size:12.5px;line-height:1.4;margin-top:2px}
+.par.spento{opacity:.4;pointer-events:none}
+.stepper{display:flex;align-items:center;gap:6px;flex:none}
+.stepper button{width:40px;height:40px;border-radius:10px;border:1px solid var(--linea-2);background:var(--pozzo);font-size:20px;font-weight:600;color:var(--oro)}
+.stepper button:disabled{opacity:.3}
+.stepper .v{min-width:44px;text-align:center;font-family:var(--disp);font-size:20px;font-weight:600}
+.preset{display:grid;gap:8px}
+.preset button{text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo)}
+.preset button.on{border-color:var(--oro);background:var(--oro-ombra)}
+.preset b{display:block;font-size:15px}
+.preset small{display:block;color:var(--muto);font-size:12.5px;margin-top:2px;line-height:1.4}
+.preset .tag{float:right;font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--viola-2);margin-left:8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{min-height:46px;border-radius:10px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:600;font-size:14.5px;color:var(--muto)}
+.seg button.on{border-color:var(--oro);color:var(--oro-2);background:var(--oro-ombra)}
+
+/* Requisiti e decreti */
+.req{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;background:var(--pozzo);border:1px solid var(--linea-2);font-size:13px;font-weight:600;white-space:nowrap;vertical-align:middle}
+.req i{width:10px;height:13px;border-radius:2.5px;display:inline-block;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.req i.st{width:12px;height:11px;border-radius:0;background:var(--oro)!important;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.dec{position:relative;display:block;width:100%;text-align:left;padding:13px 14px 12px 16px;border-radius:14px;border:1px solid var(--linea-2);background:var(--pozzo);overflow:hidden;color:var(--testo)}
+.dec::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--fc,var(--oro))}
+.dec .fam{font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--fc,var(--oro))}
+.dec .nm{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em;margin:3px 0 4px;color:var(--oro-2)}
+.dec .rq{font-size:14px;line-height:1.45;color:#DCD1BF}
+.dec .rq b{color:var(--oro-2)}
+.dec.on{border-color:var(--oro);background:linear-gradient(180deg,var(--oro-ombra),transparent),var(--pozzo);box-shadow:inset 0 0 0 1px var(--oro)}
+.dec.on::after{content:'✓';position:absolute;right:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--oro);color:#1E150A;font-weight:800;font-size:14px;display:grid;place-items:center}
+.dec.grande{padding:18px 16px 16px 20px}
+.dec.grande .nm{font-size:25px}
+.dec.vetato{opacity:.5}
+.dec.vetato .nm{text-decoration:line-through;text-decoration-color:var(--cera)}
+.decreti{display:grid;gap:8px}
+.famA{--fc:var(--oro)}.famB{--fc:var(--cera-2)}.famC{--fc:var(--viola-2)}
+
+/* Plancia */
+.tempi{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin:6px 0 12px}
+.tempi i{font-style:normal;text-align:center;font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.06em;padding:6px 2px;border-radius:7px;background:var(--pozzo);border:1px solid var(--linea);color:var(--fioco);white-space:nowrap;overflow:hidden}
+.tempi i.fatto{color:var(--muto)}
+.tempi i.on{color:var(--oro-2);border-color:var(--linea-oro);background:var(--oro-ombra)}
+.fase{position:relative;padding:18px 16px 16px 20px;overflow:hidden}
+.fase::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--tc,var(--oro))}
+.fase .t{font-family:var(--disp);font-weight:700;font-size:clamp(28px,8.6vw,38px);line-height:1.04;letter-spacing:.02em;color:var(--oro-2)}
+.fase .l{color:var(--muto);font-size:14.5px;line-height:1.5;margin-top:6px}
+.fase .l b{color:var(--testo);font-weight:600}
+.blocco{margin-top:14px}
+.blocco>h3{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muto);margin:0 0 8px}
+.rel{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin-bottom:6px}
+.rel .ic{width:30px;height:30px;flex:none;color:var(--oro)}
+.rel .ic.pat{color:var(--viola-2)}
+.rel .tx{flex:1;min-width:0;font-size:14px;line-height:1.45}
+.rel .tx b{font-weight:700}
+.rel .tx small{display:block;font-family:var(--disp);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muto);font-weight:600}
+.nota{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--pozzo);border:1px dashed var(--linea-2);color:#D3C8B6;font-size:13.5px;line-height:1.5}
+.nota b{color:var(--testo)}
+.nota.oro{border-color:var(--linea-oro);background:var(--oro-ombra)}
+.nota.viola{border-color:var(--linea-viola);background:var(--viola-ombra)}
+.timer{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px 8px 8px 14px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea)}
+.timer .tm{flex:1;font-family:var(--disp);font-weight:700;font-size:28px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.timer.scaduto .tm{color:var(--cera-2);animation:pulsa 1s ease-in-out infinite}
+@keyframes pulsa{50%{opacity:.45}}
+.timer .btn{min-height:40px;padding:0 14px;font-size:14px}
+.progresso{display:flex;gap:4px;margin:12px 0 2px}
+.progresso i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07)}
+.progresso i.on{background:var(--viola)}
+.punteggi{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.pp{padding:10px 12px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea)}
+.pp .nm{font-size:13.5px;font-weight:600;color:var(--muto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp .v{font-family:var(--disp);font-weight:700;font-size:26px;line-height:1.1;color:var(--oro-2)}
+.azioni{display:grid;gap:10px;margin-top:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 13px;border-radius:999px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:600;font-size:14.5px;color:var(--testo);display:inline-flex;align-items:center;gap:6px}
+.chip.on{border-color:var(--oro);background:var(--oro-ombra);color:var(--oro-2)}
+.chip:disabled{opacity:.3}
+.chip i{width:10px;height:13px;border-radius:2.5px;display:inline-block}
+.chip i.st{width:12px;height:11px;border-radius:0;background:var(--oro);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.etich{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muto);margin:14px 0 7px}
+
+/* Schermate a tutto schermo e riservate */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muto);font-weight:600;font-size:14px;min-height:40px;gap:10px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:18px 0}
+.big{font-family:var(--disp);font-weight:700;font-size:clamp(34px,11vw,52px);line-height:1.02;letter-spacing:.02em;color:var(--oro-2);word-break:break-word}
+.lede{margin:2px auto 0;color:var(--muto);font-size:15px;line-height:1.5;max-width:34ch}
+.lede b{color:var(--testo)}
+.bottom{display:grid;gap:10px}
+.sigillo{width:100px;height:100px;border-radius:50%;display:grid;place-items:center;margin:0 auto 8px;position:relative;color:var(--c,var(--oro));
+  background:radial-gradient(circle at 42% 36%,color-mix(in srgb,var(--c,var(--oro)) 22%,transparent),transparent 68%);border:1px solid color-mix(in srgb,var(--c,var(--oro)) 55%,transparent)}
+.sigillo::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--c,var(--oro)) 35%,transparent)}
+.sigillo svg{width:50px;height:50px}
+.riservato{display:inline-block;font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.22em;padding:4px 9px;border-radius:6px;border:1px solid currentColor;color:var(--viola-2)}
+.testa{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--linea);margin-bottom:12px}
+.testa .t{font-family:var(--disp);font-weight:700;font-size:23px;letter-spacing:.03em;color:var(--viola-2)}
+.testa .t small{display:block;font-size:10.5px;letter-spacing:.2em;color:var(--muto);font-weight:600}
+.copri{min-height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:700;font-size:15px;color:var(--testo)}
+.scheda{padding:14px;border-radius:14px;background:var(--pannello);border:1px solid var(--linea);margin-bottom:10px}
+.scheda>h3{font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:.06em;margin:0 0 4px;color:var(--oro-2)}
+.scheda>p{margin:0 0 10px;color:var(--muto);font-size:13.5px;line-height:1.45}
+.scheda>p b{color:var(--testo)}
+.scheda.viola{border-color:var(--linea-viola)}
+.intento{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.intento button{padding:12px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo);text-align:left;color:var(--testo)}
+.intento b{display:block;font-family:var(--disp);font-size:17px;letter-spacing:.04em;margin-bottom:4px}
+.intento small{display:block;font-size:12.5px;line-height:1.45;color:var(--muto);font-weight:500}
+.intento .L b{color:var(--alloro-2)}.intento .T b{color:var(--cera-2)}
+.intento .L.on{border-color:var(--alloro);background:var(--alloro-ombra);box-shadow:inset 0 0 0 1px var(--alloro)}
+.intento .T.on{border-color:var(--cera);background:var(--cera-ombra);box-shadow:inset 0 0 0 1px var(--cera)}
+.interr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo);width:100%;text-align:left;color:var(--testo)}
+.interr b{display:block;font-size:15px}
+.interr small{display:block;font-size:12.5px;color:var(--muto);line-height:1.4;margin-top:2px}
+.interr .box{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--fioco);flex:none;display:grid;place-items:center}
+.interr.on{border-color:var(--oro);background:var(--oro-ombra)}
+.interr.on .box{background:var(--oro);border-color:var(--oro)}
+.interr.on .box::after{content:'';width:7px;height:12px;border:solid #1E150A;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.interr.viola.on{border-color:var(--viola);background:var(--viola-ombra)}
+.interr.viola.on .box{background:var(--viola);border-color:var(--viola)}
+.soc{padding:20px 16px 16px;border-radius:18px;border:1px solid var(--linea-viola);background:radial-gradient(90% 60% at 50% 0%,rgba(160,104,214,.14),transparent 70%),var(--pannello);text-align:center}
+.soc .sigillo{--c:var(--viola-2)}
+.soc .nm{font-family:var(--disp);font-weight:700;font-size:clamp(25px,7.6vw,32px);line-height:1.1;color:var(--viola-2);margin:4px 0 14px}
+.soc .sez{text-align:left;padding:12px 13px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin-top:8px}
+.soc .sez .k{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);margin-bottom:4px}
+.soc .sez p{margin:0;font-size:15px;line-height:1.5}
+.soc .sez p small{display:block;color:var(--muto);font-size:12.5px;margin-top:4px}
+.mini-soc{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--viola-ombra);border:1px solid var(--linea-viola);margin-bottom:10px;font-size:13.5px;line-height:1.4}
+.mini-soc svg{width:28px;height:28px;color:var(--viola-2);flex:none}
+.mini-soc b{color:var(--viola-2)}
+.rivela{width:100%;padding:24px 16px;border-radius:18px;background:var(--pannello);border:1px solid var(--c,var(--viola));display:flex;flex-direction:column;align-items:center;gap:8px}
+.rivela .t{font-family:var(--disp);font-weight:700;font-size:clamp(30px,9.5vw,44px);line-height:1.05;color:var(--c,var(--viola-2))}
+.rivela .s{color:var(--muto);font-size:14px}
+.scrut{display:grid;gap:6px;margin-top:10px}
+.scrut div{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--pozzo);font-size:14px}
+.scrut b{font-family:var(--disp);font-size:20px;color:var(--viola-2)}
+
+/* Verifica ed esiti */
+.gioc{padding:14px;border-radius:14px;background:var(--pannello);border:1px solid var(--linea);margin-bottom:10px}
+.gioc .nm{font-family:var(--disp);font-weight:700;font-size:19px;color:var(--oro-2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.gioc .nm small{font-family:var(--ui);font-size:12.5px;color:var(--muto);font-weight:600}
+.dom{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo);text-align:left;margin-top:6px;color:var(--testo)}
+.dom .box{width:28px;height:28px;border-radius:8px;border:1.5px solid var(--fioco);flex:none;display:grid;place-items:center;font-weight:800}
+.dom .tx{flex:1;font-size:14.5px;line-height:1.4}
+.dom .tx small{display:block;font-size:12px;color:var(--muto);margin-top:2px}
+.dom.si{border-color:var(--alloro);background:var(--alloro-ombra)}
+.dom.si .box{background:var(--alloro);border-color:var(--alloro);color:#132009}
+.dom.si .box::after{content:'✓'}
+.dom.fisso{cursor:default;opacity:.92}
+.voci{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+.voci li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;line-height:1.4;padding:7px 10px;border-radius:9px;background:var(--pozzo)}
+.voci li b{font-family:var(--disp);font-weight:700;white-space:nowrap}
+.voci li .p{color:var(--alloro-2)}.voci li .n{color:var(--cera-2)}.voci li .z{color:var(--fioco)}
+.colpo{display:flex;gap:12px;align-items:flex-start;padding:12px 13px;border-radius:13px;background:var(--pozzo);border:1px solid var(--linea);margin-bottom:8px;font-size:14.5px;line-height:1.45}
+.colpo svg{width:26px;height:26px;flex:none;margin-top:1px}
+.colpo.tradimento{border-color:rgba(200,71,63,.45);background:var(--cera-ombra)}
+.colpo.tradimento svg{color:var(--cera-2)}
+.colpo.lealta{border-color:rgba(143,176,106,.4);background:var(--alloro-ombra)}
+.colpo.lealta svg{color:var(--alloro-2)}
+.colpo.scommessa svg,.colpo.potere svg{color:var(--viola-2)}
+.colpo b{font-weight:700}
+.colpo small{display:block;color:var(--muto);font-size:12.5px;margin-top:2px}
+.classifica{display:grid;gap:8px}
+.cl{padding:12px 14px;border-radius:14px;background:var(--pannello);border:1px solid var(--linea)}
+.cl.primo{border-color:var(--linea-oro);background:linear-gradient(180deg,var(--oro-ombra),transparent 70%),var(--pannello)}
+.cl .r{display:flex;align-items:center;gap:12px}
+.cl .pos{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--muto);width:24px;text-align:center}
+.cl .nm{flex:1;min-width:0}
+.cl .nm b{display:block;font-size:16.5px}
+.cl .nm small{display:block;color:var(--viola-2);font-size:12.5px;font-weight:600}
+.cl .v{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--oro-2)}
+.cl details summary{list-style:none;color:var(--muto);font-size:13px;margin-top:6px;cursor:pointer}
+.cl details summary::-webkit-details-marker{display:none}
+.cl details summary::before{content:'▸ '}.cl details[open] summary::before{content:'▾ '}
+.tab{width:100%;border-collapse:collapse;font-size:13.5px}
+.tab th{text-align:left;color:var(--muto);font-weight:600;font-size:11.5px;padding:6px 4px;border-bottom:1px solid var(--linea-2);letter-spacing:.06em}
+.tab td{padding:8px 4px;border-bottom:1px solid var(--linea);vertical-align:top}
+.tab td.r,.tab th.r{text-align:right}
+.L{color:var(--alloro-2);font-weight:700}.T{color:var(--cera-2);font-weight:700}
+
+/* Finestre sopra la pagina */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(6,4,8,.8);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
+.velo .box{width:100%;max-width:544px;max-height:90dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 16px;border-radius:18px;background:var(--pannello);border:1px solid var(--linea-2)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;pointer-events:none;max-width:92vw;padding:11px 16px;border-radius:12px;background:var(--oro-2);color:#1E150A;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.log li{font-size:14px;line-height:1.45;color:#DCD1BF;padding:8px 10px 8px 12px;border-radius:9px;background:var(--pozzo);border-left:3px solid var(--linea-2)}
+.log li.tradimento{border-left-color:var(--cera)}.log li.decreto,.log li.veto{border-left-color:var(--oro)}.log li.relazione{border-left-color:var(--viola)}
+.log li.t{background:transparent;border:0;color:var(--muto);font-family:var(--disp);font-size:11px;letter-spacing:.14em;padding:10px 2px 2px}
+
+/* Regolamento */
+.rules h3{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:.03em;margin:26px 0 8px;color:var(--oro-2);scroll-margin-top:12px}
+.rules h3 .k{display:block;font-size:11px;letter-spacing:.2em;color:var(--fioco);font-weight:600;margin-bottom:2px}
+.rules h4{font-size:15.5px;margin:14px 0 6px;color:var(--testo)}
+.rules p,.rules li{font-size:15px;line-height:1.6;color:#DCD1BF}
+.rules p{margin:0 0 9px}
+.rules ul,.rules ol{margin:0 0 9px;padding-left:21px}
+.rules li{margin:3px 0}
+.rules b{color:var(--testo)}
+.rules .f{font-size:14.5px;color:var(--oro-2);background:var(--pozzo);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;margin:6px 0 10px;line-height:1.6;overflow-x:auto;font-variant-numeric:tabular-nums}
+.rules .box{padding:12px 14px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin:8px 0 12px}
+.rules .box.oro{border-color:var(--linea-oro);background:var(--oro-ombra)}
+.rules .box.viola{border-color:var(--linea-viola);background:var(--viola-ombra)}
+.rules .box p:last-child,.rules .box ul:last-child{margin-bottom:0}
+.rules .didas{font-size:13px;color:var(--muto);margin:6px 0 12px;line-height:1.45}
+.rules table{width:100%;border-collapse:collapse;margin:6px 0 12px;font-size:14px}
+.rules th,.rules td{padding:7px 6px;border-bottom:1px solid var(--linea);text-align:left;vertical-align:top}
+.rules th{font-size:11.5px;letter-spacing:.06em;color:var(--muto);font-weight:600}
+.rules td.r,.rules th.r{text-align:right}
+.indice{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 6px}
+.indice a{display:block;padding:9px 10px;border-radius:10px;background:var(--pozzo);border:1px solid var(--linea);color:var(--testo);text-decoration:none;font-size:13.5px;line-height:1.3}
+.indice a span{font-family:var(--disp);font-size:11px;color:var(--oro);margin-right:6px}
+.flusso{display:grid;margin:8px 0 12px}
+.flusso .p{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;position:relative;padding-bottom:12px}
+.flusso .p:not(:last-child)::before{content:'';position:absolute;left:16px;top:30px;bottom:0;width:2px;background:var(--linea-2)}
+.flusso .l{width:34px;height:30px;border-radius:8px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:12px;background:var(--pozzo);border:1px solid var(--linea-oro);color:var(--oro)}
+.flusso .p.c .l{border-color:var(--linea-viola);color:var(--viola-2)}
+.flusso .p b{display:block;font-size:15px;color:var(--testo)}
+.flusso .p small{display:block;color:var(--muto);font-size:13.5px;line-height:1.45;margin-top:2px}
+.matrice{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;margin:8px 0 12px;font-size:13.5px}
+.matrice div{padding:9px 8px;border-radius:9px;background:var(--pozzo);text-align:center;line-height:1.35}
+.matrice .h{background:transparent;font-family:var(--disp);font-size:11px;letter-spacing:.12em;color:var(--muto);display:grid;place-items:center}
+.matrice b{font-family:var(--disp);font-size:16px}
+
+/* Tieni premuto */
+.hold{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(20,12,4,.28);pointer-events:none}
+.btn.sec.hold .fill{background:rgba(212,175,106,.16)}
+.btn.viola.hold .fill{background:rgba(20,8,30,.3)}
+.hold.going .fill{transition:transform var(--ms,600ms) linear;transform:scaleX(1)}
+.hold span,.hold .col{position:relative}
+.cambio{animation:cambio .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes cambio{from{opacity:.2;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.hold.going .fill{transition:none}.cambio,.timer.scaduto .tm{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= Inizio ================= -->
+<main class="wrap" id="inizio">
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
+  <header class="hero">
+    <svg class="emblema" viewBox="0 0 100 100" aria-hidden="true"><use href="#e-sigillo"/></svg>
+    <div class="kick">7 Wonders · espansione</div>
+    <h1><small>SECRET</small>SOCIETIES</h1>
+    <p>Un Concilio che scrive le leggi, patti da onorare o tradire, scommesse sugli avversari e una società segreta a testa. Carte, monete e punti restano quelli veri: il telefono fa da urna e da archivio.</p>
+  </header>
+
+  <section class="pan oro" id="resumePan" hidden>
+    <h2>Partita in corso</h2>
+    <p class="sub" id="resumeInfo"></p>
+    <div class="row">
+      <button class="btn small" id="resumeBtn" style="flex:1">Riprendi</button>
+      <button class="btn small sec hold" id="dropBtn" style="flex:1"><i class="fill"></i><span>Tieni premuto: chiudi</span></button>
+    </div>
+  </section>
+
+  <section class="pan">
+    <h2>Giocatori</h2>
+    <p class="sub">Da 3 a 8, <b>nell’ordine in cui siete seduti</b>, in senso antiorario: il telefono gira verso destra. Il primo apre la cabina del Conclave II.</p>
+    <form class="row" id="addPlayer" autocomplete="off">
+      <input class="in" id="playerName" placeholder="Nome" maxlength="16" enterkeyhint="done">
+      <button class="btn small">Aggiungi</button>
+    </form>
+    <ul class="players" id="players"></ul>
+  </section>
+
+  <section class="pan">
+    <h2>Moduli</h2>
+    <p class="sub">Concilio e Patti ci sono sempre. Per la prima partita bastano quelli e le società.</p>
+    <label class="opt"><span><b>Società segrete</b><small>Una a testa, in segreto: missione finale e un potere da usare una volta.</small></span><input type="checkbox" id="oSoc"></label>
+    <label class="opt"><span><b>Patrocinio</b><small>Paghi monete a un rivale perché costruisca ciò che vuoi tu: punti se ci riesce.</small></span><input type="checkbox" id="oPat"></label>
+    <label class="opt"><span><b>Scommesse di Palazzo</b><small>Una previsione segreta a Conclave sulle costruzioni di un altro.</small></span><input type="checkbox" id="oScom"></label>
+    <div class="between" style="border-top:1px solid var(--linea);padding-top:12px;margin-top:2px">
+      <p class="recap" id="recap" style="margin:0"></p>
+      <button class="link" id="bilBtn" style="flex:none">Bilanciamento</button>
+    </div>
+  </section>
+
+  <p class="warn" id="setupWarn" hidden></p>
+  <button class="btn" id="playBtn">Inizia la partita</button>
+  <button class="link center" id="rulesBtn">Regolamento</button>
+
+  <section class="pan" id="ultimaPan" hidden style="margin-top:16px">
+    <div class="between"><div><h2 style="margin:0">Ultima partita</h2><p class="recap" id="ultimaInfo"></p></div><button class="btn small sec" id="ultimaArch">Archivio</button></div>
+  </section>
+</main>
+
+<!-- ================= Bilanciamento ================= -->
+<main class="wrap" id="bilanciamento" hidden>
+  <div class="toprow"><button class="back" id="bilBack">‹ Indietro</button><span class="kick">Bilanciamento</span></div>
+  <section class="pan" style="margin-top:8px">
+    <h2>Configurazioni</h2>
+    <div class="preset" id="presetList"></div>
+  </section>
+  <section class="pan">
+    <h2>Parametri</h2>
+    <div id="parList"></div>
+  </section>
+  <section class="pan">
+    <h2>Dalle vostre partite</h2>
+    <div id="storicoInfo" class="recap" style="margin:0"></div>
+  </section>
+  <p class="recap" id="bilNota" style="margin:0 2px 12px"></p>
+  <button class="btn" id="bilDone">Fatto</button>
+</main>
+
+<!-- ================= Regolamento ================= -->
+<main class="wrap" id="regole" hidden>
+  <div class="toprow"><button class="back" id="regBack">‹ Indietro</button><span class="kick">Regolamento</span></div>
+  <section class="pan rules" style="margin-top:8px" id="regoleTesto"></section>
+  <button class="btn sec" id="regBack2">Indietro</button>
+</main>
+
+<!-- ================= Passa il telefono (neutra) ================= -->
+<section class="stage" id="passa" hidden>
+  <div class="top"><span class="kick" id="paKick"></span><button class="link muto" id="paIndietro">Plancia</button></div>
+  <div class="mid">
+    <div class="sigillo" id="paSigillo"></div>
+    <div class="kick">Passa il telefono a</div>
+    <div class="big" id="paNome"></div>
+    <p class="lede" id="paNota"></p>
+  </div>
+  <div class="bottom"><button class="btn viola hold" id="paApri"><i class="fill"></i><span id="paBtn"></span></button></div>
+</section>
+
+<!-- ================= Segreto: società, cannocchiale ================= -->
+<main class="wrap" id="segreto" hidden>
+  <div class="testa"><div class="t" id="sgTitolo"></div><span class="riservato">RISERVATO</span></div>
+  <div id="sgCorpo"></div>
+  <button class="btn viola" id="sgCopri" style="margin-top:14px">Ho letto: copri</button>
+</main>
+
+<!-- ================= Cabina ================= -->
+<main class="wrap" id="cabina" hidden>
+  <div class="testa"><div class="t" id="cbTitolo"></div><button class="copri" id="cbCopri">Copri</button></div>
+  <div id="cbCorpo"></div>
+  <p class="warn" id="cbWarn" hidden></p>
+  <button class="btn viola hold" id="cbSigilla"><i class="fill"></i><span>Tieni premuto: sigilla e copri</span></button>
+</main>
+
+<!-- ================= Plancia ================= -->
+<main class="wrap" id="plancia" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><div class="links"><button class="link muto" id="pRegole">Regole</button><button class="link muto" id="pMenu">Menu</button></div></div>
+  <div class="tempi" id="pTempi"></div>
+  <section class="pan fase" id="pFase"></section>
+  <section class="pan" id="pPuntiPan" hidden>
+    <div class="between" style="margin-bottom:10px"><h2 style="margin:0">Punti dell’espansione</h2><button class="link muto" id="pEsiti">Rivelazioni</button></div>
+    <div class="punteggi" id="pPunti"></div>
+  </section>
+  <div class="row">
+    <button class="btn small sec" id="pLog" style="flex:1">Cronologia</button>
+    <button class="btn small sec hold" id="pAnnulla" style="flex:1.3"><i class="fill"></i><span>Annulla ultima azione</span></button>
+  </div>
+</main>
+
+<!-- ================= Verifica di fine Era e missioni ================= -->
+<main class="wrap" id="verifica" hidden>
+  <div class="toprow"><button class="back" id="veBack">‹ Plancia</button><span class="kick" id="veKick"></span></div>
+  <section class="pan oro fase" style="margin-top:8px"><div class="t" id="veTitolo"></div><div class="l" id="veTesto"></div></section>
+  <div id="veCorpo"></div>
+  <button class="btn hold" id="veOk" style="margin-top:6px"><i class="fill"></i><span id="veOkT">Tieni premuto: conferma e svela</span></button>
+</main>
+
+<!-- ================= Rivelazioni di un'Era ================= -->
+<main class="wrap" id="esito" hidden>
+  <div class="toprow"><button class="back" id="esBack">‹ Plancia</button><span class="kick" id="esKick"></span></div>
+  <div id="esCorpo"></div>
+  <button class="btn" id="esAvanti" style="margin-top:6px"></button>
+</main>
+
+<!-- ================= Fine ================= -->
+<main class="wrap" id="fine" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="link muto" id="fiRegole">Regole</button></div>
+  <div id="fiCorpo"></div>
+  <div class="stack" style="margin-top:12px">
+    <button class="btn" id="fi7w"></button>
+    <button class="btn sec" id="fiArch">Apri l’archivio segreto</button>
+    <button class="btn sec" id="fiNuova">Nuova partita</button>
+    <button class="btn sec hold" id="fiAnnulla"><i class="fill"></i><span>Tieni premuto: annulla l’ultima azione</span></button>
+  </div>
+</main>
+
+<!-- ================= Archivio segreto ================= -->
+<main class="wrap" id="archivio" hidden>
+  <div class="toprow"><button class="back" id="arBack">‹ Indietro</button><span class="kick">Archivio segreto</span></div>
+  <div id="arCorpo"></div>
+  <button class="btn sec" id="arBack2" style="margin-top:12px">Indietro</button>
+</main>
+
+<!-- ================= Finestre ================= -->
+<div class="velo" id="relVelo" hidden><div class="box">
+  <div class="between"><h2 style="margin:0">Nuova relazione</h2><button class="link muto" id="rvChiudi">Chiudi</button></div>
+  <div id="rvCorpo"></div>
+  <button class="btn" id="rvOk" style="margin-top:14px" disabled>Registra</button>
+</div></div>
+
+<div class="velo" id="infoVelo" hidden><div class="box">
+  <h2 id="ifTitolo"></h2>
+  <div id="ifCorpo" style="color:#DCD1BF;font-size:14.5px;line-height:1.55"></div>
+  <div class="stack" style="margin-top:14px" id="ifBtns"></div>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<!-- Disegni originali -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="e-sigillo" viewBox="0 0 100 100"><path fill="currentColor" d="M50 6c5 4 9 3 14 1 2 5 6 8 11 8-1 5 1 10 5 13-3 4-3 9 0 13-4 3-6 8-5 13-5 0-9 3-11 8-5-2-9-3-14 1-5-4-9-3-14-1-2-5-6-8-11-8 1-5-1-10-5-13 3-4 3-9 0-13 4-3 6-8 5-13 5 0 9-3 11-8 5 2 9 3 14-1z" opacity=".9"/><circle cx="50" cy="40" r="22" fill="none" stroke="#110D14" stroke-width="2.4"/><path d="M50 26v28M38 34l24 12M62 34 38 46" stroke="#110D14" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<script>
+'use strict';
+/* La pagina: schermate, passaggi del telefono, salvataggio. Le regole stanno tutte in motore.js (SS). */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_PL = 'gds-giocatori', K_CFG = 'gds-societa', K_P = 'gds-societa-partita', K_ST = 'gds-societa-storico', K_7W = 'giochidisimo:7wonders';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+const norm = s => String(s).trim().replace(/\s+/g, ' ');
+const chiave = s => norm(s).toLocaleLowerCase('it');
+const ROM = SS.ROMANI;
+const segno = p => (p > 0 ? '+' + p : p < 0 ? '−' + Math.abs(p) : '0');
+
+/* ---------------- Dati ---------------- */
+let players = loadJSON(K_PL, []); if (!Array.isArray(players)) players = [];
+players = players.filter(x => typeof x === 'string' && norm(x));
+const savePl = () => saveJSON(K_PL, players);
+let impo = loadJSON(K_CFG, {}); if (!impo || typeof impo !== 'object') impo = {};
+let cfg = SS.configura(impo.cfg);
+const saveImpo = () => saveJSON(K_CFG, { cfg });
+let P = loadJSON(K_P, null), S = null;
+try { if (P) S = SS.stato(P); } catch (e) { P = null; S = null; }
+if (P && (!P.ui || typeof P.ui !== 'object')) P.ui = {};
+function salva() { if (!saveJSON(K_P, P)) toast('Attenzione: il telefono non riesce a salvare la partita.'); }
+function fai(ev) {
+  try { P = Object.assign(SS.applica(P, ev), { ui: P.ui }); } catch (e) { if (e instanceof SS.ErroreGioco) { toast(e.message); return false; } throw e; }
+  salva(); S = SS.stato(P);
+  if (S.fase === 'finita') registraStorico();
+  return true;
+}
+function registraStorico() {
+  const st = loadJSON(K_ST, []), lista = Array.isArray(st) ? st : [];
+  if (lista.some(x => x && x.id === P.id)) return;
+  lista.push(SS.riassunto(S, P));
+  saveJSON(K_ST, lista.slice(-200));
+}
+
+/* ---------------- Schermate ---------------- */
+const SCHERMATE = ['inizio', 'bilanciamento', 'regole', 'passa', 'segreto', 'cabina', 'plancia', 'verifica', 'esito', 'fine', 'archivio'];
+const RISERVATE = new Set(['segreto', 'cabina']);
+const VELI = ['relVelo', 'infoVelo'];
+let corrente = 'inizio';
+function show(id) {
+  SCHERMATE.forEach(s => { $(s).hidden = s !== id; });
+  VELI.forEach(v => { $(v).hidden = true; });
+  corrente = id; window.scrollTo(0, 0); $('toast').hidden = true;
+  if (window.gdsAppare) gdsAppare($(id));
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+function tieniPremuto(el, done, ms = 600) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { if (el.disabled) return; e.preventDefault(); stop(); el._tenuto = false; void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); el._tenuto = true; done(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el._tenuto = true; done(); } });
+  el.addEventListener('click', e => { if (e.detail === 0 || el._tenuto || el.disabled) return; avvisoTieni(); });
+}
+let avvisatoT = 0;
+function avvisoTieni() { if (Date.now() - avvisatoT < 1500) return; avvisatoT = Date.now(); toast('Tieni premuto finché la barra si riempie'); }
+function finestra(titolo, corpo, bottoni) {
+  $('ifTitolo').textContent = titolo; $('ifCorpo').innerHTML = corpo;
+  const box = $('ifBtns'); box.innerHTML = '';
+  (bottoni || [{ t: 'Chiudi', cls: 'sec' }]).forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn' + (b.cls ? ' ' + b.cls : ''); el.textContent = b.t;
+    el.onclick = () => { $('infoVelo').hidden = true; if (b.f) b.f(); };
+    box.appendChild(el);
+  });
+  $('infoVelo').hidden = false;
+}
+$('infoVelo').addEventListener('click', e => { if (e.target.id === 'infoVelo') $('infoVelo').hidden = true; });
+
+/* Disegni originali delle società e delle azioni */
+const SV = (d, w = 1.6) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICONA = {
+  astrolabio: SV('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 3.5v17M3.5 12h17M6.5 6.5l11 11"/><circle cx="12" cy="12" r="1" fill="currentColor"/>'),
+  moneta: SV('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="6"/><path d="M12 8.5v7M10 10.2c0-.9.9-1.5 2-1.5s2 .6 2 1.5-.9 1.3-2 1.6-2 .7-2 1.6.9 1.5 2 1.5 2-.6 2-1.5"/>'),
+  lame: SV('<path d="M5 3l9.5 9.5M19 3L9.5 12.5"/><path d="M3.5 4.5 5 3l1.5 1.5M20.5 4.5 19 3l-1.5 1.5"/><path d="M12.5 14.5l2-2 4 4-2 2zM11.5 14.5l-2-2-4 4 2 2z"/><path d="M17.5 18.5l2 2M6.5 18.5l-2 2"/>'),
+  piramide: SV('<path d="M12 3.5 21 19.5H3z"/><path d="M12 3.5 15 19.5M7.2 12h9.6M5 16h14"/>'),
+  ulivo: SV('<path d="M5 20C9 15 12 10 19 4"/><path d="M9 15.5c-2.2.1-3.6-1-4-3 2.2-.2 3.6.9 4 3zM12 11.8c-2-.6-2.9-2.1-2.6-4 2 .6 2.9 2.1 2.6 4zM12.2 12c.6-2 2.1-2.9 4-2.6-.6 2-2.1 2.9-4 2.6zM15.4 8c-.2-2 .8-3.4 2.7-3.9.2 2-.8 3.4-2.7 3.9zM8.6 16c.8-1.9 2.4-2.6 4.2-2-.8 1.9-2.4 2.6-4.2 2z"/>'),
+  tromba: SV('<path d="M3.5 10v4h3l7 4.5v-13l-7 4.5z"/><path d="M13.5 8.5c3-.4 5.4-2 7-4.5v16c-1.6-2.5-4-4.1-7-4.5"/><path d="M6.5 14l1 5h2.5l-1-4.4"/>'),
+  rosa: SV('<circle cx="12" cy="12" r="8.5"/><path d="M12 2.5l2 7.5 7.5 2-7.5 2-2 7.5-2-7.5-7.5-2 7.5-2z"/>'),
+  chiavi: SV('<circle cx="7.5" cy="7.5" r="3.5"/><path d="M10 10l9.5 9.5M16.5 16.5l2-2M14.5 14.5l2-2"/><circle cx="16.5" cy="7.5" r="3.5"/><path d="M14 10l-9.5 9.5M7.5 16.5l-2-2"/>'),
+  velo: SV('<path d="M3.5 9c2.5-2 5.3-3 8.5-3s6 1 8.5 3c-.5 6-4 10-8.5 10S4 15 3.5 9z"/><path d="M7.5 11c1-.7 2-.7 3 0M13.5 11c1-.7 2-.7 3 0M9.5 15.5c1.6.8 3.4.8 5 0"/>'),
+  passa: SV('<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M2 12h3M19 12h3M3.5 10.5 2 12l1.5 1.5M20.5 10.5 22 12l-1.5 1.5"/>'),
+  occhio: SV('<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  patto: SV('<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>'),
+  borsa: SV('<path d="M8 7h8l3 3.5c1 4.5-1.5 9.5-7 9.5s-8-5-7-9.5z"/><path d="M9 7 7.5 3.5h9L15 7M10 13h4"/>'),
+  urna: SV('<path d="M6 10h12l-1.2 10H7.2z"/><path d="M4.5 10h15M9 6.5h6M12 3v6.5"/>'),
+  pugnale: SV('<path d="M12 2.5v12.5M9.5 15h5M12 15v6.5"/><path d="M12 2.5l2 4-2 8.5-2-8.5z"/>'),
+  stella: SV('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>')
+};
+const ICO_SOC = id => ICONA[SS.SOC[id] ? SS.SOC[id].simbolo : 'stella'] || ICONA.stella;
+
+/* Requisiti con i colori delle carte */
+const CC = { v: 'var(--cv)', b: 'var(--cb)', r: 'var(--cr)', g: 'var(--cg)', m: 'var(--cm)', s: 'var(--cs)', p: 'var(--cp)' };
+function pallino(a) {
+  const [k, x] = a.split(':');
+  if (k === 'col') return `<i style="background:${CC[x]}"></i>`;
+  if (k === 'stadi') return '<i class="st"></i>';
+  if (a === 'verde+blu') return `<i style="background:${CC.v}"></i><i style="background:${CC.b}"></i>`;
+  if (a === 'officina') return `<i style="background:${CC.m}"></i><i style="background:${CC.b}"></i>`;
+  if (a === 'gialla+6') return `<i style="background:${CC.g}"></i>`;
+  if (a === 'norosse') return `<i style="background:transparent;border:1.5px solid ${CC.r}"></i>`;
+  return '';
+}
+const reqHTML = a => `<span class="req">${pallino(a)}${esc(SS.breve(a))}</span>`;
+function decretoHTML(id, opt = {}) {
+  const d = SS.DEC[id];
+  return `<${opt.btn ? 'button' : 'div'} class="dec fam${d.fam}${opt.on ? ' on' : ''}${opt.grande ? ' grande' : ''}${opt.vetato ? ' vetato' : ''}" ${opt.btn ? `data-voto="${id}"` : ''}>
+    <div class="fam">${esc(SS.FAMIGLIE[d.fam])}${opt.extra ? ' · ' + opt.extra : ''}</div>
+    <div class="nm">${esc(d.nome)}</div>
+    <div class="rq"><b>${segno(S ? S.cfg.decreto : cfg.decreto)}</b> a chi ${esc(SS.requisito(d.req))}${/Era/.test(SS.requisito(d.req)) ? '' : ' durante l’Era'}.</div>
+  </${opt.btn ? 'button' : 'div'}>`;
+}
+function relazioneHTML(R, nomi) {
+  if (R.tipo === 'patto') return `<div class="rel"><span class="ic pat">${ICONA.patto}</span><div class="tx"><small>${esc(SS.nomePatto(R.oa, R.ob))}</small><b>${esc(nomi[R.a])}</b> ${reqHTML(R.oa)} e <b>${esc(nomi[R.b])}</b> ${reqHTML(R.ob)}</div></div>`;
+  return `<div class="rel"><span class="ic">${ICONA.borsa}</span><div class="tx"><small>Patrocinio · ${S.cfg.costoPatrocinio} monete</small><b>${esc(nomi[R.a])}</b> finanzia <b>${esc(nomi[R.b])}</b>: ${reqHTML(R.ob)}</div></div>`;
+}
+
+/* ======================================================================
+   INIZIO
+   ====================================================================== */
+function recapCfg(c) {
+  return `Patto riuscito <b>${segno(c.pattoLL)}</b> a testa, chi tradisce <b>${segno(c.tradimento)}</b>, chi è tradito <b>${segno(c.tradito)}</b>. Obblighi da <b>${c.soglia}</b> ${c.soglia === 1 ? 'carta' : 'carte'}. Decreto ${segno(c.decreto)}${c.societa ? `, missione ${segno(c.missione)}` : ''}.`;
+}
+function renderInizio() {
+  const n = players.length;
+  $('players').innerHTML = players.map((p, i) => `<li>
+    <span class="n">${i + 1}</span><span class="nm">${esc(p)}</span>${i === 0 ? '<span class="st">vota per primo</span>' : ''}
+    <button class="ico" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Sposta su">↑</button>
+    <button class="ico" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
+  $('oSoc').checked = cfg.societa; $('oPat').checked = cfg.patrocinio; $('oScom').checked = cfg.scommesse;
+  $('recap').innerHTML = recapCfg(cfg);
+  const inCorso = P && S && S.fase !== 'finita';
+  const warn = inCorso ? '' : n < SS.MIN_G ? `Servono almeno ${SS.MIN_G} giocatori (ora ${n}).` : n > SS.MAX_G ? `Al massimo ${SS.MAX_G} giocatori.` : '';
+  $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn; $('playBtn').disabled = !!warn;
+  $('resumePan').hidden = !inCorso;
+  if (inCorso) $('resumeInfo').innerHTML = `${esc(S.nomi.join(', '))}. ${descriviFase()}`;
+  $('playBtn').textContent = inCorso ? 'Riprendi la partita' : 'Inizia la partita';
+  const finita = P && S && S.fase === 'finita';
+  $('ultimaPan').hidden = !finita;
+  if (finita) { const F = SS.finale(S); $('ultimaInfo').innerHTML = `Più punti dall’espansione: <b>${esc(F[0].nome)}</b> (${segno(F[0].punti)}).`; }
+}
+function descriviFase() {
+  if (!S) return '';
+  if (S.fase === 'era') return `Si gioca l’<b>Era ${ROM[S.era]}</b>.`;
+  if (S.fase === 'conclave') return `<b>Conclave ${ROM[S.c]}</b>${S.sub === 'cabina' ? ', si vota in cabina' : S.sub === 'esito' ? ', legge approvata' : ', trattative aperte'}.`;
+  if (S.fase === 'verifica') return `Verifica dell’<b>Era ${ROM[S.era]}</b>.`;
+  if (S.fase === 'missioni') return 'Mancano le <b>missioni</b> delle società.';
+  return '';
+}
+$('addPlayer').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = norm($('playerName').value); if (!v) return;
+  if (players.some(p => chiave(p) === chiave(v))) { toast(`${v} c’è già`); return; }
+  if (players.length >= SS.MAX_G) { toast(`Al massimo ${SS.MAX_G} giocatori`); return; }
+  players.push(v); savePl(); $('playerName').value = ''; renderInizio();
+});
+$('players').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.del != null) players.splice(+b.dataset.del, 1);
+  else if (b.dataset.up != null) { const i = +b.dataset.up; [players[i - 1], players[i]] = [players[i], players[i - 1]]; }
+  savePl(); renderInizio();
+});
+$('oSoc').onchange = e => { cfg.societa = e.target.checked; saveImpo(); renderInizio(); };
+$('oPat').onchange = e => { cfg.patrocinio = e.target.checked; saveImpo(); renderInizio(); };
+$('oScom').onchange = e => { cfg.scommesse = e.target.checked; saveImpo(); renderInizio(); };
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  players = []; savePl(); cfg = SS.configura(); saveImpo();
+  P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {}
+  renderInizio(); toast('Tutto come all’inizio');
+};
+tieniPremuto($('dropBtn'), () => { P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {} renderInizio(); toast('Partita chiusa'); }, 900);
+$('resumeBtn').onclick = () => vai();
+$('playBtn').onclick = () => { if (P && S && S.fase !== 'finita') { vai(); return; } nuova(); };
+$('rulesBtn').onclick = () => apriRegole('inizio');
+$('bilBtn').onclick = () => { renderBil(); show('bilanciamento'); };
+$('ultimaArch').onclick = () => apriArchivio('inizio');
+function nuova() {
+  try { P = SS.nuovaPartita({ nomi: players.slice(), cfg }, SS.randIntCrypto); }
+  catch (e) { if (e instanceof SS.ErroreGioco) { toast(e.message); return; } throw e; }
+  P.ui = { consegna: 0, visti: {}, creata: Date.now() };
+  salva(); S = SS.stato(P);
+  vai();
+}
+/* Va alla schermata giusta per la partita salvata (mai direttamente a una riservata) */
+function vai() {
+  if (!P || !S) { renderInizio(); show('inizio'); return; }
+  if (S.soc && (P.ui.consegna || 0) < S.n && !P.eventi.length) { consegna(); return; }
+  if (S.fase === 'finita') { renderFine(); show('fine'); return; }
+  if (S.fase === 'conclave' && S.sub === 'esito') {
+    const cn = SS.cannocchiale(S, S.c);
+    if (cn && !(P.ui.visti || {})[S.c]) { passaCannocchiale(cn); return; }
+  }
+  renderPlancia(); show('plancia');
+}
+
+/* ======================================================================
+   BILANCIAMENTO
+   ====================================================================== */
+const PARAMETRI = [
+  { k: 'soglia', nome: 'Soglia degli obblighi', desc: 'Carte di un colore (o stadi) da costruire nell’Era per Patti e Patrocini.' },
+  { k: 'pattoLL', nome: 'Patto onorato', desc: 'A testa, se entrambi leali completano.' },
+  { k: 'tradimento', nome: 'Chi tradisce', desc: 'Se il partner leale completa.' },
+  { k: 'tradito', nome: 'Chi viene tradito', desc: 'Leale con un partner traditore.' },
+  { k: 'doppio', nome: 'Doppio tradimento', desc: 'A testa.' },
+  { k: 'patrono', nome: 'Patrono', desc: 'Se il beneficiario raggiunge l’obiettivo.', dip: 'patrocinio' },
+  { k: 'beneficiario', nome: 'Beneficiario', desc: 'Se raggiunge l’obiettivo (le monete restano sue comunque).', dip: 'patrocinio' },
+  { k: 'costoPatrocinio', nome: 'Monete del Patrocinio', desc: 'Passano subito dal patrono al beneficiario.', dip: 'patrocinio' },
+  { k: 'vinta', nome: 'Scommessa vinta', desc: '', dip: 'scommesse' },
+  { k: 'persa', nome: 'Scommessa persa', desc: '', dip: 'scommesse' },
+  { k: 'decreto', nome: 'Decreto', desc: 'A chiunque soddisfi il decreto eletto.' },
+  { k: 'agente', nome: 'Agente Libero', desc: 'Senza relazioni, con carte di almeno 3 colori nell’Era.' },
+  { k: 'missione', nome: 'Missione di società', desc: '', dip: 'societa' },
+  { k: 'timer', nome: 'Timer del Conclave', desc: 'Secondi di trattativa (0 = niente timer).', passo: 30 }
+];
+function presetAttivo() { return SS.PRESET.find(p => Object.keys(p.c).every(k => cfg[k] === p.c[k])); }
+const valPar = (k, v) => k === 'timer' ? (v ? `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}` : 'no') : k === 'soglia' || k === 'costoPatrocinio' ? String(v) : segno(v);
+function renderBil() {
+  const att = presetAttivo();
+  $('presetList').innerHTML = SS.PRESET.map(p => `<button data-p="${p.id}" class="${att && att.id === p.id ? 'on' : ''}"><span class="tag">${p.tag}</span><b>${p.nome}</b><small>${p.desc}</small></button>`).join('');
+  $('parList').innerHTML = PARAMETRI.map(p => {
+    const [lo, hi] = SS.LIMITI[p.k], off = p.dip && !cfg[p.dip];
+    return `<div class="par${off ? ' spento' : ''}"><span><b>${p.nome}</b><small>${off ? 'Modulo spento.' : p.desc}</small></span>
+      <span class="stepper"><button data-k="${p.k}" data-d="-${p.passo || 1}" ${cfg[p.k] <= lo ? 'disabled' : ''} aria-label="Meno">−</button><span class="v num">${valPar(p.k, cfg[p.k])}</span><button data-k="${p.k}" data-d="${p.passo || 1}" ${cfg[p.k] >= hi ? 'disabled' : ''} aria-label="Più">+</button></span></div>`;
+  }).join('');
+  $('storicoInfo').innerHTML = statistiche();
+  $('bilNota').textContent = P && S && S.fase !== 'finita' ? 'La partita in corso tiene le regole con cui è cominciata: le modifiche valgono dalla prossima.' : 'Le modifiche valgono dalla prossima partita.';
+}
+function statistiche() {
+  const st = loadJSON(K_ST, []), L = Array.isArray(st) ? st.filter(x => x && Array.isArray(x.punti)) : [];
+  if (!L.length) return 'Ancora nessuna partita finita su questo telefono. Lo storico dirà quanto spesso si tradisce, quante scommesse riescono e quanto pesa l’espansione: sono i numeri che servono per ritoccare i parametri.';
+  const pc = (a, b) => b ? Math.round(100 * a / b) + '%' : '—';
+  const patti = L.flatMap(x => x.patti || []), sc = L.flatMap(x => x.scommesse || []), pat = L.flatMap(x => x.patrocini || []);
+  const LL = patti.filter(p => p.esito === 'LL').length, LT = patti.filter(p => p.esito === 'LT').length, TT = patti.filter(p => p.esito === 'TT').length, riu = patti.filter(p => p.riuscito).length;
+  const pts = L.flatMap(x => x.punti), media = pts.reduce((a, b) => a + b, 0) / pts.length;
+  const mis = L.flatMap(x => x.missioni || []);
+  let h = `<p style="margin:0 0 8px">Partite finite: <b>${L.length}</b>. Punti dell’espansione: in media <b>${media.toFixed(1)}</b> a testa (da ${Math.min(...pts)} a ${Math.max(...pts)}).</p>`;
+  h += `<p style="margin:0 0 8px">Patti: <b>${patti.length}</b> — leali entrambi ${pc(LL, patti.length)}, un tradimento ${pc(LT, patti.length)}, doppio tradimento ${pc(TT, patti.length)}; riusciti ${pc(riu, patti.length)}.</p>`;
+  if (pat.length) h += `<p style="margin:0 0 8px">Patrocini: <b>${pat.length}</b>, riusciti ${pc(pat.filter(x => x.ok).length, pat.length)}.</p>`;
+  if (sc.length) h += `<p style="margin:0 0 8px">Scommesse: <b>${sc.length}</b>, vinte ${pc(sc.filter(x => x.ok).length, sc.length)}.</p>`;
+  if (mis.length) h += `<p style="margin:0 0 8px">Missioni compiute: ${pc(mis.filter(x => x.ok).length, mis.length)}.</p>`;
+  const consigli = [];
+  if (patti.length >= 8 && TT / patti.length > 0.4) consigli.push('molti doppi tradimenti: alzate «Patto onorato» di 1');
+  if (patti.length >= 8 && LL / patti.length > 0.9) consigli.push('quasi nessuno tradisce: provate «Alta posta»');
+  if (sc.length >= 10 && sc.filter(x => x.ok).length / sc.length > 0.7) consigli.push('le scommesse riescono troppo: scendete a «vinta +2»');
+  if (sc.length >= 10 && sc.filter(x => x.ok).length / sc.length < 0.2) consigli.push('le scommesse non riescono quasi mai: salite a «vinta +4»');
+  h += `<p style="margin:0">${consigli.length ? 'Da provare: ' + consigli.join('; ') + '.' : 'Servono almeno una decina di partite prima di toccare i numeri: con poche partite le percentuali oscillano molto.'}</p>`;
+  return h;
+}
+$('presetList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const p = SS.PRESET.find(x => x.id === b.dataset.p); cfg = SS.configura(Object.assign({}, cfg, p.c)); saveImpo(); renderBil(); });
+$('parList').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; cfg[b.dataset.k] += +b.dataset.d; cfg = SS.configura(cfg); saveImpo(); renderBil(); });
+$('bilBack').onclick = $('bilDone').onclick = () => { renderInizio(); show('inizio'); };
+
+/* ======================================================================
+   PASSA IL TELEFONO, SOCIETÀ, CANNOCCHIALE
+   ====================================================================== */
+let passaOpt = null;
+function passa(g, opt) {
+  passaOpt = opt;
+  $('paKick').textContent = opt.kick || '';
+  $('paSigillo').innerHTML = opt.icona || ICONA.passa;
+  $('paSigillo').style.setProperty('--c', 'var(--viola-2)');
+  $('paNome').textContent = S.nomi[g];
+  $('paNota').innerHTML = opt.nota || 'Solo tu guardi lo schermo.';
+  $('paBtn').textContent = `Tieni premuto: sono ${S.nomi[g]}`;
+  $('paIndietro').hidden = !opt.indietro;
+  show('passa');
+}
+tieniPremuto($('paApri'), () => { if (passaOpt && passaOpt.poi) passaOpt.poi(); }, 650);
+$('paIndietro').onclick = () => { if (passaOpt && passaOpt.indietro) passaOpt.indietro(); };
+
+/* Consegna delle società: una alla volta, in ordine di posto */
+function consegna() {
+  const i = P.ui.consegna || 0;
+  if (i >= S.n) { vai(); return; }
+  passa(i, {
+    kick: `Società segrete · ${i + 1} di ${S.n}`, icona: ICONA.stella,
+    nota: 'Scoprirai la tua <b>società segreta</b>: una missione per fine partita e un potere da usare una volta. Gli altri non guardano.',
+    poi: () => mostraSocieta(i, () => { P.ui.consegna = i + 1; salva(); consegna(); }, true)
+  });
+}
+let segretoRitorno = null, inattivo = null;
+function societaHTML(g) {
+  const v = SS.vistaPrivata(S, g), so = v.societa;
+  return `<div class="soc">
+    <div class="sigillo">${ICO_SOC(so.id)}</div>
+    <div class="kick">La tua società</div>
+    <div class="nm">${esc(so.nome)}</div>
+    <div class="sez"><div class="k">Missione · fine partita · ${segno(S.cfg.missione)}</div><p>${esc(so.missione)}${so.verifica === 'app' ? '<small>La controlla il telefono.</small>' : '<small>Si controlla sulla tua città a fine partita.</small>'}</p></div>
+    <div class="sez"><div class="k">Potere · ${esc(so.potere.nome)} · una volta</div><p>${esc(so.potere.testo)}<small>${so.usato ? 'Già usato.' : 'Si usa dalla cabina del Concilio.'}</small></p></div>
+  </div>`;
+}
+function mostraSocieta(g, dopo, prima) {
+  segretoRitorno = () => { if (prima) consegna(); else vai(); };
+  $('sgTitolo').innerHTML = `<small>${prima ? 'CONSEGNA' : 'PROMEMORIA'}</small>${esc(S.nomi[g])}`;
+  $('sgCorpo').innerHTML = societaHTML(g) + (prima ? '<div class="nota viola" style="margin-top:12px">Tieni la società per te: un potere usato può tradirti, ma è fatto apposta. Puoi rileggerla quando vuoi dal <b>Menu</b> della plancia.</div>' : '');
+  $('sgCopri').textContent = prima ? 'Ho letto: copri e passa' : 'Ho letto: copri';
+  $('sgCopri').onclick = () => { pulisciRiservato(); dopo(); };
+  show('segreto'); sveglia();
+}
+function passaCannocchiale(cn) {
+  passa(cn.chi, {
+    kick: 'Un potere segreto', icona: ICONA.occhio,
+    nota: 'Il telefono ha un messaggio <b>solo per te</b>.',
+    poi: () => {
+      segretoRitorno = () => vai();
+      const T = cn.intento === 'T';
+      $('sgTitolo').innerHTML = `<small>CANNOCCHIALE</small>${esc(S.nomi[cn.chi])}`;
+      $('sgCorpo').innerHTML = `<div class="rivela" style="--c:${T ? 'var(--cera-2)' : 'var(--alloro-2)'}"><div class="sigillo" style="--c:var(--viola-2)">${ICONA.astrolabio}</div>
+        <div class="s">Nel Patto, <b>${esc(S.nomi[cn.bersaglio])}</b> ha scelto</div><div class="t">${T ? 'Traditore' : 'Leale'}</div>
+        <div class="s" style="max-width:32ch;text-align:center;line-height:1.5">Fanne ciò che vuoi: tacere, avvertire qualcuno o ricattare. Nessuno sa che lo sai.</div></div>`;
+      $('sgCopri').textContent = 'Ho letto: copri';
+      $('sgCopri').onclick = () => { P.ui.visti = P.ui.visti || {}; P.ui.visti[S.c] = true; salva(); pulisciRiservato(); vai(); };
+      show('segreto'); sveglia();
+    }
+  });
+}
+function pulisciRiservato() { clearTimeout(inattivo); $('sgCorpo').innerHTML = ''; $('cbCorpo').innerHTML = ''; }
+/* Se il telefono si blocca o si cambia app, tutto ciò che è riservato si copre */
+function chiudiRiservato(msg) {
+  const era = corrente;
+  pulisciRiservato();
+  if (era === 'cabina') prossimaCabina();
+  else if (segretoRitorno) segretoRitorno(); else vai();
+  if (msg) toast(msg);
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && RISERVATE.has(corrente)) chiudiRiservato(); });
+window.addEventListener('pagehide', () => { if (RISERVATE.has(corrente)) chiudiRiservato(); });
+function sveglia() { clearTimeout(inattivo); if (corrente === 'segreto') inattivo = setTimeout(() => chiudiRiservato('Coperto dopo 2 minuti senza tocchi'), 120000); }
+document.addEventListener('pointerdown', sveglia, true);
+
+/* ======================================================================
+   PLANCIA
+   ====================================================================== */
+const TEMPI = ['Era I', 'Conc. II', 'Era II', 'Conc. III', 'Era III', 'Finale'];
+function indiceTempo() {
+  if (S.fase === 'era') return S.era === 1 ? 0 : S.era === 2 ? 2 : 4;
+  if (S.fase === 'conclave') return S.c === 2 ? 1 : 3;
+  if (S.fase === 'verifica') return S.era === 2 ? 2 : 4;
+  return 5;
+}
+let timer = { resto: 0, va: false, t: null, c: null };
+function renderPlancia() {
+  const V = SS.vistaPubblica(S), it = indiceTempo();
+  $('pTempi').innerHTML = TEMPI.map((t, i) => `<i class="${i === it ? 'on' : i < it ? 'fatto' : ''}">${t}</i>`).join('');
+  const f = $('pFase'); f.style.removeProperty('--tc');
+  let h = '';
+  if (S.fase === 'era' && S.era === 1) {
+    h = `<div class="kick">Si gioca</div><div class="t">Era I</div>
+      <div class="l">Giocate l’<b>Era I</b> di 7 Wonders come sempre: niente leggi e niente patti per ora. Il telefono resta al centro.</div>
+      <div class="nota oro">Dopo i conflitti dell’Era I si apre il <b>Conclave II</b>, che scrive la legge dell’Era II.</div>
+      <div class="azioni"><button class="btn hold" id="cFineEra"><i class="fill"></i><span>Tieni premuto: l’Era I è finita</span></button></div>`;
+  } else if (S.fase === 'era' || S.fase === 'verifica') {
+    const I = V.inCorso, ver = S.fase === 'verifica';
+    h = `<div class="kick">${ver ? 'Fine dell’Era' : 'Si gioca'}</div><div class="t">Era ${ROM[I.era]}</div>
+      <div class="l">${ver ? 'Contate le carte della <b>fila dell’Era</b> e rispondete alle domande del telefono.' : 'Giocate l’Era come sempre. La legge e gli accordi qui sotto valgono <b>solo per le carte costruite in quest’Era</b>.'}</div>
+      <div class="blocco"><h3>Legge in vigore</h3>${decretoHTML(I.decreto)}</div>
+      <div class="blocco"><h3>Accordi</h3>${I.relazioni.length ? I.relazioni.map(R => relazioneHTML(R, S.nomi)).join('') : '<p class="recap" style="margin:0">Nessuno: tutti Agenti Liberi.</p>'}${agentiHTML(I.relazioni)}</div>
+      ${ver ? '' : '<div class="nota"><b>Fila dell’Era:</b> tenete le carte costruite in quest’Era sporgenti di un dito (o in una fila a parte) finché il telefono non ha fatto la verifica. Poi si rimettono a posto.</div>'}
+      <div class="azioni">${ver ? '<button class="btn" id="cVerifica">Apri la verifica</button>' : `<button class="btn hold" id="cFineEra"><i class="fill"></i><span>Tieni premuto: l’Era ${ROM[I.era]} è finita</span></button>`}</div>`;
+  } else if (S.fase === 'conclave') {
+    const K = V.conclave;
+    f.style.setProperty('--tc', 'var(--viola)');
+    if (S.sub === 'mercato') {
+      h = `<div class="kick">Concilio</div><div class="t">Conclave ${ROM[K.c]}</div>
+        <div class="l">Tre leggi possibili per l’<b>Era ${ROM[K.c]}</b>. Discutete, promettete, offrite monete, stringete accordi: poi si vota in segreto.</div>
+        <div class="blocco"><h3>Decreti proposti</h3><div class="decreti">${K.decreti.map(id => decretoHTML(id)).join('')}</div></div>
+        ${S.cfg.timer ? `<div class="timer" id="tmBox"><span class="tm" id="tmVal"></span><button class="btn small sec" id="tmVia"></button><button class="btn small sec" id="tmRi" aria-label="Ricomincia">↺</button></div>` : ''}
+        <div class="nota"><b>Tangenti:</b> puoi offrire 1 moneta a qualcuno perché prometta un voto. La moneta passa subito, la promessa non obbliga. Al massimo una data e una ricevuta a Conclave.</div>
+        <div class="blocco"><h3>Accordi registrati</h3>${K.relazioni.length ? K.relazioni.map(R => relazioneHTML(R, S.nomi)).join('') : '<p class="recap" style="margin:0 0 6px">Ancora nessuno.</p>'}${agentiHTML(K.relazioni)}
+          <button class="btn sec" id="cRel" style="margin-top:8px" ${liberi().length < 2 ? 'disabled' : ''}>+ Nuovo ${S.cfg.patrocinio ? 'Patto o Patrocinio' : 'Patto'}</button></div>
+        <div class="azioni"><button class="btn viola hold" id="cUrne"><i class="fill"></i><span>Tieni premuto: chiudi le trattative e vota</span></button></div>`;
+    } else if (S.sub === 'cabina') {
+      const g = K.prossimo;
+      h = `<div class="kick">Conclave ${ROM[K.c]}</div><div class="t">Cabina</div>
+        <div class="l">Uno alla volta, in senso antiorario: voto segreto${S.cfg.scommesse ? ', eventuale scommessa' : ''} e, per chi ha firmato un Patto, Leale o Traditore.</div>
+        <div class="progresso">${K.ordine.map((x, i) => `<i class="${i < K.fatte ? 'on' : ''}"></i>`).join('')}</div>
+        <p class="recap">${K.fatte} schede sigillate su ${S.n}.</p>
+        <div class="azioni"><button class="btn viola" id="cPassa">Passa il telefono a ${esc(S.nomi[g])}</button></div>`;
+    } else {
+      h = `<div class="kick">Conclave ${ROM[K.c]} · urne chiuse</div><div class="t">Il Concilio ha deciso</div>
+        <div class="blocco">${decretoHTML(K.eletto, { grande: true, extra: 'legge dell’Era ' + ROM[K.c] })}</div>
+        ${K.veto ? `<div class="nota" style="border-color:rgba(200,71,63,.45);background:var(--cera-ombra)">${ICONA.lame.replace('<svg', '<svg style="width:18px;height:18px;vertical-align:-4px;margin-right:6px;color:var(--cera-2)"')}La <b>Fratellanza delle Lame</b> ha posto il veto su «${esc(SS.DEC[K.veto].nome)}», che avrebbe vinto.</div>` : ''}
+        <p class="recap" style="margin-top:10px">Chi ha votato cosa resta segreto${S.cfg.scommesse ? ', come le scommesse' : ''}. Le promesse di voto erano solo promesse.</p>
+        <div class="nota oro"><b>Fila dell’Era:</b> durante l’Era ${ROM[K.c]} tenete le carte costruite sporgenti di un dito, o in una fila a parte: a fine Era contano solo quelle.</div>
+        <div class="azioni"><button class="btn" id="cApri">Inizia l’Era ${ROM[K.c]}</button></div>`;
+    }
+  } else if (S.fase === 'missioni') {
+    h = `<div class="kick">Fine dell’Era III</div><div class="t">Società svelate</div>
+      <div class="l">Ognuno scopre la sua società: si controllano le missioni sulle città.</div>
+      <div class="azioni"><button class="btn" id="cMissioni">Controlla le missioni</button></div>`;
+  }
+  f.innerHTML = h;
+  f.classList.remove('cambio'); void f.offsetWidth; f.classList.add('cambio');
+  // punti
+  const R = Object.keys(V.risultati);
+  $('pPuntiPan').hidden = !R.length;
+  if (R.length) $('pPunti').innerHTML = S.nomi.map((nm, g) => `<div class="pp"><div class="nm">${esc(nm)}</div><div class="v num">${segno(V.punti[g])}</div></div>`).join('');
+  $('pAnnulla').disabled = !SS.puoAnnullare(P);
+  // azioni
+  if ($('cFineEra')) tieniPremuto($('cFineEra'), () => { if (fai({ t: 'fineEra' })) { if (S.fase === 'verifica') { renderVerifica(); show('verifica'); } else { timer.c = null; vai(); } } }, 700);
+  if ($('cVerifica')) $('cVerifica').onclick = () => { renderVerifica(); show('verifica'); };
+  if ($('cRel')) $('cRel').onclick = () => apriRelazione();
+  if ($('cUrne')) tieniPremuto($('cUrne'), () => { fermaTimer(); if (fai({ t: 'urne' })) prossimaCabina(); }, 700);
+  if ($('cPassa')) $('cPassa').onclick = () => prossimaCabina();
+  if ($('cApri')) $('cApri').onclick = () => { if (fai({ t: 'apriEra' })) { vai(); toast(`Era ${ROM[S.era]}: buon draft`); } };
+  if ($('cMissioni')) $('cMissioni').onclick = () => { renderMissioni(); show('verifica'); };
+  if ($('tmBox')) preparaTimer();
+}
+function liberi() { return S.fase === 'conclave' ? Array.from({ length: S.n }, (_, g) => g).filter(g => !SS.relazioneDi(S, S.c, g)) : []; }
+function agentiHTML(rel) {
+  const dentro = new Set(rel.flatMap(R => [R.a, R.b])), fuori = S.nomi.filter((_, g) => !dentro.has(g));
+  if (!fuori.length || !rel.length) return '';
+  return `<p class="recap" style="margin:4px 2px 0">Agenti Liberi: <b>${esc(fuori.join(', '))}</b> (${segno(S.cfg.agente)} con carte di almeno 3 colori nell’Era).</p>`;
+}
+/* Timer del Conclave: solo in memoria, riparte a ogni Conclave */
+function preparaTimer() {
+  if (timer.c !== S.c) { fermaTimer(); timer = { resto: S.cfg.timer, va: false, t: null, c: S.c }; }
+  const disegna = () => {
+    const el = $('tmVal'); if (!el) { fermaTimer(); return; }
+    const r = Math.max(0, Math.ceil(timer.resto));
+    el.textContent = `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')}`;
+    $('tmBox').classList.toggle('scaduto', r === 0);
+    $('tmVia').textContent = timer.va ? 'Pausa' : r === 0 ? 'Finito' : timer.resto < S.cfg.timer ? 'Riprendi' : 'Avvia';
+    $('tmVia').disabled = r === 0;
+  };
+  $('tmVia').onclick = () => {
+    if (timer.va) { fermaTimer(); disegna(); return; }
+    timer.va = true; let ultimo = Date.now();
+    timer.t = setInterval(() => {
+      const ora = Date.now(); timer.resto -= (ora - ultimo) / 1000; ultimo = ora;
+      if (timer.resto <= 0) { timer.resto = 0; fermaTimer(); try { navigator.vibrate && navigator.vibrate([180, 80, 180]); } catch (e) {} }
+      disegna();
+    }, 250);
+    disegna();
+  };
+  $('tmRi').onclick = () => { fermaTimer(); timer.resto = S.cfg.timer; disegna(); };
+  disegna();
+}
+function fermaTimer() { clearInterval(timer.t); timer.t = null; timer.va = false; }
+$('pRegole').onclick = () => apriRegole('plancia');
+$('pLog').onclick = () => apriCronologia();
+$('pEsiti').onclick = () => { const k = Math.max(...Object.keys(S.risultati).map(Number)); renderEsito(k, false); show('esito'); };
+tieniPremuto($('pAnnulla'), () => {
+  if (!SS.puoAnnullare(P)) { toast('L’ultima azione non si può annullare'); return; }
+  const t = P.eventi[P.eventi.length - 1].t;
+  P = Object.assign(SS.annulla(P), { ui: P.ui }); salva(); S = SS.stato(P);
+  toast({ fineEra: 'Si torna all’Era in corso', relazione: 'Accordo tolto', urne: 'Trattative riaperte', apriEra: 'Si torna all’esito del Conclave', verifica: 'Verifica da rifare: punti tolti', missioni: 'Missioni da ricontrollare' }[t] || 'Annullato');
+  vai();
+}, 900);
+$('pMenu').onclick = () => {
+  const bt = [];
+  if (S.soc) bt.push({ t: 'Rileggi la tua società', f: () => sceltaRilettura() });
+  if (Object.keys(S.risultati).length) bt.push({ t: 'Rivelazioni dell’ultima Era', cls: 'sec', f: () => $('pEsiti').onclick() });
+  bt.push({ t: 'Torna all’inizio', cls: 'sec', f: () => { fermaTimer(); renderInizio(); show('inizio'); } });
+  bt.push({ t: 'Chiudi', cls: 'sec' });
+  finestra('Menu', `<p style="margin:0">${descriviFase()}</p>`, bt);
+};
+function sceltaRilettura() {
+  finestra('Chi rilegge la società?', `<div class="chips" id="rlChips">${S.nomi.map((nm, g) => `<button class="chip" data-g="${g}">${esc(nm)}</button>`).join('')}</div>`, [{ t: 'Annulla', cls: 'sec' }]);
+  $('rlChips').onclick = e => {
+    const b = e.target.closest('[data-g]'); if (!b) return; $('infoVelo').hidden = true;
+    const g = +b.dataset.g;
+    passa(g, { kick: 'Promemoria', icona: ICO_SOC('x'), nota: 'Solo tu rileggi la tua società.', poi: () => mostraSocieta(g, () => vai(), false), indietro: () => vai() });
+  };
+}
+function apriCronologia() {
+  let h = '<ul class="log">', ult = null;
+  for (const x of S.cronologia) {
+    const k = x.c ? 'Conclave ' + ROM[x.c] : 'Era ' + ROM[x.era];
+    if (k !== ult && x.tipo !== 'era') { h += `<li class="t">${k.toUpperCase()}</li>`; ult = k; }
+    h += `<li class="${x.tipo}">${esc(x.testo)}</li>`;
+  }
+  h += '</ul>';
+  finestra('Cronologia', S.cronologia.length ? h : '<p>Ancora niente.</p>');
+}
+
+/* ---------------- Nuova relazione ---------------- */
+let rel = null;
+function apriRelazione() { rel = { tipo: 'patto', a: null, b: null, oa: null, ob: null }; renderRel(); $('relVelo').hidden = false; }
+function chipsGioc(campo, esclusi) {
+  const L = liberi();
+  return `<div class="chips">${L.map(g => `<button class="chip${rel[campo] === g ? ' on' : ''}" data-c="${campo}" data-g="${g}" ${esclusi.includes(g) ? 'disabled' : ''}>${esc(S.nomi[g])}</button>`).join('')}</div>`;
+}
+function chipsObb(campo) {
+  return `<div class="chips">${SS.obblighi(S.cfg).map(a => `<button class="chip${rel[campo] === a ? ' on' : ''}" data-c="${campo}" data-a="${a}">${pallino(a)}${esc(SS.breve(a))}</button>`).join('')}</div>`;
+}
+function renderRel() {
+  const pat = rel.tipo === 'patrocinio';
+  let h = S.cfg.patrocinio ? `<div class="seg" style="margin-top:12px"><button data-tipo="patto" class="${pat ? '' : 'on'}">Patto</button><button data-tipo="patrocinio" class="${pat ? 'on' : ''}">Patrocinio</button></div>` : '';
+  if (!pat) {
+    h += `<div class="etich">Primo firmatario</div>${chipsGioc('a', rel.b != null ? [rel.b] : [])}`;
+    h += `<div class="etich">Il suo obbligo nell’Era ${ROM[S.c]}</div>${chipsObb('oa')}`;
+    h += `<div class="etich">Secondo firmatario</div>${chipsGioc('b', rel.a != null ? [rel.a] : [])}`;
+    h += `<div class="etich">Il suo obbligo</div>${chipsObb('ob')}`;
+    h += `<div class="nota viola">Il Patto è pubblico, la scelta <b>Leale o Traditore</b> no: ognuno la fa in cabina.${rel.oa && rel.ob ? ` Nome: <b>${esc(SS.nomePatto(rel.oa, rel.ob))}</b>.` : ''}</div>`;
+  } else {
+    h += `<div class="etich">Patrono (paga)</div>${chipsGioc('a', rel.b != null ? [rel.b] : [])}`;
+    h += `<div class="etich">Beneficiario (riceve ${S.cfg.costoPatrocinio} monete)</div>${chipsGioc('b', rel.a != null ? [rel.a] : [])}`;
+    h += `<div class="etich">Obiettivo del beneficiario nell’Era ${ROM[S.c]}</div>${chipsObb('ob')}`;
+    h += `<div class="nota viola">Il patrono consegna <b>adesso</b> ${S.cfg.costoPatrocinio} monete vere al beneficiario: restano sue comunque vada. Se l’obiettivo riesce: patrono ${segno(S.cfg.patrono)}, beneficiario ${segno(S.cfg.beneficiario)}.</div>`;
+  }
+  h += `<div class="nota"><b>Regola delle 3 carte:</b> niente obblighi su un colore in cui quella città ha già 3 o più carte, e niente stadi se alla Meraviglia ne mancano meno di ${S.cfg.soglia}. Controllate le città prima di registrare.</div>`;
+  $('rvCorpo').innerHTML = h;
+  $('rvOk').disabled = !(rel.a != null && rel.b != null && rel.ob && (pat || rel.oa));
+}
+$('rvCorpo').addEventListener('click', e => {
+  const t = e.target.closest('[data-tipo]');
+  if (t) { rel.tipo = t.dataset.tipo; rel.oa = null; renderRel(); return; }
+  const b = e.target.closest('button[data-c]'); if (!b || b.disabled) return;
+  const c = b.dataset.c, v = b.dataset.g != null ? +b.dataset.g : b.dataset.a;
+  rel[c] = rel[c] === v ? null : v; renderRel();
+});
+$('rvChiudi').onclick = () => { $('relVelo').hidden = true; };
+$('relVelo').addEventListener('click', e => { if (e.target.id === 'relVelo') $('relVelo').hidden = true; });
+$('rvOk').onclick = () => {
+  const ev = rel.tipo === 'patto' ? { t: 'relazione', tipo: 'patto', a: rel.a, b: rel.b, oa: rel.oa, ob: rel.ob } : { t: 'relazione', tipo: 'patrocinio', a: rel.a, b: rel.b, ob: rel.ob };
+  if (fai(ev)) { $('relVelo').hidden = true; renderPlancia(); toast(rel.tipo === 'patto' ? 'Patto registrato' : `Patrocinio registrato: ${S.nomi[rel.a]} paga ${S.cfg.costoPatrocinio} monete a ${S.nomi[rel.b]}`); }
+};
+
+/* ======================================================================
+   CABINA
+   ====================================================================== */
+let bozza = null;
+function prossimaCabina() {
+  if (!(S.fase === 'conclave' && S.sub === 'cabina')) { vai(); return; }
+  const g = SS.prossimoInCabina(S), K = S.conclavi[S.c], fatte = Object.keys(K.schede).length;
+  passa(g, {
+    kick: `Cabina del Conclave ${ROM[S.c]} · ${fatte + 1} di ${S.n}`, icona: ICONA.urna,
+    nota: `Voto segreto${S.cfg.scommesse ? ', scommessa facoltativa' : ''}${SS.relazioneDi(S, S.c, g) && SS.relazioneDi(S, S.c, g).R.tipo === 'patto' ? ' e la tua scelta nel Patto' : ''}. Gli altri guardano altrove.`,
+    poi: () => apriCabina(g), indietro: () => { renderPlancia(); show('plancia'); }
+  });
+}
+function apriCabina(g) {
+  bozza = { g, voto: null, sigillo: false, intento: null, sb: null, sa: null, potere: false, pb: null, pv: null, scrut: false };
+  const sc = P.ui.scrut;
+  if (sc && sc.c === S.c && sc.g === g) { bozza.potere = true; bozza.scrut = true; }
+  renderCabina(); show('cabina');
+}
+function renderCabina() {
+  const g = bozza.g, op = SS.opzioniScheda(S, g), v = SS.vistaPrivata(S, g);
+  $('cbTitolo').innerHTML = `<small>CABINA · CONCLAVE ${ROM[S.c]}</small>${esc(S.nomi[g])}`;
+  let h = '';
+  if (v.societa) h += `<div class="mini-soc">${ICO_SOC(v.societa.id)}<div><b>${esc(v.societa.nome)}</b> · ${esc(v.societa.missione)}</div></div>`;
+  // voto
+  h += `<div class="scheda"><h3>Il tuo voto</h3><p>La legge vale per tutti, anche per chi vota contro.</p><div class="decreti">${op.decreti.map(id => decretoHTML(id, { btn: true, on: bozza.voto === id })).join('')}</div>`;
+  if (op.sigillo) h += `<button class="interr${bozza.sigillo ? ' on' : ''}" data-x="sigillo" style="margin-top:8px"><span><b>Sigillo d’Influenza</b><small>+1 al tuo voto. Uno solo per tutta la partita.</small></span><span class="box"></span></button>`;
+  else h += `<p class="recap" style="margin-top:8px">Il tuo Sigillo d’Influenza è già stato usato.</p>`;
+  h += '</div>';
+  // patto
+  if (op.patto) {
+    const pa = op.patto, c = S.cfg, pn = esc(S.nomi[pa.partner]);
+    h += `<div class="scheda viola"><h3>${esc(pa.nome)} con ${pn}</h3><p>Il tuo obbligo: ${reqHTML(pa.mio)} · quello di ${pn}: ${reqHTML(pa.suo)}. La scelta è segreta e non si cambia.</p>
+      <div class="intento"><button class="L${bozza.intento === 'L' ? ' on' : ''}" data-int="L"><b>Leale</b><small>${segno(c.pattoLL)} se completate entrambi<br>${segno(c.tradito)} se ${pn} ti tradisce<br>devi completare il tuo obbligo</small></button>
+      <button class="T${bozza.intento === 'T' ? ' on' : ''}" data-int="T"><b>Traditore</b><small>${segno(c.tradimento)} se ${pn} è leale e completa<br>${segno(c.doppio)} se tradisce anche lui<br>non devi completare niente</small></button></div></div>`;
+  } else if (op.relazione) {
+    const r = op.relazione;
+    h += `<div class="scheda"><h3>Patrocinio</h3><p>${r.ruolo === 'patrono' ? `Hai finanziato <b>${esc(S.nomi[r.partner])}</b>: ${reqHTML(r.suo)}.` : `<b>${esc(S.nomi[r.partner])}</b> ti finanzia: ${reqHTML(r.mio)}.`} Nel Patrocinio non c’è niente da scegliere in segreto.</p></div>`;
+  }
+  // scommessa
+  if (op.scommessa) {
+    const s = op.scommessa;
+    h += `<div class="scheda"><h3>Scommessa di Palazzo</h3><p>Facoltativa. ${segno(S.cfg.vinta)} se si avvera, ${segno(S.cfg.persa)} se no. Si svela a fine Era.</p>
+      <div class="etich" style="margin-top:4px">Su chi</div><div class="chips">${s.bersagli.map(b => `<button class="chip${bozza.sb === b ? ' on' : ''}" data-sb="${b}">${esc(S.nomi[b])}</button>`).join('')}</div>
+      <div class="etich">Che cosa farà nell’Era ${ROM[S.c]}</div><div class="chips">${s.tipi.map(a => `<button class="chip${bozza.sa === a ? ' on' : ''}" data-sa="${a}">${pallino(a)}${esc(SS.breve(a))}</button>`).join('')}</div>
+      ${bozza.sb != null || bozza.sa ? `<p style="margin:10px 0 0;color:var(--testo);font-size:14px">${bozza.sb != null && bozza.sa ? `Scommetti che <b>${esc(S.nomi[bozza.sb])}</b> ${esc(SS.requisito(bozza.sa))} durante l’Era.` : 'Scegli sia la persona sia la previsione.'} <button class="link muto" data-x="noscom">Nessuna scommessa</button></p>` : ''}
+      <p class="recap" style="margin-top:8px">Regola delle 3 carte: niente scommesse su un colore in cui quella città ha già 3 o più carte. Non puoi scommettere su di te né su chi è in accordo con te.</p></div>`;
+  }
+  // potere
+  if (op.potere) {
+    const p = op.potere;
+    h += `<div class="scheda viola"><h3>Potere: ${esc(p.nome)}</h3><p>${esc(p.testo)}</p>`;
+    if (!p.ok) h += `<p class="recap" style="margin:0">${esc(p.motivo)}</p>`;
+    else if (p.id === 'scrutinio') {
+      if (bozza.scrut) { const sc = SS.scrutinio(S); h += `<div class="scrut">${sc.decreti.map((id, i) => `<div><span>${esc(SS.DEC[id].nome)}</span><b class="num">${sc.voti[i]}</b></div>`).join('')}</div><p class="recap">${sc.schede ? `Voti delle ${sc.schede} schede già sigillate, Sigilli compresi.` : 'Sei il primo: nessuna scheda sigillata.'} Il potere è usato.</p>`; }
+      else h += `<button class="btn sec" data-x="scrut">Guarda lo scrutinio (usa il potere)</button>`;
+    } else {
+      h += `<button class="interr viola${bozza.potere ? ' on' : ''}" data-x="potere"><span><b>Usa ora</b><small>Una volta sola in tutta la partita.</small></span><span class="box"></span></button>`;
+      if (bozza.potere && p.id === 'cannocchiale') h += `<div class="etich">Chi guardare</div><div class="chips">${p.bersagli.map(b => `<button class="chip${bozza.pb === b ? ' on' : ''}" data-pb="${b}">${esc(S.nomi[b])}</button>`).join('')}</div>`;
+      if (bozza.potere && p.id === 'veto') h += `<div class="etich">Veto su</div><div class="chips">${op.decreti.map(id => `<button class="chip${bozza.pv === id ? ' on' : ''}" data-pv="${id}">${esc(SS.DEC[id].nome)}</button>`).join('')}</div>`;
+      if (bozza.potere && p.id === 'velo' && !(bozza.sb != null && bozza.sa)) h += `<p class="recap">Il Velo copre una scommessa: scegline una qui sopra.</p>`;
+    }
+    h += '</div>';
+  } else if (v.societa && v.societa.usato) h += `<p class="recap" style="margin:0 2px 10px">Il potere della tua società è già stato usato.</p>`;
+  $('cbCorpo').innerHTML = h;
+  const err = erroreBozza(op);
+  $('cbWarn').hidden = true;
+  $('cbSigilla').disabled = !!err;
+  $('cbSigilla').querySelector('span').textContent = err || 'Tieni premuto: sigilla e copri';
+}
+function erroreBozza(op) {
+  if (!bozza.voto) return 'Scegli un decreto';
+  if (op.patto && !bozza.intento) return 'Scegli Leale o Traditore';
+  if ((bozza.sb != null) !== !!bozza.sa) return 'Completa la scommessa o toglila';
+  if (bozza.potere && op.potere) {
+    if (op.potere.id === 'cannocchiale' && bozza.pb == null) return 'Scegli chi guardare';
+    if (op.potere.id === 'veto' && !bozza.pv) return 'Scegli il decreto del veto';
+    if (op.potere.id === 'velo' && !(bozza.sb != null && bozza.sa)) return 'Il Velo vuole una scommessa';
+  }
+  return '';
+}
+$('cbCorpo').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || !bozza) return;
+  const d = b.dataset;
+  if (d.voto) bozza.voto = d.voto;
+  else if (d.int) bozza.intento = d.int;
+  else if (d.sb != null) bozza.sb = bozza.sb === +d.sb ? null : +d.sb;
+  else if (d.sa) bozza.sa = bozza.sa === d.sa ? null : d.sa;
+  else if (d.pb != null) bozza.pb = +d.pb;
+  else if (d.pv) bozza.pv = d.pv;
+  else if (d.x === 'sigillo') bozza.sigillo = !bozza.sigillo;
+  else if (d.x === 'noscom') { bozza.sb = null; bozza.sa = null; }
+  else if (d.x === 'potere') { bozza.potere = !bozza.potere; if (!bozza.potere) { bozza.pb = null; bozza.pv = null; } }
+  else if (d.x === 'scrut') { bozza.potere = true; bozza.scrut = true; P.ui.scrut = { c: S.c, g: bozza.g }; salva(); }
+  else return;
+  const y = window.scrollY; renderCabina(); window.scrollTo(0, y);
+});
+$('cbCopri').onclick = () => { pulisciRiservato(); bozza = null; prossimaCabina(); };
+tieniPremuto($('cbSigilla'), () => {
+  if (!bozza) return;
+  const op = SS.opzioniScheda(S, bozza.g);
+  if (erroreBozza(op)) return;
+  let potere = null;
+  if (bozza.potere && op.potere) {
+    potere = { id: op.potere.id };
+    if (op.potere.id === 'cannocchiale') potere.bersaglio = bozza.pb;
+    if (op.potere.id === 'veto') potere.decreto = bozza.pv;
+  }
+  const ev = { t: 'scheda', g: bozza.g, voto: bozza.voto, sigillo: bozza.sigillo, intento: op.patto ? bozza.intento : null,
+    scommessa: bozza.sb != null && bozza.sa ? { b: bozza.sb, a: bozza.sa } : null, potere };
+  if (!fai(ev)) return;
+  if (P.ui.scrut && P.ui.scrut.g === bozza.g) delete P.ui.scrut;
+  salva(); pulisciRiservato(); bozza = null;
+  if (S.sub === 'cabina') prossimaCabina();
+  else { vai(); if (corrente === 'plancia') toast('Urne chiuse'); }
+}, 800);
+
+/* ======================================================================
+   VERIFICA DI FINE ERA E MISSIONI
+   ====================================================================== */
+let risposte = {}, modoVer = 'era';
+function renderVerifica() {
+  modoVer = 'era'; risposte = {};
+  const k = S.era, D = SS.domande(S, k);
+  $('veKick').textContent = `Era ${ROM[k]}`;
+  $('veTitolo').textContent = 'Verifica';
+  $('veTesto').innerHTML = `Guardate la <b>fila dell’Era</b> di ognuno: contano solo le carte costruite in quest’Era (non quelle scartate o sotto la Meraviglia). Tocca ciò che è vero.`;
+  const per = S.nomi.map(() => []);
+  D.forEach(q => per[q.g].push(q));
+  $('veCorpo').innerHTML = per.map((qs, g) => `<div class="gioc"><div class="nm">${esc(S.nomi[g])}<small>${qs.length} ${qs.length === 1 ? 'domanda' : 'domande'}</small></div>
+    ${qs.map(q => `<button class="dom" data-k="${esc(q.key)}"><span class="box"></span><span class="tx">${esc(SS.requisito(q.a, true)[0].toUpperCase() + SS.requisito(q.a, true).slice(1))}${q.a === 'vinci' ? '<small>contro entrambi i vicini, nei conflitti di quest’Era</small>' : q.a === 'gialla+6' ? '<small>monete contate adesso, a Era finita</small>' : ''}</span></button>`).join('')}</div>`).join('');
+  $('veOkT').textContent = 'Tieni premuto: conferma e svela';
+}
+function renderMissioni() {
+  modoVer = 'missioni'; risposte = {};
+  $('veKick').textContent = 'Fine partita';
+  $('veTitolo').textContent = 'Missioni';
+  $('veTesto').innerHTML = `Ognuno mostra la sua società. Le missioni con la città si controllano al tavolo; le altre le conosce già il telefono. Missione compiuta: <b>${segno(S.cfg.missione)}</b>.`;
+  $('veCorpo').innerHTML = S.soc.map((id, g) => {
+    const so = SS.SOC[id], app = so.verifica === 'app', ok = app ? SS.missioneApp(S, g) : false;
+    return `<div class="gioc"><div class="nm">${esc(S.nomi[g])}<small style="color:var(--viola-2)">${esc(so.nome)}</small></div>
+      <button class="dom${app ? ' fisso' : ''}${ok ? ' si' : ''}" ${app ? 'disabled' : `data-k="${g}"`}><span class="box"></span><span class="tx">${esc(so.missione)}<small>${app ? (ok ? 'Compiuta: la calcola il telefono.' : 'Non compiuta: la calcola il telefono.') : 'Si controlla sulla città.'}</small></span></button></div>`;
+  }).join('');
+  $('veOkT').textContent = 'Tieni premuto: conferma e chiudi la partita';
+}
+$('veCorpo').addEventListener('click', e => {
+  const b = e.target.closest('button.dom[data-k]'); if (!b) return;
+  const k = b.dataset.k; risposte[k] = !risposte[k]; b.classList.toggle('si', !!risposte[k]);
+});
+$('veBack').onclick = () => { renderPlancia(); show('plancia'); };
+tieniPremuto($('veOk'), () => {
+  if (modoVer === 'era') {
+    const k = S.era;
+    if (fai({ t: 'verifica', r: Object.assign({}, risposte) })) { renderEsito(k, true); show('esito'); }
+  } else {
+    const r = {}; for (const g in risposte) if (risposte[g]) r[g] = true;
+    if (fai({ t: 'missioni', r })) { renderFine(); show('fine'); }
+  }
+}, 900);
+
+/* ---------------- Rivelazioni ---------------- */
+function renderEsito(k, appena) {
+  const R = S.risultati[k], nm = g => esc(S.nomi[g]);
+  $('esKick').textContent = `Era ${ROM[k]}`;
+  let h = `<section class="pan oro fase" style="margin-top:8px"><div class="kick">Fine dell’Era ${ROM[k]}</div><div class="t">Rivelazioni</div><div class="l">Patti, scommesse e poteri escono dall’ombra.</div></section>`;
+  const colpi = [];
+  for (const p of R.patti) {
+    if (p.esito === 'LL') colpi.push(`<div class="colpo lealta">${ICONA.patto}<div><b>${nm(p.a)}</b> e <b>${nm(p.b)}</b> erano entrambi leali.<small>${p.riuscito ? 'Patto onorato.' : 'Ma il Patto non è riuscito: qualcuno non ha completato l’obbligo.'}</small></div></div>`);
+    else if (p.esito === 'TT') colpi.push(`<div class="colpo tradimento">${ICONA.pugnale}<div><b>${nm(p.a)}</b> e <b>${nm(p.b)}</b> si sono traditi a vicenda.</div></div>`);
+    else { const T = p.ia === 'T' ? p.a : p.b, L = p.ia === 'T' ? p.b : p.a; colpi.push(`<div class="colpo tradimento">${ICONA.pugnale}<div><b>${nm(T)}</b> ha tradito <b>${nm(L)}</b>.<small>${(L === p.a ? p.ca : p.cb) ? `${nm(L)} aveva completato: il tradimento ha reso.` : `${nm(L)} non aveva completato: il tradimento non ha reso niente.`}</small></div></div>`); }
+  }
+  for (const s of R.scommesse) colpi.push(`<div class="colpo scommessa">${ICONA.occhio}<div><b>${nm(s.g)}</b> aveva scommesso su <b>${nm(s.b)}</b>: ${reqHTML(s.a)}<small>${s.ok ? 'Previsione giusta.' : 'Previsione sbagliata.'}</small></div></div>`);
+  for (const x of R.righe.filter(x => x.fonte === 'potere')) colpi.push(`<div class="colpo potere">${ICONA.stella}<div><b>${nm(x.g)}</b>: ${esc(x.testo)}.</div></div>`);
+  if (colpi.length) h += `<section class="pan"><h2>Colpi di scena</h2>${colpi.join('')}</section>`;
+  const d = SS.DEC[R.decreto.id];
+  h += `<section class="pan"><h2>Legge: ${esc(d.nome)}</h2><p class="recap" style="margin:0">${R.decreto.soddisfatti.length ? `Premiati: <b>${esc(R.decreto.soddisfatti.map(g => S.nomi[g]).join(', '))}</b> (${segno(S.cfg.decreto)}).` : 'Nessuno l’ha soddisfatta.'}</p></section>`;
+  h += `<section class="pan"><h2>Punti dell’Era ${ROM[k]}</h2>${S.nomi.map((n, g) => {
+    const rr = R.righe.filter(x => x.g === g);
+    return `<div class="gioc" style="background:var(--pozzo)"><div class="nm">${esc(n)}<small>${segno(R.punti[g])} in quest’Era · ${segno(puntiFinoA(k, g))} in tutto</small></div>
+      ${rr.length ? `<ul class="voci">${rr.map(x => `<li><span>${esc(x.testo)}</span><b class="${x.p > 0 ? 'p' : x.p < 0 ? 'n' : 'z'}">${segno(x.p)}</b></li>`).join('')}</ul>` : '<p class="recap" style="margin:0">Niente in quest’Era.</p>'}</div>`;
+  }).join('')}</section>`;
+  $('esCorpo').innerHTML = h;
+  const prossimo = S.fase === 'conclave' ? `Apri il Conclave ${ROM[S.c]}` : S.fase === 'missioni' ? 'Svela le società' : S.fase === 'finita' ? 'Classifica finale' : 'Torna alla plancia';
+  $('esAvanti').textContent = appena ? prossimo : 'Torna alla plancia';
+}
+function puntiFinoA(k, g) { let t = 0; for (const e of [2, 3]) if (e <= k && S.risultati[e]) t += S.risultati[e].punti[g]; return t; }
+$('esAvanti').onclick = () => vai();
+$('esBack').onclick = () => vai();
+
+/* ======================================================================
+   FINE
+   ====================================================================== */
+function renderFine() {
+  const F = SS.finale(S);
+  let h = `<section class="pan oro fase" style="margin-top:8px"><div class="kick">Fine della partita</div><div class="t">Classifica dell’espansione</div>
+    <div class="l">Questi punti <b>si sommano</b> al punteggio normale di 7 Wonders: vince chi ha il totale più alto. Le monete spese o ricevute contano già nella cassa.</div></section>`;
+  let pos = 0, prev = null;
+  h += '<div class="classifica">' + F.map((x, i) => {
+    if (x.punti !== prev) { pos = i + 1; prev = x.punti; }
+    const so = x.soc ? SS.SOC[x.soc] : null;
+    return `<div class="cl${pos === 1 ? ' primo' : ''}"><div class="r"><span class="pos">${pos}</span><span class="nm"><b>${esc(x.nome)}</b>${so ? `<small>${esc(so.nome)}${S.missioni ? (S.missioni[x.g] ? ' · missione compiuta' : ' · missione fallita') : ''}</small>` : ''}</span><span class="v num">${segno(x.punti)}</span></div>
+      <details><summary>Da dove vengono</summary><ul class="voci">${x.voci.map(v => `<li><span>${v.era === 'fine' ? '' : 'Era ' + ROM[v.era] + ' · '}${esc(v.testo)}</span><b class="${v.p > 0 ? 'p' : v.p < 0 ? 'n' : 'z'}">${segno(v.p)}</b></li>`).join('') || '<li><span>Niente</span><b class="z">0</b></li>'}</ul></details></div>`;
+  }).join('') + '</div>';
+  $('fiCorpo').innerHTML = h;
+  $('fi7w').textContent = P.ui.esportato ? 'Già nel conteggio di 7 Wonders: apri' : 'Porta i punti nel conteggio di 7 Wonders';
+  $('fiAnnulla').disabled = !SS.puoAnnullare(P);
+}
+/* Scrive i punti nella riga «Extra» del calcolatore di 7 Wonders della stessa app */
+$('fi7w').onclick = () => {
+  if (P.ui.esportato) { location.href = '../7wonders/'; return; }
+  finestra('Conteggio di 7 Wonders', `<p style="margin:0 0 8px">I punti dell’espansione si aggiungono alla riga <b>Extra</b> di ognuno nel conteggio finale di 7 Wonders (si accende da sola). Chi non c’è ancora viene aggiunto con il suo nome.</p><p class="recap" style="margin:0">Se nella riga Extra avevate già altri punti (Leaders, Cities…), restano e si sommano.</p>`, [
+    { t: 'Aggiungi e apri il conteggio', f: () => esporta() }, { t: 'Annulla', cls: 'sec' }
+  ]);
+};
+function esporta() {
+  let st = loadJSON(K_7W, null);
+  const vuoto = p => !p || (['mil', 'coins', 'won', 'civ', 'com', 'gui', 'ext'].every(k => !p[k]) && !(p.sci && (p.sci.a || p.sci.b || p.sci.c || p.sci.j)));
+  if (!st || !Array.isArray(st.players)) st = { v: 2, players: [], extra: false };
+  if (st.players.length === 1 && vuoto(st.players[0]) && /^Giocatore \d+$/.test(st.players[0].name || '')) st.players = [];
+  const nuovo = name => ({ id: 0, name, mil: 0, coins: 0, won: 0, civ: 0, com: 0, gui: 0, ext: 0, sci: { a: 0, b: 0, c: 0, j: 0 } });
+  S.nomi.forEach((nm, g) => {
+    let p = st.players.find(x => x && chiave(x.name || '') === chiave(nm));
+    if (!p) { p = nuovo(nm); st.players.push(p); }
+    p.ext = (Number.isInteger(p.ext) ? p.ext : 0) + S.punti[g];
+  });
+  st.v = 2; st.extra = true;
+  if (!saveJSON(K_7W, st)) { toast('Il telefono non riesce a salvare'); return; }
+  // il conteggio di 7 Wonders si sta per aprire: lo si segna come usato, se no comune/pulizia.js
+  // (7 giorni senza aprirlo) cancellerebbe i punti appena scritti
+  const uso = loadJSON('gds-ultimo-uso', {});
+  if (uso && typeof uso === 'object' && !Array.isArray(uso)) { uso['giochi/7wonders/'] = Date.now(); saveJSON('gds-ultimo-uso', uso); }
+  P.ui.esportato = true; salva();
+  location.href = '../7wonders/';
+}
+$('fiArch').onclick = () => apriArchivio('fine');
+$('fiNuova').onclick = () => { players = S.nomi.slice(); savePl(); P = null; S = null; try { localStorage.removeItem(K_P); } catch (e) {} renderInizio(); show('inizio'); };
+$('fiRegole').onclick = () => apriRegole('fine');
+tieniPremuto($('fiAnnulla'), () => {
+  if (!SS.puoAnnullare(P)) return;
+  P = Object.assign(SS.annulla(P), { ui: P.ui }); salva(); S = SS.stato(P);
+  if (S.fase === 'missioni') { renderMissioni(); show('verifica'); } else vai();
+  toast('Annullato');
+}, 900);
+
+/* ---------------- Archivio segreto ---------------- */
+let archRitorno = 'fine';
+function apriArchivio(da) {
+  archRitorno = da;
+  const A = SS.archivio(S); if (!A) return;
+  const nm = g => esc(S.nomi[g]);
+  let h = `<section class="pan viola fase" style="margin-top:8px"><div class="kick">A partita finita</div><div class="t">Archivio segreto</div><div class="l">Tutto quello che era nascosto: chi ha votato cosa, chi ha mantenuto le promesse, chi ha usato i poteri.</div></section>`;
+  if (A.soc) h += `<section class="pan"><h2>Società</h2>${A.soc.map((id, g) => `<div class="rel"><span class="ic pat">${ICO_SOC(id)}</span><div class="tx"><small>${esc(SS.SOC[id].nome)}</small><b>${nm(g)}</b> · missione ${A.missioni && A.missioni[g] ? 'compiuta' : 'fallita'}</div></div>`).join('')}</section>`;
+  for (const K of A.conclavi) {
+    const el = K.elezione;
+    h += `<section class="pan"><h2>Conclave ${ROM[K.c]}</h2><table class="tab"><tr><th>Decreto</th><th class="r">Voti</th></tr>${K.decreti.map((id, i) => `<tr><td>${esc(SS.DEC[id].nome)}${id === el.eletto ? ' <b style="color:var(--oro-2)">· eletto</b>' : ''}${el.veto && el.veto.vetato === id ? ' <span class="T">· veto</span>' : ''}</td><td class="r num">${el.voti[i]}</td></tr>`).join('')}</table>
+      ${el.parita && !el.veto ? '<p class="recap">Parità in testa: ha deciso il sorteggio.</p>' : ''}
+      <table class="tab" style="margin-top:10px"><tr><th>Chi</th><th>Scheda</th></tr>${S.nomi.map((_, g) => {
+        const s = K.schede[g]; if (!s) return '';
+        const parti = [`voto <b>${esc(SS.DEC[s.voto].nome)}</b>${s.sigillo ? ' + Sigillo' : ''}${s.potere && s.potere.id === 'voto' ? ' + Pietra' : ''}`];
+        if (s.intento) parti.push(`<span class="${s.intento}">${s.intento === 'L' ? 'Leale' : 'Traditore'}</span>`);
+        if (s.scommessa) parti.push(`scommessa su ${nm(s.scommessa.b)}: ${esc(SS.breve(s.scommessa.a))}`);
+        if (s.potere && s.potere.id !== 'voto') parti.push(`potere: ${esc(SS.SOC[S.soc[g]].potere.nome)}${s.potere.bersaglio != null ? ' su ' + nm(s.potere.bersaglio) : ''}${s.potere.decreto ? ' su ' + esc(SS.DEC[s.potere.decreto].nome) : ''}`);
+        return `<tr><td>${nm(g)}</td><td>${parti.join(' · ')}</td></tr>`;
+      }).join('')}</table></section>`;
+  }
+  $('arCorpo').innerHTML = h;
+  show('archivio');
+}
+$('arBack').onclick = $('arBack2').onclick = () => { if (archRitorno === 'inizio') { renderInizio(); show('inizio'); } else { renderFine(); show('fine'); } };
+
+/* ======================================================================
+   REGOLAMENTO
+   ====================================================================== */
+let regRitorno = 'inizio';
+function apriRegole(da) { regRitorno = da; $('regoleTesto').innerHTML = htmlRegole(); show('regole'); }
+$('regBack').onclick = $('regBack2').onclick = () => { if (regRitorno === 'inizio') { renderInizio(); show('inizio'); } else if (regRitorno === 'fine') { renderFine(); show('fine'); } else vai(); };
+$('regoleTesto').addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); const el = document.getElementById(a.getAttribute('href').slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth' }); });
+function htmlRegole() {
+  const c = S && corrente !== 'inizio' ? S.cfg : cfg;
+  const cap = (id, n, t) => `<h3 id="r-${id}"><span class="k">CAPITOLO ${n}</span>${t}</h3>`;
+  const CAP = [['idea', 'L’idea'], ['partita', 'Come va una partita'], ['concilio', 'Il Concilio'], ['decreti', 'I decreti'], ['patti', 'I Patti'], ['patrocinio', 'Patrocinio e Agente Libero'], ['scommesse', 'Scommesse di Palazzo'], ['societa', 'Le società segrete'], ['telefono', 'Un solo telefono'], ['verifica', 'Fine Era e casi limite'], ['bilanciamento', 'Scelte di bilanciamento'], ['playtest', 'Cosa osservare']];
+  let h = `<p>Espansione amatoriale per <b>7 Wonders</b>, nata da una proposta e ribilanciata. Non aggiunge carte e non cambia il draft: aggiunge un livello di diplomazia sopra la partita normale.</p><div class="indice">${CAP.map((x, i) => `<a href="#r-${x[0]}"><span>${i + 1}</span>${x[1]}</a>`).join('')}</div>`;
+  h += cap('idea', 1, 'L’idea') + `<p>Tre Ere di 7 Wonders come sempre. Tra un’Era e l’altra si riunisce un <b>Concilio</b> che vota una legge per l’Era successiva, e ci si accorda con chiunque al tavolo, non solo con i vicini: <b>Patti</b> da onorare o tradire, <b>Patrocini</b> per comprare le scelte di un altro, <b>scommesse</b> sulle sue costruzioni. Ognuno ha in più una <b>società segreta</b> con una missione e un potere.</p>
+    <p>I punti dell’espansione <b>si sommano</b> al punteggio normale. Le monete che passano di mano sono quelle vere del gioco.</p>`;
+  h += cap('partita', 2, 'Come va una partita') + `<div class="flusso">
+    <div class="p"><span class="l">0</span><div><b>Preparazione</b><small>Nomi nell’ordine dei posti, in senso antiorario. Il telefono consegna a ognuno, in segreto, la sua società.</small></div></div>
+    <div class="p"><span class="l">I</span><div><b>Era I</b><small>Normale, senza leggi né accordi.</small></div></div>
+    <div class="p c"><span class="l">C II</span><div><b>Conclave II</b><small>Tre decreti proposti, trattative con timer, accordi pubblici, poi la cabina: ognuno vota in segreto. Si annuncia solo la legge eletta.</small></div></div>
+    <div class="p"><span class="l">II</span><div><b>Era II</b><small>Si gioca con la legge e gli accordi in vigore. Le carte dell’Era si tengono nella «fila dell’Era».</small></div></div>
+    <div class="p"><span class="l">✓</span><div><b>Verifica</b><small>Poche domande sì/no per giocatore, poi si svelano tradimenti e scommesse e si assegnano i punti.</small></div></div>
+    <div class="p c"><span class="l">C III</span><div><b>Conclave III</b><small>Come il II, per l’Era III.</small></div></div>
+    <div class="p"><span class="l">III</span><div><b>Era III e verifica</b><small>Come l’Era II.</small></div></div>
+    <div class="p"><span class="l">★</span><div><b>Finale</b><small>Si svelano le società e si controllano le missioni. Classifica dell’espansione, da sommare a quella normale.</small></div></div></div>`;
+  h += cap('concilio', 3, 'Il Concilio') + `<p>Il telefono propone <b>tre decreti</b>, uno per famiglia (Sapere e commercio, Potenza, Intrigo e varietà), validi per l’Era che sta per cominciare. Il decreto eletto dà <b>${segno(c.decreto)}</b> a <b>chiunque</b> lo soddisfi in quell’Era, anche a chi ha votato contro: vincere il voto non basta, conta chi è pronto a sfruttarlo.</p>
+    <ul><li><b>Un voto segreto a testa</b>, in cabina.</li>
+    <li><b>Sigillo d’Influenza:</b> una volta per partita aggiungi +1 al tuo voto. È segreto anche quello.</li>
+    <li><b>Tangenti:</b> puoi offrire 1 moneta vera a qualcuno perché prometta un voto. La moneta passa subito, la promessa non obbliga. Al massimo una offerta data e una ricevuta a Conclave.</li>
+    <li><b>Parità:</b> decide un sorteggio fatto dal telefono a inizio partita. Si annuncia solo la legge eletta, mai i conteggi (si vedono nell’archivio a fine partita).</li></ul>
+    <div class="box oro"><p><b>Regola d’oro.</b> Un decreto non cambia mai risorse, costi, scudi, scienza o monete: aggiunge solo punti verificabili a fine Era, e conta solo ciò che si costruisce <b>dopo</b> l’elezione.</p></div>`;
+  h += cap('decreti', 4, 'I decreti') + `<table><tr><th>Decreto</th><th>${segno(c.decreto)} a chi…</th><th>Ere</th></tr>${SS.DECRETI.map(d => `<tr><td><b>${esc(d.nome)}</b><br><span class="didas">${esc(SS.FAMIGLIE[d.fam])}</span></td><td>${esc(SS.requisito(d.req))}</td><td>${d.ere.map(e => ROM[e]).join(', ')}</td></tr>`).join('')}</table>
+    <p class="didas">I tre decreti del Conclave III non ripetono quelli del Conclave II. «Tregua Sacra» premia chi rinuncia alle carte rosse: in un’Era di pace i conflitti si giocano lo stesso.</p>`;
+  h += cap('patti', 5, 'I Patti') + `<p>Durante il Mercato due giocatori qualsiasi possono firmare un Patto: ognuno sceglie <b>il proprio obbligo</b> per l’Era, cioè costruire almeno <b>${c.soglia} ${c.soglia === 1 ? 'carta' : 'carte'} di un colore</b> (verde, blu, rossa, gialla) o almeno <b>${c.soglia} ${c.soglia === 1 ? 'stadio' : 'stadi'} della Meraviglia</b>. Il Patto si registra in pubblico; in cabina ognuno sceglie in segreto <b>Leale</b> o <b>Traditore</b>, e non si torna indietro.</p>
+    <div class="matrice"><div class="h"></div><div class="h">PARTNER LEALE</div><div class="h">PARTNER TRADITORE</div>
+      <div class="h">LEALE</div><div><b>${segno(c.pattoLL)}</b><br>se completate entrambi<br><span class="didas">0 se uno non completa</span></div><div><b class="T">${segno(c.tradito)}</b><br>comunque vada</div>
+      <div class="h">TRADITORE</div><div><b>${segno(c.tradimento)}</b><br>se il partner completa<br><span class="didas">0 se non completa</span></div><div><b class="T">${segno(c.doppio)}</b><br>a testa</div></div>
+    <p>Chi tradisce non deve completare niente: incassa sullo sforzo dell’altro. Chi è leale e sospetta un tradimento può <b>smettere di completare</b>: prende comunque ${segno(c.tradito)}, ma toglie il premio al traditore.</p>
+    <div class="box"><p><b>Regola delle 3 carte.</b> Nessuno si impegna su un colore in cui la sua città ha già 3 o più carte, né su stadi che la sua Meraviglia non ha più. Un Patto su ciò che faresti comunque non cambia nessuna scelta: deve costare qualcosa.</p></div>
+    <p>Ognuno può avere <b>una sola relazione per Era</b> (un Patto o un Patrocinio).</p>`;
+  h += cap('patrocinio', 6, 'Patrocinio e Agente Libero') + (c.patrocinio ? `<p><b>Patrocinio.</b> Il patrono paga subito <b>${c.costoPatrocinio} monete vere</b> a un altro giocatore e gli assegna un obiettivo (stesso menu dei Patti). Se il beneficiario lo raggiunge: patrono <b>${segno(c.patrono)}</b>, beneficiario <b>${segno(c.beneficiario)}</b>. Se no, nessun punto, e le monete restano al beneficiario. Non c’è Leale/Traditore: il rischio è che l’altro intaschi e faccia altro.</p>
+    <p class="didas">Le monete non sono punti: valgono 1 punto ogni 3 a fine partita, ma prima comprano risorse. Pagare un vicino perché costruisca blu invece di rosso è anche un modo di comprare pace.</p>` : '<p>Il Patrocinio è spento in questa configurazione.</p>') +
+    `<p><b>Agente Libero.</b> Chi non ha relazioni in un’Era prende <b>${segno(c.agente)}</b> se costruisce carte di almeno 3 colori diversi. È un ripiego dignitoso, non un’alternativa a un buon accordo: con un numero dispari qualcuno resta fuori.</p>`;
+  h += cap('scommesse', 7, 'Scommesse di Palazzo') + (c.scommesse ? `<p>In cabina puoi fare <b>una previsione</b> su un altro giocatore per l’Era che comincia: almeno 2 carte verdi, blu, rosse o gialle, almeno 2 stadi, oppure la vittoria in entrambi i conflitti. Vinta <b>${segno(c.vinta)}</b>, persa <b>${segno(c.persa)}</b>.</p>
+    <ul><li>Mai su te stesso, né su chi è in accordo con te in quell’Era.</li><li>Regola delle 3 carte anche qui: niente scommesse su un colore in cui il bersaglio ha già 3 o più carte.</li><li>La scommessa resta segreta fino alla verifica, poi si svela.</li></ul>
+    <p class="didas">Nella proposta originale si pagava anche 1 moneta alla banca: pagando davanti a tutti si scopriva chi aveva scommesso, quindi il costo è diventato solo la penalità in punti.</p>` : '<p>Le scommesse sono spente in questa configurazione.</p>');
+  h += cap('societa', 8, 'Le società segrete') + (c.societa ? `<p>All’inizio il telefono consegna a ognuno, in segreto, una società diversa. La <b>missione</b> vale <b>${segno(c.missione)}</b> a fine partita; il <b>potere</b> si usa <b>una volta</b>, dalla cabina. Usare un potere può far capire chi sei: fa parte del gioco.</p>
+    <table><tr><th>Società</th><th>Missione · Potere</th></tr>${SS.SOCIETA.filter(s => !s.richiede || c[s.richiede]).map(s => `<tr><td><b>${esc(s.nome)}</b></td><td>${esc(s.missione)}<br><span class="didas"><b>${esc(s.potere.nome)}:</b> ${esc(s.potere.testo)}</span></td></tr>`).join('')}</table>` : '<p>Le società sono spente in questa configurazione.</p>');
+  h += cap('telefono', 9, 'Un solo telefono') + `<p>Il telefono sta al centro e passa di mano solo in cabina e alla consegna delle società. Ogni passaggio ha una schermata neutra con il nome di chi deve prenderlo: si apre <b>tenendo premuto</b>. Le schermate riservate si coprono da sole se il telefono si blocca o resta fermo.</p>
+    <div class="box viola"><p>Privato non vuol dire inviolabile: chi sbircia di proposito ci riesce. Il gioco si regge sulla buona educazione al tavolo.</p></div>
+    <p>Si può annullare l’ultima azione pubblica (un accordo, l’apertura delle urne, una verifica). Una scheda sigillata invece non si riapre.</p>`;
+  h += cap('verifica', 10, 'Fine Era e casi limite') + `<ul><li><b>Fila dell’Era:</b> durante l’Era II e III tenete le carte costruite sporgenti o in una fila a parte; dopo la verifica si rimettono a posto. Così «costruite in quest’Era» si conta a colpo d’occhio.</li>
+    <li><b>Costruire</b> vuol dire mettere la carta nella città: non contano carte scartate, sotto la Meraviglia o rimaste in mano. Gli stadi si contano sulla plancia.</li>
+    <li><b>Conflitti:</b> solo quelli terrestri del gioco base (con i modificatori delle espansioni fisiche, se le usate). Leggi e Patti non toccano mai gli scudi.</li>
+    <li>Il telefono chiede <b>tutti</b> gli obblighi, anche dei traditori, così le domande non svelano niente prima del tempo.</li>
+    <li><b>Monete insufficienti:</b> niente Patrocinio senza poterlo pagare; le tangenti non sono mai obbligatorie.</li>
+    <li><b>Pareggio finale:</b> si usa lo spareggio della vostra versione di 7 Wonders, dopo aver sommato i punti dell’espansione. A fine partita il telefono può scrivere i punti nella riga Extra del conteggio di 7 Wonders.</li>
+    <li>Con <b>Leaders, Cities, Armada, Edifice</b> l’espansione non cambia i loro sottosistemi: debiti, diplomazia e guerre navali restano come sono.</li></ul>`;
+  h += cap('bilanciamento', 11, 'Scelte di bilanciamento') + `<p>Rispetto alla proposta originale sono cambiati alcuni numeri. Il motivo principale è matematico.</p>
+    <h4>Il Patto originale non era un dilemma</h4>
+    <p>Sia π la probabilità che il partner sia leale, q quella che, se leale, completi, e c quanto ti costa (in punti) completare il tuo obbligo. Con premio R per Leale/Leale, Tm per il traditore, S per il tradito e P per il doppio tradimento, il vantaggio della lealtà è</p>
+    <div class="f">Δ = E[Leale] − E[Traditore] = π·q·(R − Tm) + (1 − π)·(S − P) − c</div>
+    <p>Con i numeri originali (R = 3, Tm = 2, S = 0, P = −1) e q = 1 viene <b>Δ = 1 − c</b>: non dipende da π. Tradire o no era una scelta solitaria («mi costa più di un punto completare?»), e la fiducia nel partner non contava niente.</p>
+    <p>Con i numeri nuovi (R = ${c.pattoLL}, Tm = ${c.tradimento}, S = ${c.tradito}, P = ${c.doppio}) viene <b>Δ = ${c.pattoLL - c.tradimento}·π·q ${c.tradito - c.doppio === 0 ? '' : (c.tradito - c.doppio > 0 ? '+ ' : '− ') + Math.abs(c.tradito - c.doppio) + '·(1 − π) '}− c</b>: conviene essere leali solo se ti fidi abbastanza. È una <b>caccia al cervo</b>: due equilibri, cooperare conviene a entrambi, ma solo se ci si fida.</p>
+    <p class="didas">Contando il distacco dagli altri invece dei punti assoluti, a 3 giocatori il Patto diventa un vero dilemma del prigioniero (tradire il proprio unico rivale conviene sempre); da 4 in su resta una caccia al cervo, con una soglia di fiducia che scende col numero di giocatori. Conti in <b>prove/societa.bilanciamento.js</b>.</p>
+    <h4>Obblighi da 2 carte</h4>
+    <p>Con un draft a caso, «almeno 1 carta di un colore in un’Era» succede in circa 2 casi su 3 o più, «almeno 2» in circa 1 su 4–5 (stima grezza su un modello semplice, da confermare giocando). Un obbligo da 1 carta di solito non sposta il draft; da 2 sì.</p>
+    <h4>Altro</h4>
+    <ul><li><b>Agente Libero</b> ${segno(c.agente)} con 3 colori: con +2 rendeva più di un Patto rischioso e nessuno avrebbe firmato.</li>
+    <li><b>Scommesse senza moneta:</b> pagarla in pubblico svelava chi aveva scommesso.</li>
+    <li><b>Decreti</b> con soglie da 2 carte e una «Tregua Sacra»: un decreto che tutti soddisfano non sposta niente.</li>
+    <li><b>Società</b> che non dipendono da moduli spenti (la Società del Velo esce solo con le scommesse), così bastano fino a 8 giocatori.</li></ul>
+    <p>In <b>Bilanciamento</b> ci sono anche i numeri della proposta, per confrontare.</p>`;
+  h += cap('playtest', 12, 'Cosa osservare') + `<p>Il telefono salva un riassunto di ogni partita (si vede in Bilanciamento). Domande da farsi dopo qualche serata:</p>
+    <ul><li>Un Patto vi ha mai fatto rinunciare a una carta migliore? Se no, gli obblighi sono troppo facili.</li>
+    <li>Quanti Patti finiscono in tradimento? Molti doppi tradimenti: alzare il premio del Patto onorato. Nessun tradimento mai: provare «Alta posta».</li>
+    <li>Le scommesse riescono più di 7 volte su 10? Troppo facili. Meno di 2 su 10? Troppo difficili.</li>
+    <li>Quanto dura un Conclave? L’obiettivo è stare sotto i 5 minuti.</li>
+    <li>I punti dell’espansione decidono la partita da soli? Dovrebbero permettere rimonte, non cancellare il draft.</li></ul>`;
+  return h;
+}
+
+/* ---------------- Avvio ---------------- */
+vai();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

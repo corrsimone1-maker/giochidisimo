@@ -21,6 +21,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Expansions | Secret Hitler: Dossier (espansione per il gioco fisico: ruoli dal telefono, un indizio logico vero a testa, rapporti al Presidente, poteri liberali a scelta tra Voto segreto, Testimone, Inchiesta e Confronto, Voltagabbana facoltativo, indagine ed esecuzione) | `giochi/dossier/` |
 | Expansions | Camel Up: Economics (espansione per Camel Up 2ª edizione: il telefono fa da piramide con sequenza dei dadi fissata a inizio tappa e impronta SHA-256 verificabile, asta segreta per una licenza di spionaggio con tre domande, Borsa LMSR sul vincitore di tappa con prezzi d’apertura dalla classifica, portafogli, liquidazione, punteggio finale sterline + guadagno in Borsa / 10) | `giochi/camelup/` (logica in `motore.js`, prove in `prove/camelup.test.js`, simulazioni in `prove/camelup.bilanciamento.js`) |
 | Expansions | Nome in Codice: Double Agents (espansione per Codenames, «Nome in Codice» in italiano: due mappe segrete diverse generate dal telefono, 3 doppi agenti condivisi che conquista chi li tocca per primo, punti intelligence fino a 7 con bonus di coppia, intercettazioni a sorpresa sulla prima scelta avversaria, messaggi criptati da 1 o 2, un’indagine segreta, annulla onesto, debriefing con tutti i segreti, regolamento illustrato) | `giochi/codenames/` (logica in `motore.js`, prove in `prove/codenames.test.js` e `prove/codenames.pagina.test.js`, simulazioni in `prove/codenames.bilanciamento.js`) |
+| Expansions | 7 Wonders: Secret Societies (espansione per 7 Wonders con un solo telefono: società segrete con missione e potere, Concilio che vota una legge per l’Era II e III con Sigillo e veto, Patti pubblici con scelta segreta Leale/Traditore ribilanciati come «caccia al cervo», Patrocini, scommesse sulle costruzioni degli altri, verifica sì/no a fine Era, rivelazioni, archivio segreto, punti portati nel conteggio di 7 Wonders) | `giochi/societa/` (logica in `motore.js`, prove in `prove/societa.test.js` e `prove/societa.pagina.test.js`, conti in `prove/societa.bilanciamento.js`) |
 
 > Le istruzioni complete per Claude (dove mettere parole e ruoli, convenzioni, come provare e pubblicare)
 > sono in [`CLAUDE.md`](CLAUDE.md).
@@ -55,7 +56,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents, Claude Machine:** le partite e le impostazioni stanno sul
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies, Claude Machine:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
 - **Poker:**
   - ogni tavolo sta su tre server MQTT pubblici e gratuiti (un messaggio per tavolo, sovrascritto a ogni mossa) e in

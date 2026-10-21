@@ -54,6 +54,7 @@ self.GIOCHI = {
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0', dati: ['gds-chiinizia'] },
     { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#08E8DE', dati: ['gds-dossier', 'gds-dossier-partita', 'gds-giocatori'] },
     { categoria: 'expansions', nome: 'Camel Up: Economics', descrizione: 'Piramide digitale, spionaggio sui dadi e Borsa sul vincitore di tappa', link: 'giochi/camelup/', colore: '#C8A273', extra: ['giochi/camelup/motore.js'], dati: ['gds-camelup', 'gds-camelup-partita', 'gds-giocatori'] },
-    { categoria: 'expansions', nome: 'Nome\u00A0in\u00A0Codice: Double\u00A0Agents', descrizione: 'Due mappe segrete, doppi agenti contesi, intercettazioni e messaggi criptati', link: 'giochi/codenames/', colore: '#B7E449', extra: ['giochi/codenames/motore.js'], dati: ['gds-codenames', 'gds-codenames-partita'] }
+    { categoria: 'expansions', nome: 'Nome\u00A0in\u00A0Codice: Double\u00A0Agents', descrizione: 'Due mappe segrete, doppi agenti contesi, intercettazioni e messaggi criptati', link: 'giochi/codenames/', colore: '#B7E449', extra: ['giochi/codenames/motore.js'], dati: ['gds-codenames', 'gds-codenames-partita'] },
+    { categoria: 'expansions', nome: '7\u00A0Wonders: Secret\u00A0Societies', descrizione: 'Concilio, patti da onorare o tradire, scommesse e società segrete', link: 'giochi/societa/', colore: '#9B4DDB', extra: ['giochi/societa/motore.js'], dati: ['gds-societa', 'gds-societa-partita', 'gds-giocatori'] }
   ]
 };
