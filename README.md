@@ -14,6 +14,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Giochi | Lupus (30 ruoli tra cui scegliere, distribuzione segreta, scaletta della notte per il narratore) | `giochi/lupus/` (ruoli in `ruoli.js`) |
 | Giochi | Perudo (i propri dadi sotto il bicchiere: si guarda tenendo premuto, si mescola tenendo premuto, −1 dado, calza) | `giochi/perudo/` |
 | Giochi | Hex ad Aste (Hex in cui ogni pedina si conquista con un’asta di carte vere: l’app gestisce solo la scacchiera; si sceglie a mano chi ha vinto l’asta, Pareggio e gettone di priorità, annulla tenendo premuto, 5×5–11×11, mazzo francese o italiano, regolamento con schemi) | `giochi/hex/` |
+| Giochi | Claude Machine (deduzione alla Turing Machine: un codice segreto di tre cifre e 4–6 verificatori che controllano in segreto una regola ciascuno; livelli Medio, Difficile e Insano con carte «malate» e carte doppie; collaborativa o versus, con un telefono che gira o ognuno col suo in una stanza che si chiude e si cancella) | `giochi/machine/` (logica in `motore.js`, prove in `prove/machine.test.js` e `prove/machine.stanze.test.js`) |
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
@@ -54,7 +55,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents:** le partite e le impostazioni stanno sul
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents, Claude Machine:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
 - **Poker:**
   - ogni tavolo sta su tre server MQTT pubblici e gratuiti (un messaggio per tavolo, sovrascritto a ogni mossa) e in
@@ -62,6 +63,8 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
   - «Chiudi il tavolo» nel menu mostra a tutti la classifica finale e cancella il tavolo dai telefoni, mentre sui
     server resta solo la classifica (meno di 1 KB);
   - le copie dei tavoli fermi da più di 7 giorni si cancellano da sole.
+- **Claude Machine, stanze:** ogni stanza sta sugli stessi tre server MQTT del poker; «Chiudi e cancella» la cancella
+  per tutti (resta solo una lapide vuota, che scade dopo un giorno) e comunque i server la cancellano da soli dopo 12 ore.
 - **Pulizia:**
   - un gioco non aperto da più di 7 giorni torna come nuovo: via nomi, squadre, impostazioni e partita;
   - il tasto «Pulisci tutto» in fondo alla home (da tenere premuto) lo fa subito per tutti i giochi;

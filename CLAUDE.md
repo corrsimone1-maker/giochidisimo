@@ -41,7 +41,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
-- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste);
+- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
@@ -123,7 +123,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
-     Nome in Codice: Double Agents verde acido `#B7E449`);
+     Nome in Codice: Double Agents verde acido `#B7E449`, Claude Machine cartoncino `#E6DAC0`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -154,13 +154,14 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Niente schermate intermedie** di impostazioni se non le chiede: si entra subito nel gioco, e le impostazioni stanno in un tasto piccolo.
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:
-  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier e Camel Up: Economics);
+  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics e il versus a un telefono di Claude Machine);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
   - `gds-codenames` (`cfg` e `primo`), `gds-codenames-partita` (partita: mappa segreta ed eventi), `gds-codenames-storico` (risultati, per bilanciare);
+  - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
@@ -280,6 +281,46 @@ da sola chi muove; dopo ogni pedina torna su «Chi ha vinto l'asta?».
 - Il regolamento sta in `renderRegole()` e segue colori e mazzo scelti: se cambi una meccanica, aggiornalo lì.
 - **Verifica:** se tocchi la geometria, controlla che le adiacenze ricavate dai poligoni disegnati (due vertici in comune)
   coincidano con `vicini()` e che su scacchiere piene a caso ci sia sempre esattamente un vincitore.
+
+### Claude Machine → `giochi/machine/`
+
+Gioco di deduzione ispirato a Turing Machine, nome scelto da Simo. Tema «schede perforate» scuro (cartoncino `#E6DAC0` per
+la scheda di prova e le testate dei verificatori, nastro con i fori per lo storico; font Saira Stencil One, Martian Mono e
+Figtree solo in questa pagina). Codice segreto di tre cifre da 1 a 5: blu ▲, giallo ■, viola ●.
+- **`motore.js`** (in `extra`): carte, generatore, regole del round, senza pagina (`self.CM`, o `require` da node).
+  - Carta = criterio con le sue regole; `tipo` `classico` o `malato`; due carte dello stesso `gruppo` non stanno mai nello
+    stesso puzzle (dicono quasi la stessa cosa, per esempio «somma multipla di 3» e «numero multiplo di 3»). Gli `id` finiscono
+    nelle stanze: non si cambiano. Nei testi `{b}` `{g}` `{v}` diventano le forme colorate.
+  - Puzzle `{ v: 1, livello, ver: [{ carte: [id] | [id, id], vera }], codice }`; `vera` indicizza le regole delle carte del
+    verificatore, in ordine. Garanzie controllate da `genera()` e `controlla()`: (U) codice unico, (N) nessun verificatore
+    inutile, (D) dalle sole carte restano almeno 2 codici (serve almeno una domanda).
+  - `LIVELLI`: Medio 4 verificatori classici; Difficile 5 con 2–3 carte malate; Insano 6 verificatori con **due carte** ciascuno
+    (la regola vera viene da una sola) e 7–12 carte malate. `candidati` = quanti codici restano ragionando solo sulle carte
+    (Medio 2–6, Difficile 4–12, Insano 8–40): è la manopola della difficoltà.
+  - Per aggiungere una carta: `aggiungi(...)` nel blocco giusto, poi `node prove/machine.test.js`, che ricontrolla tutto da zero.
+- **Modalità** (`S.loc`, `S.vs`, `S.st` nella pagina):
+  - collaborativa con un telefono (anche da soli): una dichiarazione sbagliata perde la partita;
+  - versus con un telefono che gira in senso antiorario: schede private aperte tenendo premuto, che si richiudono se il telefono
+    si blocca; le dichiarazioni si scoprono a fine round con `CM.fineRound` (meno domande vince, chi sbaglia è eliminato, l'ultimo
+    rimasto vince);
+  - stanze (ognuno col suo): collaborativa con nastro unico di squadra; versus in contemporanea, il round si chiude quando tutti
+    hanno finito. Lo stato del versus si ricava da quello di tutti (`statoVersus`), uguale su ogni telefono.
+- **Stanze** su tre broker MQTT pubblici (gli stessi del poker), topic `claude-machine/v1/<C>/meta` (scritto una volta da chi
+  crea: modo, livello, puzzle, host, t) e `claude-machine/v1/<C>/g/<pid>` (stato di ogni giocatore, scritto solo dal suo
+  telefono, con `n` crescente). MQTT 5 con `messageExpiryInterval`: 12 ore la stanza, 24 la lapide; se un server rifiuta la
+  versione 5 si ricollega in 3.1.1 e lì vale solo la scadenza controllata dall'app.
+  - **Chiudi e cancella** (tenendo premuto, per chiunque nella stanza): lapide `{ chiusa, t, prossima? }` sul meta e messaggio
+    vuoto su ogni giocatore, su tutti i server. Chi la riceve svuota il suo topic ed esce. Un telefono scrive il suo stato solo
+    dopo aver visto il meta aperto, quindi una stanza chiusa non si riapre; chi l'ha creata la riscrive su un server che l'ha
+    persa solo nei primi 2 minuti o se un altro server la mostra ancora aperta.
+  - «Nuova partita» a fine partita (solo chi ha creato la stanza): crea una stanza nuova e chiude la vecchia con `prossima`, così
+    gli altri telefoni passano da soli alla nuova.
+  - Le stanze di questo telefono stanno in `gds-machine-stanze` (con `pid`, per rientrare come prima); in Impostazioni si
+    rientra o si cancellano tenendo premuto; quelle con più di 12 ore si cancellano da sole all'apertura della pagina.
+- **Prove:** `node prove/machine.test.js` (carte, puzzle ricontrollati da zero, `fineRound`); nel browser
+  `prove/machine.stanze.test.js` (serve `python3 -m http.server 8765`; broker finti in node, un contesto per telefono;
+  con `SCATTI=cartella` salva gli screenshot). Se cambi stanze, round o chiusura, aggiungi un caso.
+- Il regolamento sta in `htmlRegole()`: se cambi una meccanica, aggiornalo lì.
 
 ### Poker (Fiches) → `giochi/poker/index.html`
 

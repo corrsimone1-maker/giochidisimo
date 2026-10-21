@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0E18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<title>Claude Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Martian+Mono:wght@500;700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Claude Machine: macchina a schede perforate, tema scuro.
+   Il cartoncino delle schede (--scheda) è l'unico colore chiaro: la scheda di prova si punzona,
+   i verificatori hanno la testata di cartoncino, lo storico è un nastro con i fori.
+   Font Saira Stencil One, Martian Mono e Figtree solo in questa pagina. */
+:root{
+  --inchiostro:#0A0E18; --lamiera:#121827; --lamiera-2:#1A2236; --foro:#05080F;
+  --scheda:#E6DAC0; --scheda-2:#CFC2A2; --scheda-ink:#211C12; --scheda-tenue:#7A6E55;
+  --linea:rgba(230,218,192,.12); --linea-forte:rgba(230,218,192,.24);
+  --testo:#ECE6D8; --tenue:#8F99AF; --spento:#58627A;
+  --si:#5BC68E; --no:#E35F4B;
+  --blu:#4F8EF7; --giallo:#F3C53E; --viola:#A97DF5;
+  --stencil:'Saira Stencil One','Arial Narrow',Impact,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Martian Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--inchiostro);color:var(--testo);font-family:var(--ui);font-size:15px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:default}
+input{font:inherit;-webkit-user-select:text;user-select:text}
+:focus-visible{outline:2px solid var(--scheda);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;
+  background:radial-gradient(circle at 1px 1px,rgba(230,218,192,.05) 1px,transparent 1.6px) 0 0/18px 18px,var(--inchiostro)}
+
+/* Barra in alto */
+.top{display:flex;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 4px max(14px,env(safe-area-inset-left))}
+.back{flex:none;color:var(--scheda);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
+.title{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;margin:0;font-family:var(--stencil);font-weight:400;font-size:21px;letter-spacing:.02em;white-space:nowrap}
+.title svg{width:22px;height:22px;flex:none}
+.links{flex:none;display:flex;align-items:center;gap:2px}
+.linkbtn{padding:8px 4px;border:0;background:none;color:var(--tenue);font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.gear{display:grid;place-items:center;width:38px;height:38px;margin-right:-8px;border:0;background:none;color:var(--tenue)}
+.gear svg{width:20px;height:20px}
+
+/* Striscia di stato: livello, modalità, stanza */
+.striscia{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:2px max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left));
+  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tenue);border-bottom:1px dashed var(--linea-forte)}
+.striscia .sep{color:var(--spento)}
+.striscia .dx{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--testo)}
+.striscia button{border:1px solid var(--linea-forte);background:var(--lamiera);border-radius:999px;padding:3px 9px;font:inherit;color:var(--scheda);display:inline-flex;align-items:center;gap:6px}
+.punto-rete{width:7px;height:7px;border-radius:50%;background:var(--spento)}
+.punto-rete.on{background:var(--si);box-shadow:0 0 6px var(--si)}
+
+.scorri{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:14px max(14px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.colonna{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.sez{display:flex;flex-direction:column;gap:8px}
+.etichetta{margin:0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);display:flex;justify-content:space-between;gap:8px}
+.etichetta span{color:var(--spento)}
+.aiuto{margin:0;font-size:12.5px;color:var(--spento);line-height:1.4}
+
+/* Forme dei tre colori */
+.forma{width:.95em;height:.95em;display:inline-block;vertical-align:-.1em;flex:none}
+.f-blu{color:var(--blu)} .f-giallo{color:var(--giallo)} .f-viola{color:var(--viola)}
+.c-blu{color:var(--blu)} .c-giallo{color:var(--giallo)} .c-viola{color:var(--viola)}
+.cod{font-family:var(--mono);font-weight:700;letter-spacing:.08em;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* Scheda di prova: cartoncino con l'angolo tagliato, i fori si punzonano */
+.scheda{position:relative;background:var(--scheda);color:var(--scheda-ink);border-radius:6px 12px 12px 12px;padding:12px 12px 10px;
+  clip-path:polygon(18px 0,100% 0,100% 100%,0 100%,0 18px);display:flex;flex-direction:column;gap:7px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.scheda .intesta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-left:12px;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--scheda-tenue)}
+.scheda .intesta b{color:var(--scheda-ink)}
+.riga-fori{display:grid;grid-template-columns:64px repeat(5,1fr);gap:6px;align-items:center}
+.riga-fori .nome{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px}
+.riga-fori .nome .forma{width:15px;height:15px;filter:drop-shadow(0 0 .5px rgba(0,0,0,.6))}
+.fp{height:42px;border-radius:8px;border:1.5px solid var(--scheda-2);background:transparent;color:var(--scheda-ink);
+  font-family:var(--mono);font-weight:700;font-size:15px;display:grid;place-items:center;transition:background .12s,color .12s,border-color .12s}
+.fp[aria-pressed="true"]{background:var(--foro);border-color:var(--foro);color:var(--c);box-shadow:inset 0 0 12px -2px var(--c),0 0 0 2px var(--c)}
+.r-blu .fp{--c:var(--blu)} .r-giallo .fp{--c:var(--giallo)} .r-viola .fp{--c:var(--viola)}
+.scheda.ferma .fp:not([aria-pressed="true"]){opacity:.35}
+.scheda .nota{margin:2px 0 0;padding-left:2px;font-size:12.5px;font-weight:600;color:var(--scheda-tenue);min-height:1.4em}
+
+/* Verificatori */
+.verificatori{display:flex;flex-direction:column;gap:10px}
+.ver{background:var(--lamiera);border:1px solid var(--linea);border-radius:6px 12px 12px 12px;overflow:hidden;
+  clip-path:polygon(14px 0,100% 0,100% 100%,0 100%,0 14px)}
+.ver-testa{display:flex;align-items:center;gap:10px;background:var(--scheda);color:var(--scheda-ink);padding:6px 8px 6px 18px;min-height:46px}
+.lettera{font-family:var(--stencil);font-size:28px;line-height:1;width:22px;text-align:center}
+.ver-testa .tipo{flex:1;min-width:0;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--scheda-tenue)}
+.fori{display:flex;gap:6px}
+.foro{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--scheda-2);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--scheda-2)}
+.foro.si{background:var(--foro);border-color:var(--foro);color:var(--si);box-shadow:0 0 0 2px var(--si),0 0 12px var(--si)}
+.foro.no{background:var(--foro);border-color:var(--foro);color:var(--no);box-shadow:0 0 0 2px var(--no),0 0 12px var(--no)}
+.chiedi{border:0;border-radius:999px;background:var(--scheda-ink);color:var(--scheda);font-weight:800;font-size:13.5px;padding:8px 14px;white-space:nowrap}
+.chiedi:disabled{background:transparent;color:var(--scheda-tenue);box-shadow:inset 0 0 0 1.5px var(--scheda-2)}
+.ver-corpo{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.carta h3{margin:0 0 6px;font-size:14.5px;font-weight:700;line-height:1.3}
+.carta .nota-c{margin:-3px 0 6px;font-size:12px;color:var(--tenue)}
+.regole{display:flex;flex-wrap:wrap;gap:6px}
+.rg{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--linea-forte);background:var(--lamiera-2);border-radius:7px;padding:5px 9px 5px 7px;
+  font-size:13.5px;font-weight:600;line-height:1.25;text-align:left}
+.rg::before{content:"";width:8px;height:12px;border-radius:2px;border:1.5px solid var(--tenue);flex:none}
+.rg.via{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px}
+.rg.via::before{background:var(--tenue)}
+.oppure{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--spento)}
+.oppure::before,.oppure::after{content:"";flex:1;border-top:1px dashed var(--linea-forte)}
+.risposta{margin:0;font-size:13.5px;font-weight:700;line-height:1.35}
+.risposta.si{color:var(--si)} .risposta.no{color:var(--no)}
+.ver.accesa .foro.si,.ver.accesa .foro.no{animation:accendi .5s ease-out}
+@keyframes accendi{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* Pulsanti */
+.azioni{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.azioni.una{grid-template-columns:1fr}
+.btn{position:relative;overflow:hidden;min-height:50px;border-radius:12px;border:1px solid var(--linea-forte);background:var(--lamiera-2);
+  font-weight:800;font-size:15px;padding:10px 12px;line-height:1.2}
+.btn.primo{background:var(--scheda);color:var(--scheda-ink);border-color:var(--scheda)}
+.btn.pericolo{color:#F3A595;border-color:rgba(227,95,75,.45)}
+.btn:disabled{opacity:.38}
+.btn small{display:block;font-size:11.5px;font-weight:700;opacity:.7;margin-top:2px}
+.btn .lbl{position:relative}
+/* Tasto da tenere premuto: la barra si riempie, se lasci prima torna indietro */
+[data-tieni]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+[data-tieni] .riempi{position:absolute;inset:0;background:rgba(91,198,142,.38);transform:scaleX(0);transform-origin:left;transition:transform .16s ease-out;pointer-events:none}
+.btn.pericolo .riempi{background:rgba(227,95,75,.35)}
+.btn.primo .riempi{background:rgba(33,28,18,.22)}
+[data-tieni].carica .riempi{transform:scaleX(1);transition:transform var(--ms,1000ms) linear}
+
+/* Nastro dello storico */
+.nastro-box{overflow-x:auto;background:var(--lamiera);border:1px solid var(--linea);border-radius:10px;
+  background-image:radial-gradient(circle,var(--foro) 2.2px,transparent 2.8px);background-size:14px 14px;background-position:6px 0;background-repeat:repeat-y}
+table.nastro{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.nastro th,.nastro td{padding:7px 5px;text-align:center;border-bottom:1px dashed var(--linea);font-size:13.5px;white-space:nowrap}
+.nastro tr:last-child td{border-bottom:0}
+.nastro th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--tenue);font-weight:700}
+.nastro th:first-child,.nastro td:first-child{padding-left:20px}
+.nastro td.r{font-family:var(--mono);font-size:11px;color:var(--tenue)}
+.nastro td.chi{text-align:left;max-width:84px;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:var(--tenue);font-size:12.5px}
+.nastro tr.ora td{background:rgba(230,218,192,.05)}
+.h{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-style:normal;font-size:10px;font-weight:800}
+.h.si{background:var(--foro);color:var(--si);box-shadow:0 0 0 1.5px var(--si)}
+.h.no{background:var(--foro);color:var(--no);box-shadow:0 0 0 1.5px var(--no)}
+.h.vuoto{width:6px;height:6px;background:var(--spento)}
+.vuoto-nastro{padding:14px 14px 14px 22px;font-size:13.5px;color:var(--tenue)}
+
+/* Appunti */
+.appunti{background:var(--lamiera);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.fa{height:38px;border-radius:50%;width:38px;justify-self:center;border:1.5px solid var(--linea-forte);background:var(--foro);font-family:var(--mono);font-weight:700;font-size:14px;color:var(--testo);position:relative}
+.fa.via{color:var(--spento);border-color:var(--linea)}
+.fa.via::after{content:"";position:absolute;left:18%;right:18%;top:50%;height:2px;background:var(--no);transform:rotate(-40deg)}
+.piede{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;color:var(--spento)}
+
+/* Avvisi dentro la pagina */
+.avviso{border:1px dashed var(--linea-forte);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;color:var(--testo);background:var(--lamiera)}
+.avviso b{color:var(--scheda)}
+.avviso.privato{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* Schermi pieni: passa il telefono, fine del round, cerca stanza */
+.schermo{position:fixed;inset:0;z-index:15;background:var(--inchiostro);display:flex;flex-direction:column;overflow-y:auto;
+  padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+.schermo .dentro{max-width:480px;width:100%;margin:auto;display:flex;flex-direction:column;gap:16px;text-align:center}
+.occhiello{margin:0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
+.chi-tocca{margin:0;font-family:var(--stencil);font-weight:400;font-size:clamp(40px,13vw,64px);line-height:1;color:var(--scheda);overflow-wrap:anywhere}
+.schermo p{margin:0;color:var(--tenue);line-height:1.5}
+.btn.grande{min-height:64px;font-size:16px}
+.pubblico{display:flex;flex-direction:column;gap:0;text-align:left;border:1px solid var(--linea);border-radius:12px;background:var(--lamiera);overflow:hidden}
+.pubblico div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px dashed var(--linea);font-size:14px}
+.pubblico div:last-child{border-bottom:0}
+.pubblico span{color:var(--tenue);font-variant-numeric:tabular-nums}
+.pubblico .via{text-decoration:line-through;color:var(--spento)}
+
+/* Fine partita */
+.fine{display:flex;flex-direction:column;gap:14px;text-align:center;padding-top:8px}
+.fine h2{margin:0;font-family:var(--stencil);font-weight:400;font-size:36px;line-height:1.05;color:var(--scheda)}
+.fine .grande-cod{font-size:40px;letter-spacing:.16em}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.stat div{background:var(--lamiera);border:1px solid var(--linea);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center}
+.stat b{font-family:var(--mono);font-size:22px}
+.stat span{font-size:12px;color:var(--tenue)}
+
+/* Fogli (impostazioni, regole, soluzione, stanza) */
+.velo{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,12,.76)}
+.foglio{width:min(560px,100%);max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--lamiera);border:1px solid var(--linea);border-bottom:0;
+  border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  display:flex;flex-direction:column;gap:12px}
+.foglio .hd{position:sticky;top:-18px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:-18px -16px 0;padding:18px 16px 8px;background:var(--lamiera);border-radius:20px 20px 0 0;box-shadow:0 10px 12px -12px rgba(0,0,0,.7)}
+.foglio h2{margin:0;font-family:var(--stencil);font-weight:400;font-size:26px;color:var(--scheda)}
+.foglio h3{margin:8px 0 0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue)}
+.foglio p{margin:0;color:#D6D0C3;line-height:1.5;font-size:14.5px}
+.foglio p.nota{color:var(--tenue);font-size:13px}
+.hd .chiudi,.hd .reset{border:0;background:none;color:var(--tenue);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+.hd .reset.armato{color:var(--no)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--foro);border-radius:12px}
+.seg button{border:0;border-radius:9px;background:transparent;color:var(--tenue);font-weight:700;font-size:14px;padding:10px 6px;line-height:1.15}
+.seg button[aria-pressed="true"]{background:var(--scheda);color:var(--scheda-ink)}
+.campo{display:flex;gap:8px}
+.campo input{flex:1;min-width:0;height:46px;border-radius:10px;border:1px solid var(--linea-forte);background:var(--foro);color:var(--testo);padding:0 12px;font-size:16px}
+.campo input.codice-in{font-family:var(--mono);font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.campo .btn{min-height:46px;padding:0 16px}
+.lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lista li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--lamiera-2);border:1px solid var(--linea);border-radius:10px;padding:8px 10px 8px 12px;font-size:14.5px}
+.lista li .n{font-family:var(--mono);font-size:11px;color:var(--spento);margin-right:8px}
+.lista li .x{border:0;background:none;color:var(--tenue);font-size:20px;line-height:1;padding:4px 6px}
+.lista li .stato{color:var(--tenue);font-size:12.5px;text-align:right}
+.lista .piccoli{display:flex;gap:6px;flex:none}
+.lista .piccoli .btn{min-height:36px;padding:6px 10px;font-size:13px;border-radius:9px}
+.codice-stanza{font-family:var(--mono);font-weight:700;font-size:34px;letter-spacing:.24em;color:var(--scheda);text-align:center;padding:8px 0}
+.regola-blocco{display:flex;flex-direction:column;gap:6px}
+.regola-blocco ul{margin:0;padding-left:18px;color:#D6D0C3;font-size:14.5px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+
+.toast{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;width:max-content;max-width:92vw;
+  padding:10px 14px;border-radius:10px;background:var(--scheda);color:var(--scheda-ink);font-weight:700;font-size:14px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <h1 class="title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h15a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7z" fill="#E6DAC0"/><circle cx="8" cy="12" r="2" fill="#4F8EF7"/><circle cx="13" cy="12" r="2" fill="#F3C53E"/><circle cx="18" cy="12" r="2" fill="#A97DF5"/><path d="M6 17h12" stroke="#211C12" stroke-width="1.4" stroke-dasharray="1.6 1.6"/></svg><span>Claude Machine</span></h1>
+    <div class="links">
+      <button class="linkbtn" id="regoleBtn" type="button">Regole</button>
+      <button class="gear" id="impBtn" type="button" aria-label="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    </div>
+  </div>
+  <div class="striscia" id="striscia"></div>
+  <main class="scorri" id="scorri"><div class="colonna" id="vista"></div></main>
+</div>
+
+<div class="schermo" id="schermo" hidden></div>
+<div class="velo" id="velo" hidden><div class="foglio" id="foglio" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="motore.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   Claude Machine. La logica dei puzzle sta in motore.js (CM).
+   Modalità:
+     coop  + uno    partita sul telefono (da soli o in squadra)            S.loc
+     versus + uno   il telefono gira in senso antiorario, schede private   S.vs
+     coop  + tanti  stanza: ognuno fa prove sul suo telefono, storico unico  S.st
+     versus + tanti stanza: ognuno gioca per sé, i round si chiudono insieme S.st
+   Un «banco» è la plancia di chi gioca: { r, codice, chieste, storico, domande, app }.
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+function randInt(n) { const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1); do crypto.getRandomValues(a); while (a[0] >= lim); return a[0] % n; }
+const rid = n => Array.from({ length: n }, () => 'abcdefghijkmnpqrstuvwxyz23456789'[randInt(32)]).join('');
+
+const K_CFG = 'gds-machine', K_PARTITA = 'gds-machine-partita', K_STANZE = 'gds-machine-stanze', K_PL = 'gds-giocatori';
+const LETTERE = 'ABCDEF';
+const COLORI = ['blu', 'giallo', 'viola'];
+const NOMI_COL = ['Blu', 'Giallo', 'Viola'];
+const LIV = CM.LIVELLI;
+
+let cfg = Object.assign({ livello: 'medio', modo: 'coop', telefoni: 'uno', nome: '' }, LS.get(K_CFG, {}));
+if (!LIV[cfg.livello]) cfg.livello = 'medio';
+let nomi = LS.get(K_PL, []); if (!Array.isArray(nomi)) nomi = [];
+let S = null;          // partita (salvata)
+let R = null;          // stanza collegata (solo in memoria)
+let ultimaChiesta = null;
+
+const salvaCfg = () => LS.set(K_CFG, cfg);
+const salva = () => LS.set(K_PARTITA, S);
+const stanzeSalvate = () => { const v = LS.get(K_STANZE, []); return Array.isArray(v) ? v : []; };
+
+/* ---------- Disegni piccoli ---------- */
+const FORME = [
+  '<path d="M7 1.2 13.2 12.6H.8Z" fill="currentColor"/>',
+  '<rect x="1.6" y="1.6" width="10.8" height="10.8" rx="1.4" fill="currentColor"/>',
+  '<circle cx="7" cy="7" r="5.8" fill="currentColor"/>'
+];
+const forma = i => `<svg class="forma f-${COLORI[i]}" viewBox="0 0 14 14" aria-label="${COLORI[i]}" role="img">${FORME[i]}</svg>`;
+const testo = s => esc(s).replace(/\{b\}/g, forma(0)).replace(/\{g\}/g, forma(1)).replace(/\{v\}/g, forma(2));
+const codHtml = c => `<span class="cod">${c.map((x, i) => `<span class="c-${COLORI[i]}">${x == null ? '·' : x}</span>`).join('')}</span>`;
+const completo = c => Array.isArray(c) && c.every(x => x >= 1 && x <= 5);
+const pl = (n, uno, tanti) => `${n} ${n === 1 ? uno : tanti}`;
+let toastT = null;
+function toast(msg, ms = 2600) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms); }
+
+/* =====================================================================
+   Partite sul telefono
+   ===================================================================== */
+const nuovoBanco = () => ({ r: 1, codice: [null, null, null], chieste: {}, storico: [], domande: 0, app: { reg: {}, cif: {} } });
+const fissato = b => Object.keys(b.chieste).length > 0;
+
+function generaPuzzle(livello) { return CM.genera(livello, randInt); }
+
+function nuovaPartita() {
+  esciStanza(false);
+  if (cfg.modo === 'versus' && nomi.length < 2) { cfg.modo = 'coop'; salvaCfg(); toast('Per il versus servono almeno 2 nomi: si gioca in collaborativa'); }
+  const puzzle = generaPuzzle(cfg.livello);
+  S = { v: 1, id: rid(8), cfg: { livello: cfg.livello, modo: cfg.modo, telefoni: 'uno' }, puzzle, t0: Date.now(), fine: null };
+  if (cfg.modo === 'versus') {
+    S.vs = { r: 1, turno: 0, fase: 'passa', risultati: [], giocatori: nomi.map(n => Object.assign({ nome: n, attivo: true, dich: null }, nuovoBanco())) };
+  } else S.loc = nuovoBanco();
+  salva(); chiudiFoglio(); disegna();
+  $('scorri').scrollTop = 0;
+}
+
+/* Azioni sul banco */
+function scegli(b, col, n) { if (fissato(b)) return; b.codice[col] = n; }
+function chiedi(b, i) {
+  if (!completo(b.codice) || b.chieste[i] !== undefined || Object.keys(b.chieste).length >= 3) return false;
+  if (!fissato(b)) b.tOra = Date.now();
+  b.chieste[i] = CM.rispetta(S.puzzle, i, b.codice);
+  b.domande++; ultimaChiesta = i;
+  return true;
+}
+function chiudiRound(b, avanza = true) {
+  if (fissato(b)) b.storico.push({ r: b.r, t: b.tOra || Date.now(), codice: b.codice.slice(), esiti: Object.assign({}, b.chieste) });
+  b.chieste = {}; delete b.tOra;
+  if (avanza) b.r++;
+}
+
+/* Banco su cui agiscono i tocchi in questo momento */
+function bancoAttivo() {
+  if (!S || S.fine) return null;
+  if (S.loc) return S.loc;
+  if (S.vs) return S.vs.fase === 'privato' ? S.vs.giocatori[S.vs.turno] : null;
+  if (S.st && R && R.meta) {
+    if (S.st.modo === 'versus') { const V = statoVersus(); return V.fase === 'gioco' && V.attivo && !S.st.io.fatto ? S.st.banco : null; }
+    return S.st.banco;
+  }
+  return null;
+}
+
+/* =====================================================================
+   Disegno della plancia
+   ===================================================================== */
+function htmlScheda(valori, attiva, pref, nota, intesta) {
+  return `<div class="scheda ${attiva ? '' : 'ferma'}">
+    <div class="intesta"><span>${intesta || 'Scheda di prova'}</span><b>${valori.map(x => x || '·').join(' ')}</b></div>
+    ${COLORI.map((col, i) => `<div class="riga-fori r-${col}">
+      <span class="nome">${forma(i)}${NOMI_COL[i]}</span>
+      ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="fp" data-${pref}="${i}-${n}" aria-pressed="${valori[i] === n}" aria-label="${col} ${n}" ${attiva ? '' : 'disabled'}>${n}</button>`).join('')}
+    </div>`).join('')}
+    ${nota != null ? `<p class="nota">${nota}</p>` : ''}
+  </div>`;
+}
+
+function htmlVerificatori(b, puoChiedere) {
+  const qui = Object.keys(b.chieste).length;
+  return `<div class="verificatori">${S.puzzle.ver.map((v, i) => {
+    const r = b.chieste[i];
+    const puo = puoChiedere && completo(b.codice) && r === undefined && qui < 3;
+    let off = 0;
+    const carte = v.carte.map(id => {
+      const c = CM.PER_ID[id]; const base = off; off += c.regole.length;
+      return `<div class="carta"><h3>${testo(c.nome)}</h3>${c.nota ? `<p class="nota-c">${esc(c.nota)}</p>` : ''}
+        <div class="regole">${c.regole.map((rg, j) => {
+          const k = i + '-' + (base + j), via = !!b.app.reg[k];
+          return `<button type="button" class="rg${via ? ' via' : ''}" data-reg="${k}" aria-pressed="${via}">${testo(rg.t)}</button>`;
+        }).join('')}</div></div>`;
+    }).join('<div class="oppure">oppure</div>');
+    const risposta = r === undefined ? '' :
+      `<p class="risposta ${r ? 'si' : 'no'}">${r ? '✓' : '✗'} ${codHtml(b.codice)} ${r ? 'rispetta' : 'non rispetta'} la regola segreta di ${LETTERE[i]}</p>`;
+    return `<article class="ver${r !== undefined && ultimaChiesta === i ? ' accesa' : ''}">
+      <div class="ver-testa">
+        <span class="lettera">${LETTERE[i]}</span>
+        <span class="tipo">${v.carte.length > 1 ? 'Due carte, una regola' : 'Verificatore'}</span>
+        <span class="fori" aria-label="${r === undefined ? 'non ancora chiesto' : r ? 'rispettata' : 'non rispettata'}"><span class="foro ${r === true ? 'si' : ''}">✓</span><span class="foro ${r === false ? 'no' : ''}">✗</span></span>
+        ${r === undefined ? `<button type="button" class="chiedi" data-ch="${i}" ${puo ? '' : 'disabled'}>Chiedi</button>` : ''}
+      </div>
+      <div class="ver-corpo">${carte}${risposta}</div>
+    </article>`;
+  }).join('')}</div>`;
+}
+
+/* righe: [{ chi?, r, codice, esiti, ora? }] */
+function htmlNastro(righe, conChi) {
+  const n = S.puzzle.ver.length;
+  if (!righe.length) return `<div class="nastro-box"><div class="vuoto-nastro">Qui si perfora ogni prova: il codice e la risposta di ogni verificatore.</div></div>`;
+  return `<div class="nastro-box"><table class="nastro"><thead><tr>${conChi ? '<th>Chi</th>' : '<th>R</th>'}<th>Codice</th>${LETTERE.slice(0, n).split('').map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+    ${righe.map(x => `<tr class="${x.ora ? 'ora' : ''}">${conChi ? `<td class="chi">${esc(x.chi)}</td>` : `<td class="r">${x.r}</td>`}<td>${codHtml(x.codice)}</td>${Array.from({ length: n }, (_, i) => {
+      const e = x.esiti[i]; return `<td>${e === undefined ? '<i class="h vuoto"></i>' : e ? '<i class="h si">✓</i>' : '<i class="h no">✗</i>'}</td>`;
+    }).join('')}</tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+function htmlAppunti(b) {
+  return `<div class="appunti">${COLORI.map((col, i) => `<div class="riga-fori">
+    <span class="nome">${forma(i)}${NOMI_COL[i]}</span>
+    ${[1, 2, 3, 4, 5].map(n => { const via = !!b.app.cif[i + '-' + n]; return `<button type="button" class="fa${via ? ' via' : ''}" data-cif="${i}-${n}" aria-pressed="${via}" aria-label="escludi ${col} ${n}">${n}</button>`; }).join('')}
+  </div>`).join('')}</div>`;
+}
+
+/* La plancia completa. o: { puo, intesta, nota, azioni, righe, conChi, sopra } */
+function htmlPlancia(b, o) {
+  const qui = Object.keys(b.chieste).length;
+  const nota = o.nota != null ? o.nota : (!o.puo ? '' : fissato(b) ? `Scheda fissata: ${qui} di 3 domande in questo round.` : completo(b.codice) ? 'Ora chiedi ai verificatori.' : 'Punzona una cifra per ogni colore.');
+  return `${o.sopra || ''}
+    <section class="sez">${htmlScheda(b.codice, o.puo && !fissato(b), 'cod', nota, o.intesta)}</section>
+    <section class="sez">
+      <h2 class="etichetta">Verificatori <span>${qui} di 3</span></h2>
+      <p class="aiuto">Ogni verificatore controlla in segreto una sola delle regole scritte sulla sua carta${S.puzzle.ver[0].carte.length > 1 ? ' (una sola, da una delle due carte)' : ''}. Tocca una regola per barrarla.</p>
+      ${htmlVerificatori(b, o.puo)}
+    </section>
+    ${o.azioni || ''}
+    <section class="sez"><h2 class="etichetta">Nastro <span>✓ rispetta · ✗ non rispetta</span></h2>${htmlNastro(o.righe, o.conChi)}</section>
+    <section class="sez"><h2 class="etichetta">Appunti <span><button type="button" class="linkbtn" data-az="pulisci-app" style="padding:0">Cancella</button></span></h2>${htmlAppunti(b)}
+      <p class="aiuto">Tocca una cifra per escluderla.</p></section>`;
+}
+const righeBanco = b => b.storico.map(x => ({ r: x.r, codice: x.codice, esiti: x.esiti })).concat(fissato(b) ? [{ r: b.r, codice: b.codice, esiti: b.chieste, ora: true }] : []);
+
+/* =====================================================================
+   Disegno generale
+   ===================================================================== */
+function striscia() {
+  const parti = [];
+  if (S) {
+    parti.push(LIV[S.cfg.livello].nome, S.cfg.modo === 'versus' ? 'Versus' : 'Collaborativa');
+    if (S.vs) parti.push(pl(S.vs.giocatori.length, 'giocatore', 'giocatori'));
+  }
+  let dx = '';
+  if (S && S.loc && !S.fine) dx = `R${S.loc.r} · ${pl(S.loc.domande, 'domanda', 'domande')}`;
+  if (S && S.vs && !S.fine) dx = `Round ${S.vs.r}`;
+  if (S && S.st) {
+    const on = R ? R.links.filter(l => l.ok).length : 0;
+    dx = `<button type="button" data-az="foglio-stanza"><i class="punto-rete ${on ? 'on' : ''}"></i>Stanza ${esc(S.st.c)}</button>`;
+  }
+  $('striscia').innerHTML = parti.map(esc).join('<span class="sep">·</span>') + (dx ? `<span class="dx">${dx}</span>` : '');
+}
+
+function disegna() {
+  if (!S) return;
+  striscia();
+  const v = $('vista');
+  $('schermo').hidden = true;
+  if (S.fine) { v.innerHTML = htmlFine(); return; }
+  if (S.loc) { v.innerHTML = vistaLocale(); }
+  else if (S.vs) { vistaVersusUno(); }
+  else if (S.st) { vistaStanza(); }
+  ultimaChiesta = null;
+}
+
+/* ---------- Collaborativa (o da solo) sul telefono ---------- */
+function vistaLocale() {
+  const b = S.loc;
+  return htmlPlancia(b, {
+    puo: true, intesta: `Scheda di prova · round ${b.r}`, righe: righeBanco(b),
+    azioni: `<div class="azioni">
+      <button type="button" class="btn" data-az="nuovo-round" ${fissato(b) ? '' : 'disabled'}>Nuovo round</button>
+      <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button></div>`
+  });
+}
+
+/* ---------- Versus, un telefono che gira ---------- */
+function vistaVersusUno() {
+  const V = S.vs, g = V.giocatori[V.turno];
+  if (V.fase === 'privato') {
+    $('vista').innerHTML = htmlPlancia(g, {
+      puo: true, intesta: `Schede di ${esc(g.nome)} · round ${V.r}`, righe: righeBanco(g),
+      sopra: `<div class="avviso privato"><span>Schede di <b>${esc(g.nome)}</b>: solo tu le guardi.</span><button type="button" class="linkbtn" data-az="vs-nascondi">Nascondi</button></div>`,
+      azioni: `<div class="azioni una"><button type="button" class="btn primo" data-az="vs-fine-turno">Fine turno<small>${fissato(g) ? pl(Object.keys(g.chieste).length, 'domanda', 'domande') + ' in questo round' : 'Nessuna domanda in questo round'}</small></button></div>`
+    });
+    return;
+  }
+  $('vista').innerHTML = '';
+  const sch = $('schermo');
+  sch.hidden = false;
+  if (V.fase === 'passa') {
+    const prima = V.giocatori.findIndex(x => x.attivo) === V.turno;
+    sch.innerHTML = `<div class="dentro">
+      <p class="occhiello">Round ${V.r} · ${LIV[S.cfg.livello].nome}</p>
+      <p>${prima ? 'Si comincia da' : 'Passa il telefono a destra, a'}</p>
+      <h2 class="chi-tocca">${esc(g.nome)}</h2>
+      <p>Gli altri non guardano lo schermo.</p>
+      <button type="button" class="btn primo grande" data-tieni="vs-apri" data-ms="600"><span class="riempi"></span><span class="lbl">Tieni premuto per vedere le tue schede</span></button>
+      ${htmlPubblico()}
+    </div>`;
+  } else if (V.fase === 'fineRound') {
+    const ultimo = V.risultati[V.risultati.length - 1];
+    const righe = ultimo.dich.length ? ultimo.dich.map(d => `<div><b>${esc(V.giocatori[d.g].nome)}</b><span>ha dichiarato: sbagliato, eliminato</span></div>`).join('')
+      : '<div>Nessuno ha dichiarato il codice.</div>';
+    sch.innerHTML = `<div class="dentro">
+      <p class="occhiello">Fine del round ${ultimo.r}</p>
+      <h2 class="chi-tocca" style="font-size:44px">Si continua</h2>
+      <div class="pubblico">${righe}</div>
+      ${htmlPubblico()}
+      <button type="button" class="btn primo grande" data-az="vs-avanti">Inizia il round ${V.r}</button>
+    </div>`;
+  }
+  if (window.gdsAppare) gdsAppare(sch.firstElementChild);
+}
+function htmlPubblico() {
+  const V = S.vs;
+  return `<div class="pubblico">${V.giocatori.map(g => `<div><b class="${g.attivo ? '' : 'via'}">${esc(g.nome)}</b><span>${g.attivo ? pl(g.domande, 'domanda', 'domande') : 'eliminato'}</span></div>`).join('')}</div>`;
+}
+function vsPassaAlProssimo() {
+  const V = S.vs;
+  let k = V.turno + 1;
+  while (k < V.giocatori.length && !V.giocatori[k].attivo) k++;
+  if (k < V.giocatori.length) { V.turno = k; V.fase = 'passa'; return; }
+  // tutti hanno giocato il round: si scoprono le dichiarazioni
+  const es = CM.fineRound(S.puzzle, V.giocatori.map((g, i) => ({ id: i, attivo: g.attivo, dich: g.dich && g.dich.r === V.r ? g.dich : null, domande: g.domande })));
+  const dich = V.giocatori.map((g, i) => ({ g: i, d: g.dich })).filter(x => x.d && x.d.r === V.r && V.giocatori[x.g].attivo);
+  es.eliminati.forEach(i => { V.giocatori[i].attivo = false; });
+  if (es.fine) {
+    S.fine = { tipo: 'versus', r: V.r, vincitori: es.vincitori.map(i => V.giocatori[i].nome), ultimo: !!es.ultimo,
+      righe: V.giocatori.map((g, i) => ({ nome: g.nome, domande: g.domande, stato: es.vincitori.includes(i) ? 'vince' : g.attivo ? 'in gara' : 'eliminato' })) };
+    return;
+  }
+  V.risultati.push({ r: V.r, dich: dich.map(x => ({ g: x.g })) });
+  V.r++;
+  V.giocatori.forEach(g => { if (g.attivo) { g.r = V.r; g.chieste = {}; } });
+  V.turno = V.giocatori.findIndex(g => g.attivo);
+  V.fase = 'fineRound';
+}
+
+/* ---------- Fine partita ---------- */
+function htmlFine() {
+  const F = S.fine, cod = codHtml(S.puzzle.codice);
+  const occh = `<p class="occhiello">${esc(LIV[S.cfg.livello].nome)} · ${S.cfg.modo === 'versus' ? 'Versus' : 'Collaborativa'}</p>`;
+  const bottoni = S.st
+    ? `<div class="azioni">${S.st.host ? '<button type="button" class="btn primo" data-az="stanza-nuova">Nuova partita<small>nuova stanza per tutti</small></button>' : '<button type="button" class="btn" data-az="esci-stanza">Esci dalla stanza</button>'}
+        <button type="button" class="btn pericolo" data-tieni="chiudi-stanza" data-ms="1200"><span class="riempi"></span><span class="lbl">Chiudi e cancella la stanza<small>tieni premuto</small></span></button></div>`
+    : `<div class="azioni una"><button type="button" class="btn primo" data-az="nuova">Nuova partita</button></div>`;
+  if (F.tipo === 'versus') {
+    const tit = F.vincitori.length === 0 ? 'Nessun vincitore' : F.vincitori.length === 1 ? `Vince ${esc(F.vincitori[0])}` : `Vincono ${F.vincitori.map(esc).join(' e ')}`;
+    const sotto = F.vincitori.length === 0 ? 'Avete dichiarato tutti un codice sbagliato.' : F.ultimo ? 'Unico rimasto in gara: gli altri hanno sbagliato il codice.'
+      : F.vincitori.length > 1 ? `Codice trovato al round ${F.r}, a pari domande.` : `Codice trovato al round ${F.r}.`;
+    return `<div class="fine">${occh}<h2>${tit}</h2><p class="aiuto" style="font-size:14px;color:var(--tenue)">${sotto}</p>
+      <div class="grande-cod">${cod}</div>
+      <div class="pubblico">${F.righe.map(x => `<div><b class="${x.stato === 'eliminato' ? 'via' : ''}">${esc(x.nome)}</b><span>${pl(x.domande, 'domanda', 'domande')} · ${x.stato}</span></div>`).join('')}</div>
+      ${bottoni}</div>`;
+  }
+  const vinto = F.tipo === 'vinto';
+  return `<div class="fine">${occh}<h2>${vinto ? 'Codice trovato' : 'Codice sbagliato'}</h2>
+    ${vinto ? '' : `<p class="aiuto" style="font-size:14px;color:var(--tenue)">Avevate dichiarato ${codHtml(F.dichiarato)}. Il codice era:</p>`}
+    <div class="grande-cod">${cod}</div>
+    <div class="stat">${F.round != null ? `<div><b>${F.round}</b><span>${F.round === 1 ? 'round' : 'round'}</span></div>` : ''}<div><b>${F.domande}</b><span>${F.domande === 1 ? 'domanda' : 'domande'}</span></div>${F.prove != null ? `<div><b>${F.prove}</b><span>${F.prove === 1 ? 'prova' : 'prove'}</span></div>` : ''}</div>
+    ${bottoni}</div>`;
+}
+
+/* =====================================================================
+   Fogli: soluzione, impostazioni, regole, stanza
+   ===================================================================== */
+let foglio = null;      // { tipo, ... }
+function apriFoglio(tipo, extra) { foglio = Object.assign({ tipo }, extra || {}); disegnaFoglio(); $('velo').hidden = false; $('foglio').scrollTop = 0; }
+function chiudiFoglio() { foglio = null; $('velo').hidden = true; }
+function disegnaFoglio() {
+  if (!foglio) return;
+  const f = $('foglio');
+  const hd = (tit, reset) => `<div class="hd"><h2>${tit}</h2><span>${reset ? '<button type="button" class="reset" id="resetBtn">Reset</button> &nbsp; ' : ''}<button type="button" class="chiudi" data-az="chiudi-foglio">Chiudi</button></span></div>`;
+  if (foglio.tipo === 'soluzione') {
+    const titolo = foglio.versus ? (S.st ? 'Fine del round' : `Fine turno di ${esc(foglio.nome)}`) : 'Qual è il codice?';
+    if (foglio.versus && !foglio.dichiara) {
+      f.innerHTML = `${hd(titolo)}
+        <p>Se sei sicuro, dichiara il codice: si scopre a fine round. Se è sbagliato sei eliminato; se è giusto vince chi l’ha trovato con meno domande.</p>
+        <div class="azioni"><button type="button" class="btn" data-az="vs-passo">Passo<small>niente codice</small></button>
+        <button type="button" class="btn primo" data-az="vs-voglio-dichiarare">Dichiaro il codice</button></div>`;
+      return;
+    }
+    f.innerHTML = `${hd(titolo)}
+      ${htmlScheda(foglio.cod, true, 'sol', null, 'Codice da dichiarare')}
+      <p class="nota">${foglio.versus ? 'Il codice resta sigillato fino a fine round.' : 'Se è sbagliato la partita è persa.'}</p>
+      <button type="button" class="btn primo" data-tieni="${foglio.versus ? 'sigilla' : 'verifica'}" data-ms="900" ${completo(foglio.cod) ? '' : 'disabled'}><span class="riempi"></span><span class="lbl">${foglio.versus ? 'Tieni premuto per sigillare' : 'Tieni premuto per verificare'}</span></button>`;
+    return;
+  }
+  if (foglio.tipo === 'regole') { f.innerHTML = hd('Come si gioca') + htmlRegole(); return; }
+  if (foglio.tipo === 'stanza') { f.innerHTML = hd(`Stanza ${esc(S.st.c)}`) + htmlFoglioStanza(); return; }
+  if (foglio.tipo === 'imp') { f.innerHTML = hd('Impostazioni', true) + htmlImpostazioni(); collegaReset(); return; }
+}
+
+function htmlImpostazioni() {
+  const segm = (chiave, voci) => `<div class="seg">${voci.map(([v, t]) => `<button type="button" data-set="${chiave}:${v}" aria-pressed="${cfg[chiave] === v}">${t}</button>`).join('')}</div>`;
+  const tanti = cfg.telefoni === 'tanti';
+  let blocco = '';
+  if (!tanti && cfg.modo === 'versus') {
+    blocco = `<h3>Giocatori, in senso antiorario</h3>
+      <ul class="lista">${nomi.map((n, i) => `<li><span><span class="n">${i + 1}</span>${esc(n)}</span><button type="button" class="x" data-del="${i}" aria-label="Togli ${esc(n)}">×</button></li>`).join('')}</ul>
+      <div class="campo"><input id="nomeNuovo" maxlength="18" placeholder="Nome" autocomplete="off" enterkeyhint="done"><button type="button" class="btn" data-az="aggiungi-nome">Aggiungi</button></div>
+      <p class="nota">Il primo dell’elenco inizia, poi il telefono passa a destra. Servono almeno 2 giocatori.</p>`;
+  }
+  if (tanti) {
+    blocco = `<h3>Il tuo nome</h3>
+      <div class="campo"><input id="mioNome" maxlength="18" placeholder="Come ti vedono gli altri" value="${esc(cfg.nome)}" autocomplete="off"></div>`;
+  }
+  const inCorso = S && !S.fine && ((S.loc && (S.loc.domande || S.loc.storico.length)) || S.vs);
+  const avvio = tanti
+    ? `<button type="button" class="btn primo" data-az="crea-stanza">Crea una stanza<small>${LIV[cfg.livello].nome} · ${cfg.modo === 'versus' ? 'Versus' : 'Collaborativa'}</small></button>
+       <h3>Entra in una stanza</h3>
+       <div class="campo"><input id="codiceIn" class="codice-in" maxlength="5" placeholder="Codice" autocomplete="off" autocapitalize="characters"><button type="button" class="btn" data-az="entra-stanza">Entra</button></div>`
+    : inCorso
+      ? `<button type="button" class="btn primo" data-tieni="nuova" data-ms="700"><span class="riempi"></span><span class="lbl">Nuova partita<small>tieni premuto: quella in corso si perde</small></span></button>`
+      : `<button type="button" class="btn primo" data-az="nuova">Nuova partita</button>`;
+  const st = stanzeSalvate();
+  return `<h3>Livello</h3>${segm('livello', [['medio', 'Medio'], ['difficile', 'Difficile'], ['insano', 'Insano']])}
+    <p class="nota">${{ medio: '4 verificatori, carte classiche.', difficile: '5 verificatori, con carte malate.', insano: '6 verificatori quasi tutti malati, e ognuno mostra due carte ma controlla una sola regola.' }[cfg.livello]}</p>
+    <h3>Modalità</h3>${segm('modo', [['coop', 'Collaborativa'], ['versus', 'Versus']])}
+    <p class="nota">${cfg.modo === 'versus' ? 'Ognuno per sé: vince chi dichiara il codice giusto con meno domande.' : 'Da soli o in squadra sulla stessa macchina: contate le domande insieme.'}</p>
+    <h3>Telefoni</h3>${segm('telefoni', [['uno', 'Un telefono che gira'], ['tanti', 'Ognuno col suo']])}
+    ${blocco}
+    ${avvio}
+    ${st.length ? `<h3>Stanze aperte su questo telefono</h3>
+      <ul class="lista">${st.map(x => `<li><span><b class="cod">${esc(x.c)}</b><br><span class="stato">${x.modo === 'versus' ? 'Versus' : 'Collaborativa'} · ${LIV[x.livello] ? LIV[x.livello].nome : ''} · ${orario(x.t)}</span></span>
+        <span class="piccoli">${S && S.st && S.st.c === x.c ? '<span class="stato">sei dentro</span>' : `<button type="button" class="btn" data-rientra="${esc(x.c)}">Rientra</button>`}
+        <button type="button" class="btn pericolo" data-tieni="cancella-lista" data-c="${esc(x.c)}" data-ms="900"><span class="riempi"></span><span class="lbl">Cancella</span></button></span></li>`).join('')}</ul>
+      <p class="nota">Tieni premuto «Cancella» per chiudere la stanza per tutti e cancellarla dai server. Le stanze si cancellano comunque da sole dopo 12 ore.</p>` : ''}`;
+}
+const orario = t => { const d = new Date(t); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+
+let resetT = null;
+function collegaReset() {
+  const b = $('resetBtn'); if (!b) return;
+  b.onclick = () => {
+    if (!b.classList.contains('armato')) { b.classList.add('armato'); b.textContent = 'Tocca ancora'; clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armato'); b.textContent = 'Reset'; }, 3000); return; }
+    clearTimeout(resetT);
+    cfg = { livello: 'medio', modo: 'coop', telefoni: 'uno', nome: cfg.nome };
+    salvaCfg(); nuovaPartita(); toast('Tutto come all’inizio');
+  };
+}
+
+function htmlRegole() {
+  return `<div class="regola-blocco"><h3>Lo scopo</h3>
+    <p>La macchina nasconde un codice di tre cifre da 1 a 5: ${forma(0)} blu, ${forma(1)} giallo, ${forma(2)} viola. Bisogna scoprirlo facendo meno domande possibile.</p></div>
+  <div class="regola-blocco"><h3>I verificatori</h3>
+    <p>Ogni verificatore (A, B, C…) ha una carta con alcune regole possibili, per esempio «${forma(0)} &lt; 3», «${forma(0)} = 3», «${forma(0)} &gt; 3». In segreto ne controlla <b>una sola</b>. Non sai quale: lo deduci dalle risposte.</p></div>
+  <div class="regola-blocco"><h3>Un round</h3>
+    <ul><li>Punzoni sulla scheda un codice di prova.</li>
+    <li>Lo sottoponi a <b>fino a 3</b> verificatori diversi. Ognuno risponde ✓ se il codice rispetta la sua regola segreta, ✗ se non la rispetta.</li>
+    <li>Ogni risposta finisce sul nastro. Poi si passa al round dopo, con un codice nuovo.</li></ul></div>
+  <div class="regola-blocco"><h3>Due garanzie</h3>
+    <ul><li>Il codice che rispetta tutte le regole segrete è <b>uno solo</b>.</li>
+    <li><b>Nessun verificatore è inutile</b>: senza uno qualsiasi di loro, il codice non sarebbe più unico. Serve a scartare regole: se una regola renderebbe inutile un verificatore, non è quella giusta.</li></ul></div>
+  <div class="regola-blocco"><h3>Dichiarare il codice</h3>
+    <p>Quando sei sicuro dichiari il codice tenendo premuto. In collaborativa, se è sbagliato la partita è persa. In versus le dichiarazioni si scoprono a fine round: chi sbaglia è eliminato, tra chi ha ragione vince chi ha fatto meno domande (a parità vincono insieme). Se resta in gara uno solo, vince lui.</p></div>
+  <div class="regola-blocco"><h3>Livelli</h3>
+    <ul><li><b>Medio</b>: 4 verificatori con carte classiche (confronti, parità, quante volte compare una cifra…).</li>
+    <li><b>Difficile</b>: 5 verificatori, con alcune carte malate: numeri primi, resti, potenze, progressioni, Pitagora.</li>
+    <li><b>Insano</b>: 6 verificatori quasi tutti malati, e ognuno mostra <b>due carte</b> ma controlla una sola regola, presa da una delle due.</li></ul></div>
+  <div class="regola-blocco"><h3>Modalità</h3>
+    <ul><li><b>Collaborativa, un telefono</b>: da soli o tutti intorno allo stesso telefono.</li>
+    <li><b>Collaborativa, ognuno col suo</b>: si entra nella stessa stanza; ognuno fa le sue prove e il nastro è unico per la squadra. Contano le domande di tutti.</li>
+    <li><b>Versus, un telefono che gira</b>: a ogni round il telefono passa a destra, in senso antiorario. Ognuno guarda solo le sue schede, tenendo premuto.</li>
+    <li><b>Versus, ognuno col suo</b>: si gioca in contemporanea; il round si chiude quando tutti hanno finito il loro.</li></ul></div>
+  <div class="regola-blocco"><h3>Stanze</h3>
+    <p>Chi crea la stanza legge il codice agli altri, che lo inseriscono in Impostazioni. Dal tasto della stanza, in alto, la si può chiudere e cancellare per tutti tenendo premuto; si cancella comunque da sola dopo 12 ore. Le stanze create da questo telefono sono elencate in Impostazioni.</p></div>`;
+}
+
+/* =====================================================================
+   Tocchi
+   ===================================================================== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-az]');
+  if (!t || t.disabled) return;
+  const d = t.dataset;
+  if (d.tieni) return;                                   // si attivano tenendo premuto
+  if (d.cod) { const b = bancoAttivo(); if (!b) return; const [i, n] = d.cod.split('-').map(Number); scegli(b, i, n); dopoMossa(b); return; }
+  if (d.sol) { const [i, n] = d.sol.split('-').map(Number); foglio.cod[i] = n; disegnaFoglio(); return; }
+  if (d.ch !== undefined) { const b = bancoAttivo(); if (!b) return; if (chiedi(b, +d.ch)) dopoMossa(b, true); return; }
+  if (d.reg) { const b = bancoAppunti(); if (!b) return; b.app.reg[d.reg] = !b.app.reg[d.reg]; dopoMossa(b); return; }
+  if (d.cif) { const b = bancoAppunti(); if (!b) return; b.app.cif[d.cif] = !b.app.cif[d.cif]; dopoMossa(b); return; }
+  if (d.set) { const [k, v] = d.set.split(':'); leggiCampi(); cfg[k] = v; salvaCfg(); disegnaFoglio(); return; }
+  if (d.del !== undefined) { nomi.splice(+d.del, 1); LS.set(K_PL, nomi); disegnaFoglio(); return; }
+  if (d.rientra) { leggiCampi(); rientra(d.rientra); return; }
+  if (d.az) azione(d.az, t);
+});
+/* Il banco su cui si prendono appunti: anche a round fermo (in attesa degli altri) */
+function bancoAppunti() {
+  if (!S || S.fine) return null;
+  if (S.loc) return S.loc;
+  if (S.vs) return S.vs.fase === 'privato' ? S.vs.giocatori[S.vs.turno] : null;
+  if (S.st) return S.st.banco;
+  return null;
+}
+function dopoMossa(b, chiesta) {
+  salva();
+  if (S.st && chiesta) pubblicaIo();
+  const y = $('scorri').scrollTop; disegna(); $('scorri').scrollTop = y;
+}
+function leggiCampi() {
+  const n = $('mioNome'); if (n) { cfg.nome = n.value.trim().slice(0, 18); salvaCfg(); }
+}
+
+function azione(a, el) {
+  const b = bancoAttivo();
+  switch (a) {
+    case 'chiudi-foglio': chiudiFoglio(); return;
+    case 'nuova': leggiCampi(); if (cfg.modo === 'versus' && cfg.telefoni === 'uno' && nomi.length < 2) { toast('Servono almeno 2 giocatori'); return; } nuovaPartita(); return;
+    case 'nuovo-round': if (S.loc && fissato(S.loc)) { chiudiRound(S.loc); salva(); disegna(); $('scorri').scrollTop = 0; } return;
+    case 'soluzione': if (S.loc || (S.st && S.st.modo === 'coop')) apriFoglio('soluzione', { cod: [null, null, null] }); return;
+    case 'pulisci-app': { const x = bancoAppunti(); if (x) { x.app = { reg: {}, cif: {} }; salva(); disegna(); } return; }
+    case 'aggiungi-nome': {
+      const i = $('nomeNuovo'), n = (i.value || '').trim().slice(0, 18);
+      if (!n) return;
+      if (nomi.some(x => x.toLowerCase() === n.toLowerCase())) { toast('C’è già'); return; }
+      nomi.push(n); LS.set(K_PL, nomi); disegnaFoglio(); setTimeout(() => { const j = $('nomeNuovo'); if (j) j.focus(); }, 30); return;
+    }
+    case 'vs-fine-turno': apriFoglio('soluzione', { versus: true, nome: S.vs.giocatori[S.vs.turno].nome, cod: S.vs.giocatori[S.vs.turno].codice.slice() }); return;
+    case 'vs-voglio-dichiarare': foglio.dichiara = true; disegnaFoglio(); return;
+    case 'vs-passo': if (S.vs) vsFineTurno(null); else if (S.st) versusStanzaFineRound(null); return;
+    case 'vs-nascondi': S.vs.fase = 'passa'; salva(); disegna(); return;
+    case 'vs-avanti': S.vs.fase = 'passa'; salva(); disegna(); return;
+    case 'versus-fine-round': apriFoglio('soluzione', { versus: true, nome: '', cod: S.st.banco.codice.slice() }); return;
+    case 'coop-nuova-prova': if (S.st && fissato(S.st.banco)) { chiudiRound(S.st.banco); pubblicaIo(); salva(); disegna(); $('scorri').scrollTop = 0; } return;
+    case 'foglio-stanza': if (S && S.st) apriFoglio('stanza'); return;
+    case 'crea-stanza': leggiCampi(); if (!cfg.nome) { toast('Scrivi il tuo nome'); return; } creaStanza(); return;
+    case 'entra-stanza': {
+      leggiCampi(); const c = ($('codiceIn').value || '').trim().toUpperCase();
+      if (!cfg.nome) { toast('Scrivi il tuo nome'); return; }
+      if (!/^[A-Z0-9]{5}$/.test(c)) { toast('Il codice ha 5 caratteri'); return; }
+      entraStanza(c); return;
+    }
+    case 'esci-stanza': esciStanza(true); return;
+    case 'stanza-inizia': avviaVersusStanza(); return;
+    case 'stanza-nuova': nuovaStanzaDopo(); return;
+    case 'togli': togliGiocatore(el.dataset.pid); return;
+  }
+}
+
+/* Azioni da tenere premuto */
+function azioneTenuta(a, el) {
+  switch (a) {
+    case 'nuova': leggiCampi(); if (cfg.modo === 'versus' && cfg.telefoni === 'uno' && nomi.length < 2) { toast('Servono almeno 2 giocatori'); return; } nuovaPartita(); return;
+    case 'verifica': dichiaraCoop(foglio.cod.slice()); return;
+    case 'sigilla': if (S.vs) vsFineTurno(foglio.cod.slice()); else if (S.st) versusStanzaFineRound(foglio.cod.slice()); return;
+    case 'vs-apri': S.vs.fase = 'privato'; salva(); disegna(); $('scorri').scrollTop = 0; return;
+    case 'chiudi-stanza': chiudiECancella(); return;
+    case 'cancella-lista': cancellaDaLista(el.dataset.c); return;
+  }
+}
+let tieni = null;
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('[data-tieni]');
+  if (!el || el.disabled) return;
+  const ms = +el.dataset.ms || 1000;
+  el.style.setProperty('--ms', ms + 'ms');
+  el.classList.add('carica');
+  tieni = { el, timer: setTimeout(() => { el.classList.remove('carica'); tieni = null; tenutoFinito = true; azioneTenuta(el.dataset.tieni, el); }, ms) };
+});
+/* finito un «tieni premuto» la pagina cambia sotto il dito: il click che segue il rilascio non deve toccare altro */
+let tenutoFinito = false, senzaClickFino = 0;
+document.addEventListener('pointerup', () => { if (tenutoFinito) { tenutoFinito = false; senzaClickFino = Date.now() + 400; } }, true);
+document.addEventListener('click', e => { if (Date.now() < senzaClickFino) { senzaClickFino = 0; e.stopPropagation(); e.preventDefault(); } }, true);
+const molla = e => { if (!tieni || (e.type === 'pointerleave' && e.target !== tieni.el)) return; clearTimeout(tieni.timer); tieni.el.classList.remove('carica'); tieni = null; };
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => document.addEventListener(t, molla, true));
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-tieni]')) e.preventDefault(); });
+
+$('impBtn').addEventListener('click', () => apriFoglio('imp'));
+$('regoleBtn').addEventListener('click', () => apriFoglio('regole'));
+$('velo').addEventListener('click', e => { if (e.target === $('velo')) chiudiFoglio(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && foglio) chiudiFoglio();
+  if (e.key === 'Enter' && e.target.id === 'nomeNuovo') azione('aggiungi-nome');
+  if (e.key === 'Enter' && e.target.id === 'codiceIn') azione('entra-stanza');
+});
+
+/* Collaborativa sul telefono: dichiarazione */
+function dichiaraCoop(cod) {
+  if (S.st) { dichiaraCoopStanza(cod); return; }
+  const b = S.loc;
+  const rounds = b.storico.length + (fissato(b) ? 1 : 0);
+  S.fine = { tipo: CM.giusto(S.puzzle, cod) ? 'vinto' : 'perso', dichiarato: cod, round: rounds, domande: b.domande };
+  salva(); chiudiFoglio(); disegna(); $('scorri').scrollTop = 0;
+}
+/* Versus sul telefono: fine del turno di chi ha il telefono */
+function vsFineTurno(cod) {
+  const V = S.vs, g = V.giocatori[V.turno];
+  if (cod) g.dich = { r: V.r, codice: cod };
+  chiudiRound(g, false);
+  vsPassaAlProssimo();
+  salva(); chiudiFoglio(); disegna(); $('scorri').scrollTop = 0;
+}
+/* Le schede private si richiudono se il telefono si blocca */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && S && S.vs && S.vs.fase === 'privato' && !S.fine) { S.vs.fase = 'passa'; chiudiFoglio(); salva(); disegna(); }
+});
+
+/* =====================================================================
+   Stanze (ognuno col suo telefono)
+   Ogni stanza sta su tre broker MQTT pubblici, come il poker:
+     claude-machine/v1/<C>/meta      scritta una volta da chi crea la stanza: modo, livello, puzzle, host, t
+                                     chiusa → { chiusa: true, t, prossima? } (la «lapide»)
+     claude-machine/v1/<C>/g/<pid>   lo stato di ogni giocatore, scritto solo dal suo telefono
+   Tutti i messaggi sono retained. Con MQTT 5 hanno anche una scadenza (12 ore la stanza, 24 la lapide),
+   così i server li cancellano da soli anche se nessuno chiude la stanza.
+   Chiudere la stanza: si scrive la lapide sopra il meta e si svuotano tutti i giocatori.
+   Un telefono scrive il suo stato solo dopo aver visto il meta aperto, così una stanza chiusa non si riapre.
+   ===================================================================== */
+const BROKERS = (new URLSearchParams(location.search).get('brokers') || '').split(',').filter(Boolean);
+if (!BROKERS.length) BROKERS.push('wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://test.mosquitto.org:8081/mqtt');
+const TTL = 12 * 3600e3, TTL_LAPIDE = 24 * 3600e3;
+const RADICE = c => `claude-machine/v1/${c}`;
+const ALFABETO = 'ACDEFHJKLMNPQRTUVWXY3479';
+let mqttPronto = null;
+function caricaMqtt() {
+  if (window.mqtt) return Promise.resolve();
+  if (mqttPronto) return mqttPronto;
+  mqttPronto = new Promise((ok, ko) => {
+    const prova = (src, poi) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = poi; document.head.appendChild(s); };
+    prova('https://cdn.jsdelivr.net/npm/mqtt@5.16.1/dist/mqtt.min.js', () => prova('https://unpkg.com/mqtt@5.16.1/dist/mqtt.min.js', () => { mqttPronto = null; ko(new Error('mqtt')); }));
+  });
+  return mqttPronto;
+}
+
+function collega(url, c, suMessaggio, suConnessione) {
+  const L = { url, v: 5, ok: false, falliti: 0, client: null, metaVisto: false, lapideVista: false, giocatori: new Set() };
+  const radice = RADICE(c);
+  const crea = () => {
+    let connesso = false;
+    const cl = window.mqtt.connect(url, { clientId: 'cm_' + rid(10), clean: true, keepalive: 25, reconnectPeriod: 3000, connectTimeout: 10000, protocolVersion: L.v });
+    cl.on('connect', () => { connesso = true; L.ok = true; L.metaVisto = false; cl.subscribe(radice + '/#', { qos: 1 }); suConnessione && suConnessione(L); aggiornaRete(); });
+    cl.on('close', () => {
+      L.ok = false; aggiornaRete();
+      // se MQTT 5 non va con questo server si riprova con la versione 3.1.1
+      if (!connesso && L.v === 5 && ++L.falliti >= 2 && L.client === cl) { L.v = 4; try { cl.end(true); } catch (e) {} crea(); }
+    });
+    cl.on('offline', () => { L.ok = false; aggiornaRete(); });
+    cl.on('error', () => {});
+    cl.on('message', (t, buf) => { if (L.client === cl && t.startsWith(radice + '/')) suMessaggio(L, t.slice(radice.length + 1), new TextDecoder().decode(buf)); });
+    L.client = cl;
+  };
+  L.pubblica = (sotto, txt, durata) => {
+    try {
+      const o = { qos: 1, retain: true };
+      if (L.v === 5 && durata) o.properties = { messageExpiryInterval: Math.max(60, Math.round(durata / 1000)) };
+      L.client.publish(radice + '/' + sotto, txt, o);
+    } catch (e) {}
+  };
+  L.riavvia = () => { const vecchio = L.client; L.ok = false; try { vecchio.end(true); } catch (e) {} crea(); };
+  L.fine = () => { const vecchio = L.client; L.client = null; try { vecchio.end(true); } catch (e) {} L.ok = false; };
+  crea();
+  return L;
+}
+function aggiornaRete() { if (S && S.st) { const b = $('striscia').querySelector('.punto-rete'); if (b && R) b.classList.toggle('on', R.links.some(l => l.ok)); } }
+
+let ultimoNascosto = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { ultimoNascosto = Date.now(); return; }
+  if (!R) return;
+  if (Date.now() - ultimoNascosto > 15000) R.links.forEach(l => l.riavvia());   // il telefono ha dormito: i socket sono morti
+  else R.links.forEach(l => { if (!l.ok) l.riavvia(); });
+});
+
+const scadenzaStanza = meta => meta.t + TTL - Date.now();
+
+/* Apre il collegamento alla stanza c. Se meta è dato, la stanza è nuova e la scriviamo noi. */
+async function apriStanza(c, metaNuovo) {
+  chiudiCollegamento();
+  const mia = R = { c, links: [], meta: metaNuovo || null, chiusa: false, giocatori: {}, cercaDal: Date.now(), timer: null };
+  disegna();
+  try { await caricaMqtt(); }
+  catch (e) { if (R === mia) { toast('Non riesco a collegarmi: controlla internet'); disegna(); } return; }
+  if (R !== mia) return;
+  R.links = BROKERS.map(u => collega(u, c, (L, sotto, txt) => { if (R === mia) suMessaggio(L, sotto, txt); }, L => suConnessione(mia, L)));
+  R.timer = setInterval(() => { if (R === mia && !controllaScadenza() && !R.meta) disegna(); }, 4000);
+  disegna();
+}
+function chiudiCollegamento(ritardo = 0) {
+  if (!R) return;
+  const vecchio = R; R = null;
+  clearInterval(vecchio.timer);
+  setTimeout(() => vecchio.links.forEach(l => l.fine()), ritardo);
+}
+function suConnessione(mia, L) {
+  if (R !== mia) return;
+  // chi ha creato la stanza la riscrive su un server che l'ha persa, solo se nessuno l'ha chiusa
+  if (S && S.st && S.st.host && R.meta && !R.meta.chiusa) {
+    setTimeout(() => {
+      if (R !== mia || R.chiusa || L.lapideVista || L.metaVisto || !L.ok) return;
+      const resta = scadenzaStanza(R.meta);
+      if (resta > 0 && (Date.now() - R.meta.t < 120e3 || R.links.some(x => x.metaVisto))) { L.pubblica('meta', JSON.stringify(R.meta), resta); L.metaVisto = true; pubblicaIoSu(L); }
+    }, Date.now() - R.meta.t < 5000 ? 0 : 2000);
+  }
+}
+function suMessaggio(L, sotto, txt) {
+  if (!R || !S || !S.st || L.client == null) return;
+  if (sotto === 'meta') {
+    if (!txt) return;
+    let m; try { m = JSON.parse(txt); } catch (e) { return; }
+    if (m.chiusa) { L.lapideVista = true; stanzaChiusa(m); return; }
+    if (!m.puzzle || CM.controlla(m.puzzle)) return;
+    L.metaVisto = true;
+    if (!R.meta || R.meta.t !== m.t) R.meta = m;
+    if (!S.st.puzzle) { S.st.puzzle = m.puzzle; }
+    if (S.st.modo !== m.modo && !(S.st.io.n > 0)) S.st.io = ioVuoto(m.modo, S.st.nome);
+    S.puzzle = m.puzzle; S.cfg.livello = m.livello; S.cfg.modo = m.modo; S.st.modo = m.modo;
+    S.st.host = m.host === S.st.pid;
+    ricordaStanza(S.st.c, S.st.host, m.modo, m.livello, S.st.pid, m.t);
+    if (controllaScadenza()) return;
+    pubblicaIoSu(L);
+    salva(); disegnaPresto();
+    return;
+  }
+  if (sotto.startsWith('g/')) {
+    const pid = sotto.slice(2);
+    if (!txt) { if (pid !== S.st.pid) delete R.giocatori[pid]; disegnaPresto(); return; }
+    let g; try { g = JSON.parse(txt); } catch (e) { return; }
+    L.giocatori.add(pid);
+    if (pid === S.st.pid) { adottaMio(g); return; }
+    const prima = R.giocatori[pid];
+    if (!prima || (g.n || 0) > (prima.n || 0)) { R.giocatori[pid] = g; dopoStatoAltrui(); }
+  }
+}
+let disegnoT = null;
+function disegnaPresto() { clearTimeout(disegnoT); disegnoT = setTimeout(() => { const y = $('scorri').scrollTop; disegna(); $('scorri').scrollTop = y; if (foglio && foglio.tipo === 'stanza') disegnaFoglio(); }, 60); }
+
+function pubblicaIoSu(L) {
+  if (!S || !S.st || !R || R.chiusa || !L.ok || !L.metaVisto || !R.meta) return;
+  if (S.st.modo === 'versus' && S.st.fuori) return;      // partita già iniziata senza di noi
+  L.pubblica('g/' + S.st.pid, JSON.stringify(S.st.io), Math.max(60e3, scadenzaStanza(R.meta)));
+}
+function pubblicaIo() {
+  if (!S || !S.st) return;
+  const io = S.st.io;
+  io.n = (io.n || 0) + 1; io.t = Date.now(); io.nome = S.st.nome;
+  if (S.st.modo === 'coop') {
+    const b = S.st.banco;
+    io.prove = b.storico.map(x => ({ t: x.t, codice: x.codice, esiti: x.esiti }));
+    if (fissato(b)) io.prove.push({ t: b.tOra || Date.now(), codice: b.codice.slice(), esiti: Object.assign({}, b.chieste), aperta: true });
+    io.domande = b.domande;
+  } else {
+    io.domande = S.st.banco.domande;
+  }
+  salva();
+  if (R) R.links.forEach(pubblicaIoSu);
+}
+
+function codiceNuovo() { return Array.from({ length: 5 }, () => ALFABETO[randInt(ALFABETO.length)]).join(''); }
+const ioVuoto = (modo, nome) => modo === 'coop' ? { n: 0, nome, prove: [], domande: 0, dich: null } : { n: 0, nome, r: 1, fatto: false, domande: 0, dich: null };
+function iniziaSessione(c, host, modo, puzzle, livello, pid) {
+  S = { v: 1, id: rid(8), cfg: { livello, modo, telefoni: 'tanti' }, puzzle, t0: Date.now(), fine: null,
+    st: { c, pid: pid || rid(10), nome: cfg.nome, host, modo, puzzle, banco: nuovoBanco(), io: ioVuoto(modo, cfg.nome) } };
+  ricordaStanza(c, host, modo, livello, S.st.pid);
+  salva();
+}
+function ricordaStanza(c, host, modo, livello, pid, t) {
+  const tutte = stanzeSalvate(), prima = tutte.find(x => x.c === c);
+  const st = tutte.filter(x => x.c !== c);
+  st.unshift({ c, t: t || (prima && prima.t) || Date.now(), host, modo, livello, pid });
+  LS.set(K_STANZE, st.slice(0, 12));
+}
+/* Rientrando con lo stesso pid, i server hanno il nostro stato più recente: si riprende da lì */
+function adottaMio(g) {
+  if (!S || !S.st || (g.n || 0) <= (S.st.io.n || 0)) return;
+  S.st.io = g; S.st.nome = g.nome || S.st.nome;
+  const b = S.st.banco;
+  b.domande = g.domande || 0;
+  if (S.st.modo === 'coop' || g.prove) {
+    const chiuse = (g.prove || []).filter(p => !p.aperta), aperta = (g.prove || []).find(p => p.aperta);
+    b.storico = chiuse.map((p, k) => ({ r: k + 1, t: p.t, codice: p.codice, esiti: p.esiti }));
+    b.r = b.storico.length + 1;
+    if (aperta) { b.codice = aperta.codice.slice(); b.chieste = Object.assign({}, aperta.esiti); b.tOra = aperta.t; }
+  } else { b.r = g.r || 1; b.chieste = {}; }
+  salva(); dopoStatoAltrui();
+}
+function dimenticaStanza(c) { LS.set(K_STANZE, stanzeSalvate().filter(x => x.c !== c)); }
+
+function creaStanza(dopo) {
+  const c = codiceNuovo();
+  const puzzle = generaPuzzle(cfg.livello);
+  esciStanza(false);
+  iniziaSessione(c, true, cfg.modo, puzzle, cfg.livello);
+  S.puzzle = puzzle;
+  const meta = { v: 1, t: Date.now(), modo: cfg.modo, livello: cfg.livello, puzzle, host: S.st.pid };
+  chiudiFoglio();
+  apriStanza(c, meta);
+  if (!dopo) toast(`Stanza ${c}: leggi il codice agli altri`);
+  return c;
+}
+function entraStanza(c, pid) {
+  esciStanza(false);
+  iniziaSessione(c, false, cfg.modo, null, cfg.livello, pid);
+  S.puzzle = null;
+  chiudiFoglio();
+  apriStanza(c, null);
+}
+function rientra(c) {
+  if (S && S.st && S.st.c === c) { chiudiFoglio(); return; }
+  const salvata = LS.get(K_PARTITA, null);
+  if (salvata && salvata.st && salvata.st.c === c) { S = salvata; chiudiFoglio(); apriStanza(c, null); return; }
+  const x = stanzeSalvate().find(y => y.c === c);
+  if (!cfg.nome) { toast('Scrivi il tuo nome'); return; }
+  entraStanza(c, x && x.pid);
+}
+/* Esce dalla stanza senza cancellarla. Se avvisa, torna a una partita sul telefono. */
+function esciStanza(avvisa) {
+  if (!S || !S.st) { chiudiCollegamento(); return; }
+  chiudiCollegamento();
+  if (avvisa) {
+    S = null; LS.del(K_PARTITA);
+    cfg.telefoni = 'uno'; if (cfg.modo === 'versus' && nomi.length < 2) cfg.modo = 'coop';
+    salvaCfg(); chiudiFoglio(); nuovaPartita();
+    toast('Sei uscito: la stanza resta aperta per gli altri');
+  }
+}
+
+/* Chiudere e cancellare: lapide sul meta, giocatori svuotati, su tutti i server */
+function scriviLapide(links, c, pids, prossima) {
+  const lapide = JSON.stringify(Object.assign({ v: 1, chiusa: true, t: Date.now() }, prossima ? { prossima } : {}));
+  links.forEach(L => {
+    if (!L.ok) return;
+    L.pubblica('meta', lapide, TTL_LAPIDE);
+    new Set([...pids, ...L.giocatori]).forEach(pid => L.pubblica('g/' + pid, '', 0));
+  });
+}
+function chiudiECancella(prossima) {
+  if (!S || !S.st) return;
+  const c = S.st.c;
+  dimenticaStanza(c);
+  if (R && R.c === c) {
+    R.chiusa = true;
+    const pids = [S.st.pid, ...Object.keys(R.giocatori)];
+    const links = R.links;
+    scriviLapide(links, c, pids, prossima);
+    // i server non ancora collegati la ricevono appena si collegano
+    links.forEach(L => { if (!L.ok) { const vecchia = L.client; vecchia && vecchia.once && vecchia.once('connect', () => setTimeout(() => scriviLapide([L], c, pids, prossima), 1500)); } });
+    chiudiCollegamento(8000);
+  } else cancellaDaLista(c);
+  if (!prossima) {
+    S = null; LS.del(K_PARTITA);
+    cfg.telefoni = 'uno'; if (cfg.modo === 'versus' && nomi.length < 2) cfg.modo = 'coop'; salvaCfg();
+    chiudiFoglio(); nuovaPartita(); toast(`Stanza ${c} chiusa e cancellata`);
+  }
+}
+/* Qualcun altro ha chiuso la stanza */
+function stanzaChiusa(m) {
+  if (!R || R.chiusa || !S || !S.st) return;
+  R.chiusa = true;
+  const c = S.st.c, nome = S.st.nome;
+  scriviLapide(R.links.filter(l => !l.lapideVista), c, [S.st.pid], m.prossima);
+  R.links.forEach(L => { if (L.ok) L.pubblica('g/' + S.st.pid, '', 0); });
+  chiudiCollegamento(6000);
+  dimenticaStanza(c);
+  if (m.prossima) { cfg.nome = nome; salvaCfg(); entraStanza(m.prossima); toast(`Nuova partita: stanza ${m.prossima}`); return; }
+  const finita = !!S.fine;
+  if (finita) { delete S.st; S.cfg.telefoni = 'uno'; salva(); disegna(); toast('La stanza è stata chiusa'); return; }
+  S = null; LS.del(K_PARTITA);
+  cfg.telefoni = 'uno'; salvaCfg();
+  nuovaPartita(); toast(`La stanza ${c} è stata chiusa`);
+}
+/* Cancella una stanza dell'elenco a cui non siamo collegati */
+async function cancellaDaLista(c, silenzioso) {
+  if (S && S.st && S.st.c === c) { chiudiECancella(); return; }
+  try { await caricaMqtt(); } catch (e) { if (!silenzioso) toast('Senza connessione: riprova più tardi'); return; }
+  const tmp = { links: [] };
+  let fatto = false;
+  tmp.links = BROKERS.map(u => collega(u, c, (L, sotto, txt) => { if (sotto.startsWith('g/') && txt) L.giocatori.add(sotto.slice(2)); }, L => {
+    setTimeout(() => { scriviLapide([L], c, [], null); fatto = true; }, 1500);
+  }));
+  setTimeout(() => {
+    tmp.links.forEach(l => l.fine());
+    if (fatto) { dimenticaStanza(c); if (!silenzioso) toast(`Stanza ${c} chiusa e cancellata`); }
+    else if (!silenzioso) toast('Non sono riuscito a raggiungere i server: riprova');
+    if (foglio && foglio.tipo === 'imp') disegnaFoglio();
+  }, 6000);
+  if (!silenzioso) { toast(`Chiudo la stanza ${c}…`); }
+}
+/* Stanze di questo telefono più vecchie di 12 ore: si cancellano da sole all'apertura */
+function pulisciStanzeVecchie() {
+  stanzeSalvate().filter(x => Date.now() - x.t > TTL && !(S && S.st && S.st.c === x.c)).forEach(x => cancellaDaLista(x.c, true));
+}
+function controllaScadenza() {
+  if (!R || !R.meta || R.meta.chiusa || R.chiusa) return false;
+  if (scadenzaStanza(R.meta) > 0) return false;
+  chiudiECancella();
+  toast('La stanza aveva più di 12 ore: chiusa e cancellata');
+  return true;
+}
+
+/* ---------- Stanza: viste ---------- */
+function elencoGiocatori() {
+  if (!S || !S.st) return [];
+  const io = Object.assign({ pid: S.st.pid }, S.st.io, { nome: S.st.nome });
+  const altri = Object.entries(R ? R.giocatori : {}).map(([pid, g]) => Object.assign({ pid }, g));
+  return [io, ...altri];
+}
+function statoVersus() {
+  const tutti = elencoGiocatori();
+  const per = Object.fromEntries(tutti.map(g => [g.pid, g]));
+  const host = R && R.meta ? per[R.meta.host] : null;
+  if (!host || !host.avvio) return { fase: 'attesa', tutti };
+  const tolti = new Set(host.tolti || []);
+  const ids = host.avvio.giocatori.filter(id => !tolti.has(id));
+  const gioc = ids.map(id => per[id] || { pid: id, nome: '…', r: 1, fatto: false, domande: 0, dich: null });
+  const attivi = new Set(ids);
+  const io = S.st.pid;
+  for (let r = 1; r < 400; r++) {
+    const inGioco = gioc.filter(g => attivi.has(g.pid));
+    // resta in gara uno solo (gli altri tolti o eliminati): vince lui
+    if (inGioco.length <= 1) return { fase: 'fine', round: r, es: { fine: true, vincitori: inGioco.map(g => g.pid), eliminati: [], ultimo: true }, gioc, attivi, host, dentro: ids.includes(io) };
+    const finito = g => (g.r || 1) > r || ((g.r || 1) === r && g.fatto);
+    const mancano = inGioco.filter(g => !finito(g));
+    if (mancano.length) return { fase: 'gioco', round: r, gioc, attivi, mancano, attivo: attivi.has(io), dentro: ids.includes(io), host };
+    const es = CM.fineRound(S.puzzle, inGioco.map(g => ({ id: g.pid, attivo: true, dich: g.dich && g.dich.r === r ? g.dich : null, domande: g.domande || 0 })));
+    if (es.fine) return { fase: 'fine', round: r, es, gioc, attivi, host, dentro: ids.includes(io) };
+    es.eliminati.forEach(id => attivi.delete(id));
+  }
+  return { fase: 'attesa', tutti };
+}
+/* Quando cambia lo stato degli altri: in versus si passa al round dopo o alla fine */
+function dopoStatoAltrui() {
+  if (!S || !S.st || !R || !R.meta) { disegnaPresto(); return; }
+  if (S.st.modo === 'versus') {
+    const V = statoVersus();
+    if (V.fase === 'gioco' && V.attivo && (S.st.io.r || 1) < V.round) {
+      S.st.io.r = V.round; S.st.io.fatto = false; S.st.banco.r = V.round; S.st.banco.chieste = {};
+      pubblicaIo();
+    }
+    if (V.fase === 'fine' && !S.fine) {
+      S.fine = { tipo: 'versus', r: V.round, vincitori: V.es.vincitori.map(id => (V.gioc.find(g => g.pid === id) || {}).nome || '…'), ultimo: !!V.es.ultimo,
+        righe: V.gioc.map(g => ({ nome: g.nome, domande: g.domande || 0, stato: V.es.vincitori.includes(g.pid) ? 'vince' : (V.attivi.has(g.pid) && !V.es.eliminati.includes(g.pid)) ? 'in gara' : 'eliminato' })) };
+      salva();
+    }
+  } else {
+    const prima = primaDichiarazione();
+    if (prima && !S.fine) {
+      const tot = totaliSquadra();
+      S.fine = { tipo: prima.ok ? 'vinto' : 'perso', dichiarato: prima.codice, domande: tot.domande, prove: tot.prove, chi: prima.nome };
+      salva();
+    }
+  }
+  disegnaPresto();
+}
+function primaDichiarazione() {
+  return elencoGiocatori().filter(g => g.dich && g.dich.codice).map(g => Object.assign({ nome: g.nome }, g.dich)).sort((a, b) => a.t - b.t)[0] || null;
+}
+function totaliSquadra() {
+  const g = elencoGiocatori();
+  return { domande: g.reduce((a, x) => a + (x.domande || 0), 0), prove: g.reduce((a, x) => a + (x.prove ? x.prove.length : 0), 0) };
+}
+function dichiaraCoopStanza(cod) {
+  const b = S.st.banco;
+  chiudiRound(b);
+  S.st.io.dich = { codice: cod, ok: CM.giusto(S.puzzle, cod), t: Date.now() };
+  pubblicaIo(); chiudiFoglio(); dopoStatoAltrui();
+}
+function avviaVersusStanza() {
+  const V = statoVersus();
+  const presenti = elencoGiocatori();
+  if (presenti.length < 2) { toast('Aspetta almeno un altro giocatore'); return; }
+  S.st.io.avvio = { t: Date.now(), giocatori: presenti.map(g => g.pid) };
+  pubblicaIo(); disegna();
+}
+function togliGiocatore(pid) {
+  if (!S.st.host || pid === S.st.pid) return;
+  S.st.io.tolti = Array.from(new Set([...(S.st.io.tolti || []), pid]));
+  pubblicaIo(); dopoStatoAltrui(); toast('Tolto dalla partita');
+}
+function versusStanzaFineRound(cod) {
+  const b = S.st.banco;
+  chiudiRound(b, false);
+  S.st.io.fatto = true;
+  if (cod) S.st.io.dich = { r: S.st.io.r || 1, codice: cod };
+  pubblicaIo(); chiudiFoglio(); dopoStatoAltrui();
+  $('scorri').scrollTop = 0;
+}
+/* Fine partita in stanza: chi l'ha creata apre una stanza nuova e porta tutti lì */
+function nuovaStanzaDopo() {
+  if (!S || !S.st || !S.st.host) return;
+  const vecchio = S.st.c, mod = S.cfg.modo, liv = S.cfg.livello;
+  cfg.modo = mod; cfg.livello = liv; cfg.telefoni = 'tanti'; cfg.nome = S.st.nome; salvaCfg();
+  const statoVecchio = { c: vecchio, R };
+  R = null;   // il collegamento vecchio resta acceso per scrivere la lapide
+  const nuovo = creaStanza(true);
+  if (statoVecchio.R) {
+    const v = statoVecchio.R; v.chiusa = true;
+    scriviLapide(v.links, vecchio, [], nuovo);
+    v.links.forEach(L => { new Set(L.giocatori).forEach(pid => L.ok && L.pubblica('g/' + pid, '', 0)); });
+    clearInterval(v.timer); setTimeout(() => v.links.forEach(l => l.fine()), 8000);
+  }
+  dimenticaStanza(vecchio);
+  toast(`Nuova stanza ${nuovo}: gli altri ti seguono da soli`);
+}
+
+function vistaStanza() {
+  const v = $('vista');
+  if (!R || !R.meta || !S.puzzle) {
+    const lungo = R && Date.now() - R.cercaDal > 9000;
+    v.innerHTML = `<div class="fine"><p class="occhiello">Stanza</p><div class="codice-stanza">${esc(S.st.c)}</div>
+      <p class="aiuto" style="font-size:14.5px;color:var(--tenue)">${lungo ? 'Non trovo la stanza. Controlla il codice e la connessione: continuo a cercarla.' : 'Mi collego alla stanza…'}</p>
+      <div class="azioni una"><button type="button" class="btn" data-az="esci-stanza">Lascia perdere</button></div></div>`;
+    return;
+  }
+  const b = S.st.banco;
+  if (S.st.modo === 'coop') {
+    const altri = elencoGiocatori();
+    const righe = altri.flatMap(g => (g.pid === S.st.pid ? righeBanco(b).map(x => ({ t: x.ora ? Date.now() : (b.storico.find(y => y.r === x.r) || {}).t || 0, chi: 'Tu', codice: x.codice, esiti: x.esiti, ora: x.ora })) :
+      (g.prove || []).map(p => ({ t: p.t, chi: g.nome, codice: p.codice, esiti: p.esiti, ora: p.aperta })))).sort((a, c) => a.t - c.t);
+    const tot = totaliSquadra();
+    v.innerHTML = htmlPlancia(b, {
+      puo: true, intesta: `La tua prova · squadra: ${pl(tot.prove, 'prova', 'prove')}`, righe, conChi: true,
+      sopra: `<div class="avviso">Squadra: <b>${altri.map(g => esc(g.pid === S.st.pid ? 'tu' : g.nome)).join(', ')}</b> · ${pl(tot.domande, 'domanda', 'domande')} in tutto.</div>`,
+      azioni: `<div class="azioni">
+        <button type="button" class="btn" data-az="coop-nuova-prova" ${fissato(b) ? '' : 'disabled'}>Nuova prova</button>
+        <button type="button" class="btn primo" data-az="soluzione">Ho la soluzione</button></div>`
+    });
+    return;
+  }
+  const V = statoVersus();
+  if (V.fase === 'attesa') {
+    const tutti = V.tutti;
+    v.innerHTML = `<div class="fine"><p class="occhiello">Versus · ${LIV[S.cfg.livello].nome}</p>
+      <p class="aiuto" style="font-size:14.5px;color:var(--tenue)">Codice della stanza da dire agli altri:</p>
+      <div class="codice-stanza">${esc(S.st.c)}</div>
+      <div class="pubblico">${tutti.map(g => `<div><b>${esc(g.pid === S.st.pid ? g.nome + ' (tu)' : g.nome)}</b><span>${R.meta.host === g.pid ? 'ha creato la stanza' : 'pronto'}</span></div>`).join('')}</div>
+      ${S.st.host ? `<div class="azioni una"><button type="button" class="btn primo" data-az="stanza-inizia" ${tutti.length >= 2 ? '' : 'disabled'}>Inizia la partita<small>${tutti.length >= 2 ? pl(tutti.length, 'giocatore', 'giocatori') : 'aspetta almeno un altro'}</small></button></div>`
+        : `<p class="aiuto" style="font-size:14px">Aspettiamo che ${esc((tutti.find(g => g.pid === R.meta.host) || {}).nome || 'chi ha creato la stanza')} inizi la partita.</p>`}
+      </div>`;
+    return;
+  }
+  if (!V.dentro) {
+    v.innerHTML = `<div class="fine"><h2>Partita già iniziata</h2><p class="aiuto" style="font-size:14.5px;color:var(--tenue)">In questa stanza si gioca senza di te. Aspetta la prossima.</p>
+      <div class="azioni una"><button type="button" class="btn" data-az="esci-stanza">Esci dalla stanza</button></div></div>`;
+    S.st.fuori = true;
+    return;
+  }
+  const io = S.st.io;
+  let sopra = '', puo = V.attivo && !io.fatto;
+  if (!V.attivo) sopra = `<div class="avviso">Hai dichiarato un codice sbagliato: sei <b>eliminato</b>. Puoi guardare come finisce.</div>`;
+  else if (io.fatto) sopra = `<div class="avviso">Round ${V.round} finito per te. Aspettiamo <b>${V.mancano.map(g => esc(g.nome)).join(', ')}</b>.</div>`;
+  sopra += `<div class="pubblico">${V.gioc.map(g => `<div><b class="${V.attivi.has(g.pid) ? '' : 'via'}">${esc(g.pid === S.st.pid ? 'Tu' : g.nome)}</b><span>${V.attivi.has(g.pid) ? (V.mancano.some(x => x.pid === g.pid) ? 'gioca il round ' + V.round : 'ha finito il round') + ' · ' + pl(g.domande || 0, 'domanda', 'domande') : 'eliminato'}</span></div>`).join('')}</div>`;
+  v.innerHTML = htmlPlancia(b, {
+    puo, intesta: `Le tue schede · round ${V.round}`, righe: righeBanco(b), sopra,
+    nota: puo ? null : '',
+    azioni: puo ? `<div class="azioni una"><button type="button" class="btn primo" data-az="versus-fine-round">Fine round<small>${fissato(b) ? pl(Object.keys(b.chieste).length, 'domanda', 'domande') + ' in questo round' : 'nessuna domanda in questo round'}</small></button></div>` : ''
+  });
+}
+function htmlFoglioStanza() {
+  const tutti = elencoGiocatori();
+  const V = S.st.modo === 'versus' && R && R.meta ? statoVersus() : null;
+  const inGioco = V && V.fase === 'gioco';
+  const on = R ? R.links.filter(l => l.ok).length : 0;
+  return `<div class="codice-stanza">${esc(S.st.c)}</div>
+    <p class="nota" style="text-align:center">${S.cfg.modo === 'versus' ? 'Versus' : 'Collaborativa'} · ${LIV[S.cfg.livello].nome} · collegato a ${on} server su ${BROKERS.length}</p>
+    <h3>Giocatori</h3>
+    <ul class="lista">${tutti.map(g => `<li><span>${esc(g.nome)}${g.pid === S.st.pid ? ' (tu)' : ''}</span>
+      <span class="piccoli"><span class="stato">${pl(g.domande || 0, 'domanda', 'domande')}</span>${inGioco && S.st.host && g.pid !== S.st.pid && V.attivi.has(g.pid) ? `<button type="button" class="btn" data-az="togli" data-pid="${esc(g.pid)}">Togli</button>` : ''}</span></li>`).join('')}</ul>
+    ${inGioco && S.st.host ? '<p class="nota">«Togli» serve se qualcuno se ne va: senza di lui il round si chiude.</p>' : ''}
+    <div class="azioni">
+      <button type="button" class="btn" data-az="esci-stanza">Esci<small>la stanza resta</small></button>
+      <button type="button" class="btn pericolo" data-tieni="chiudi-stanza" data-ms="1200"><span class="riempi"></span><span class="lbl">Chiudi e cancella<small>tieni premuto</small></span></button>
+    </div>
+    <p class="nota">Chiudere la stanza la cancella per tutti dai server. Si cancella comunque da sola dopo 12 ore.</p>`;
+}
+
+/* =====================================================================
+   Avvio
+   ===================================================================== */
+function partitaValida(x) {
+  if (!x || x.v !== 1 || !x.cfg) return false;
+  if (x.st) return typeof x.st.c === 'string' && x.st.banco && x.st.io;
+  if (!x.puzzle || CM.controlla(x.puzzle)) return false;
+  if (x.loc) return Array.isArray(x.loc.codice);
+  if (x.vs) return Array.isArray(x.vs.giocatori) && x.vs.giocatori.length >= 2;
+  return false;
+}
+(function avvia() {
+  const salvata = LS.get(K_PARTITA, null);
+  if (partitaValida(salvata)) {
+    S = salvata;
+    if (S.st) { S.puzzle = S.st.puzzle || null; apriStanza(S.st.c, null); }
+    else disegna();
+  } else {
+    if (cfg.telefoni === 'tanti' || (cfg.modo === 'versus' && nomi.length < 2)) { cfg.telefoni = 'uno'; if (cfg.modo === 'versus' && nomi.length < 2) cfg.modo = 'coop'; }
+    nuovaPartita();
+  }
+  setTimeout(pulisciStanzeVecchie, 1500);
+})();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>
