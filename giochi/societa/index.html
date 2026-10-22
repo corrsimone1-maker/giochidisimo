@@ -549,8 +549,8 @@ function fai(ev) {
   return true;
 }
 function registraStorico() {
-  const st = loadJSON(K_ST, []), lista = Array.isArray(st) ? st : [];
-  if (lista.some(x => x && x.id === P.id)) return;
+  // una riga per partita: se si annulla il finale e lo si rifà, la riga si aggiorna
+  const st = loadJSON(K_ST, []), lista = (Array.isArray(st) ? st : []).filter(x => !(x && x.id === P.id));
   lista.push(SS.riassunto(S, P));
   saveJSON(K_ST, lista.slice(-200));
 }
@@ -840,7 +840,7 @@ function passaCannocchiale(cn) {
       $('sgTitolo').innerHTML = `<small>CANNOCCHIALE</small>${esc(S.nomi[cn.chi])}`;
       $('sgCorpo').innerHTML = `<div class="rivela" style="--c:${T ? 'var(--cera-2)' : 'var(--alloro-2)'}"><div class="sigillo" style="--c:var(--viola-2)">${ICONA.astrolabio}</div>
         <div class="s">Nel Patto, <b>${esc(S.nomi[cn.bersaglio])}</b> ha scelto</div><div class="t">${T ? 'Traditore' : 'Leale'}</div>
-        <div class="s" style="max-width:32ch;text-align:center;line-height:1.5">Fanne ciò che vuoi: tacere, avvertire qualcuno o ricattare. Nessuno sa che lo sai.</div></div>`;
+        <div class="s" style="max-width:32ch;text-align:center;line-height:1.5">Fanne ciò che vuoi: tacere, avvertire qualcuno o ricattare. Gli altri hanno visto che il telefono è passato a te, ma non cosa ti ha mostrato.</div></div>`;
       $('sgCopri').textContent = 'Ho letto: copri';
       $('sgCopri').onclick = () => { P.ui.visti = P.ui.visti || {}; P.ui.visti[S.c] = true; salva(); pulisciRiservato(); vai(); };
       show('segreto'); sveglia();
@@ -1254,17 +1254,28 @@ function renderFine() {
       <details><summary>Da dove vengono</summary><ul class="voci">${x.voci.map(v => `<li><span>${v.era === 'fine' ? '' : 'Era ' + ROM[v.era] + ' · '}${esc(v.testo)}</span><b class="${v.p > 0 ? 'p' : v.p < 0 ? 'n' : 'z'}">${segno(v.p)}</b></li>`).join('') || '<li><span>Niente</span><b class="z">0</b></li>'}</ul></details></div>`;
   }).join('') + '</div>';
   $('fiCorpo').innerHTML = h;
-  $('fi7w').textContent = P.ui.esportato ? 'Già nel conteggio di 7 Wonders: apri' : 'Porta i punti nel conteggio di 7 Wonders';
+  const es = esportati();
+  $('fi7w').textContent = !es ? 'Porta i punti nel conteggio di 7 Wonders' : es.every((p, g) => p === S.punti[g]) ? 'Già nel conteggio di 7 Wonders: apri' : 'Aggiorna i punti nel conteggio di 7 Wonders';
   $('fiAnnulla').disabled = !SS.puoAnnullare(P);
+}
+/* Punti già scritti nel conteggio di 7 Wonders (per correggerli se si annulla e si rifà il finale) */
+function esportati() {
+  const e = P.ui.esportato;
+  if (Array.isArray(e) && e.length === S.n) return e;
+  return e === true ? S.punti.slice() : null;
 }
 /* Scrive i punti nella riga «Extra» del calcolatore di 7 Wonders della stessa app */
 $('fi7w').onclick = () => {
-  if (P.ui.esportato) { location.href = '../7wonders/'; return; }
-  finestra('Conteggio di 7 Wonders', `<p style="margin:0 0 8px">I punti dell’espansione si aggiungono alla riga <b>Extra</b> di ognuno nel conteggio finale di 7 Wonders (si accende da sola). Chi non c’è ancora viene aggiunto con il suo nome.</p><p class="recap" style="margin:0">Se nella riga Extra avevate già altri punti (Leaders, Cities…), restano e si sommano.</p>`, [
-    { t: 'Aggiungi e apri il conteggio', f: () => esporta() }, { t: 'Annulla', cls: 'sec' }
+  const es = esportati();
+  if (es && es.every((p, g) => p === S.punti[g])) { location.href = '../7wonders/'; return; }
+  finestra('Conteggio di 7 Wonders', es
+    ? `<p style="margin:0">Dopo l’ultima volta i punti sono cambiati: nella riga <b>Extra</b> si toglie quello che era stato aggiunto e si mette il valore nuovo.</p>`
+    : `<p style="margin:0 0 8px">I punti dell’espansione si aggiungono alla riga <b>Extra</b> di ognuno nel conteggio finale di 7 Wonders (si accende da sola). Chi non c’è ancora viene aggiunto con il suo nome.</p><p class="recap" style="margin:0">Se nella riga Extra avevate già altri punti (Leaders, Cities…), restano e si sommano.</p>`, [
+    { t: es ? 'Aggiorna e apri il conteggio' : 'Aggiungi e apri il conteggio', f: () => esporta() }, { t: 'Annulla', cls: 'sec' }
   ]);
 };
 function esporta() {
+  const prima = esportati() || Array(S.n).fill(0);
   let st = loadJSON(K_7W, null);
   const vuoto = p => !p || (['mil', 'coins', 'won', 'civ', 'com', 'gui', 'ext'].every(k => !p[k]) && !(p.sci && (p.sci.a || p.sci.b || p.sci.c || p.sci.j)));
   if (!st || !Array.isArray(st.players)) st = { v: 2, players: [], extra: false };
@@ -1273,7 +1284,7 @@ function esporta() {
   S.nomi.forEach((nm, g) => {
     let p = st.players.find(x => x && chiave(x.name || '') === chiave(nm));
     if (!p) { p = nuovo(nm); st.players.push(p); }
-    p.ext = (Number.isInteger(p.ext) ? p.ext : 0) + S.punti[g];
+    p.ext = (Number.isInteger(p.ext) ? p.ext : 0) + S.punti[g] - prima[g];
   });
   st.v = 2; st.extra = true;
   if (!saveJSON(K_7W, st)) { toast('Il telefono non riesce a salvare'); return; }
@@ -1281,7 +1292,7 @@ function esporta() {
   // (7 giorni senza aprirlo) cancellerebbe i punti appena scritti
   const uso = loadJSON('gds-ultimo-uso', {});
   if (uso && typeof uso === 'object' && !Array.isArray(uso)) { uso['giochi/7wonders/'] = Date.now(); saveJSON('gds-ultimo-uso', uso); }
-  P.ui.esportato = true; salva();
+  P.ui.esportato = S.punti.slice(); salva();
   location.href = '../7wonders/';
 }
 $('fiArch').onclick = () => apriArchivio('fine');

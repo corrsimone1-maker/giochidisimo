@@ -144,7 +144,7 @@ const SOCIETA = [
     missione: 'Avere almeno 2 carte viola.',
     potere: { id: 'privilegio', nome: 'Privilegio', testo: 'Dichiaralo in cabina: nell’Era che segue, se il decreto eletto ti premia, prendi il doppio.' } },
   { id: 'velo', nome: 'Società del Velo', simbolo: 'velo', verifica: 'app', richiede: 'scommesse',
-    missione: 'Vincere entrambe le scommesse (una per Conclave).',
+    missione: 'Vincere almeno una scommessa senza perderne nessuna (una coperta dal Velo conta come persa).',
     potere: { id: 'velo', nome: 'Velo', testo: 'Dichiaralo insieme a una scommessa: se la perdi, niente penalità.' } }
 ];
 const SOC = Object.fromEntries(SOCIETA.map(s => [s.id, s]));
@@ -383,7 +383,10 @@ function missioneApp(S, g) {
     return partner.size >= 2;
   }
   if (s === 'araldi') return [2, 3].every(c => S.conclavi[c].schede[g].voto === S.conclavi[c].elezione.eletto);
-  if (s === 'velo') return [2, 3].reduce((t, k) => t + S.risultati[k].scommesse.filter(x => x.g === g && x.ok).length, 0) >= 2;
+  if (s === 'velo') {
+    const mie = [2, 3].flatMap(k => S.risultati[k].scommesse.filter(x => x.g === g));
+    return mie.some(x => x.ok) && mie.every(x => x.ok);
+  }
   return false;
 }
 function domandeMissioni(S) {

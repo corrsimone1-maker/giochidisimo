@@ -295,7 +295,24 @@ prova('domande: non dipendono da intenzioni né poteri (si chiedono anche gli ob
 });
 
 /* ======================= Missioni ======================= */
-prova('missioni: Concordia (due relazioni riuscite con persone diverse), Araldi (eletto due volte), Velo (due scommesse), le altre dal tavolo', () => {
+prova('missione del Velo: almeno una scommessa vinta e nessuna persa (anche coperta dal Velo)', () => {
+  const soc = ['velo', 'oro', 'lame', 'pietra', 'araldi'];
+  const gioca = (sc2, ok2, sc3, ok3, velo3) => {
+    let P = A(partita({}, 5, soc), { t: 'fineEra' });
+    P = finoAllaVerifica(P, [], sc2 ? { 0: { scommessa: { b: 1, a: R2 } } } : {});
+    P = A(P, { t: 'verifica', r: ok2 ? r('1|' + R2) : {} });
+    P = finoAllaVerifica(P, [], sc3 ? { 0: Object.assign({ scommessa: { b: 2, a: B2 } }, velo3 ? { potere: { id: 'velo' } } : {}) } : {});
+    P = A(P, { t: 'verifica', r: ok3 ? r('2|' + B2) : {} });
+    return S(A(P, { t: 'missioni', r: {} })).missioni[0];
+  };
+  assert.equal(gioca(true, true, true, true), true, 'due vinte');
+  assert.equal(gioca(true, true, false), true, 'una vinta, l’altra non fatta');
+  assert.equal(gioca(false, false, true, true), true);
+  assert.equal(gioca(true, true, true, false), false, 'una persa');
+  assert.equal(gioca(true, true, true, false, true), false, 'persa ma coperta dal Velo: conta come persa');
+  assert.equal(gioca(false, false, false), false, 'nessuna scommessa');
+});
+prova('missioni: Concordia (due relazioni riuscite con persone diverse), Araldi (eletto due volte), Velo, le altre dal tavolo', () => {
   const soc = ['concordia', 'araldi', 'velo', 'pietra', 'lame'];
   let P = A(partita({}, 5, soc), { t: 'fineEra' });
   P = finoAllaVerifica(P, [{ t: 'relazione', tipo: 'patto', a: 0, b: 3, oa: V2, ob: V2 }], { 1: { voto: 'culto' }, 2: { voto: 'culto', scommessa: { b: 4, a: R2 } }, 4: { voto: 'culto' } });

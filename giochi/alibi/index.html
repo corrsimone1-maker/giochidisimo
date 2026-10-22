@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0D0F12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<script src="motore.js"></script>
+<title>ALIBI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700;1,800&family=Courier+Prime:wght@400;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tema «giallo di notte»: grafite fredda, fascicoli battuti a macchina, la pianta disegnata col gesso
+   e un solo accento giallo evidenziatore. Il rosso è solo per la scena del delitto e i timbri. */
+:root{
+  --notte:#0D0F12; --carta:#15181D; --carta-2:#1C2026; --pozzo:#0A0B0E;
+  --linea:rgba(215,219,224,.08); --linea-2:rgba(215,219,224,.16); --linea-g:rgba(242,210,27,.34);
+  --giallo:#F2D21B; --giallo-2:#F8E57A; --giallo-ombra:rgba(242,210,27,.09);
+  --rosso:#D2453A; --rosso-2:#EE8077; --rosso-ombra:rgba(210,69,58,.12);
+  --gesso:#D7DBE0; --testo:#E7E9EC; --muto:#8F96A0; --fioco:#5E646D;
+  --disp:'Playfair Display',Georgia,'Times New Roman',serif;
+  --macch:'Courier Prime','Courier New',ui-monospace,monospace;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;color:var(--testo);font-family:var(--ui);-webkit-tap-highlight-color:transparent}
+html{background:var(--notte)}
+body{min-height:100dvh;background:radial-gradient(100% 40% at 50% -8%,rgba(242,210,27,.05),transparent 60%),var(--notte)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--giallo);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px}
+.back{display:inline-block;padding:8px 0;color:var(--giallo);font-weight:700;font-size:15px;text-decoration:none;background:none;border:0}
+.link{background:none;border:0;padding:6px 0;color:var(--giallo);font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.link.muto{color:var(--muto);font-size:14px}
+.links{display:flex;gap:16px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muto);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.reset.armed{color:var(--rosso-2)}
+.macch{font-family:var(--macch)}
+.kick{font-family:var(--macch);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muto)}
+.ev{background:linear-gradient(transparent 52%,rgba(242,210,27,.42) 52%,rgba(242,210,27,.42) 90%,transparent 90%);padding:0 2px}
+
+/* Intestazione */
+.hero{position:relative;margin:10px 0 16px;padding:22px 18px 18px;border:1px solid var(--linea-2);border-radius:16px;overflow:hidden;background:var(--carta)}
+.hero h1{position:relative;font-family:var(--disp);font-style:italic;font-weight:800;font-size:clamp(64px,21vw,96px);line-height:.86;margin:6px 0 12px;color:var(--giallo);letter-spacing:-.01em}
+.hero p{position:relative;margin:0;color:var(--muto);font-size:15px;line-height:1.5;max-width:33ch}
+.hero p b{color:var(--testo)}
+.hero svg.pianta-deco{position:absolute;right:-12px;top:-8px;width:160px;opacity:.16;pointer-events:none}
+
+/* Pannelli */
+.pan{background:var(--carta);border:1px solid var(--linea);border-radius:16px;padding:16px;margin-bottom:12px}
+.pan.g{border-color:var(--linea-g)}
+h2{font-family:var(--disp);font-weight:700;font-size:21px;margin:0 0 10px}
+.sub{margin:-4px 0 12px;color:var(--muto);font-size:14px;line-height:1.45}
+.sub b{color:var(--testo)}
+.row{display:flex;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.in{flex:1;min-width:0;height:48px;padding:0 14px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-size:17px}
+.in::placeholder{color:var(--fioco)}
+.in:focus{outline:none;border-color:var(--giallo)}
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:13px;border:0;background:var(--giallo);color:#17140A;
+  font-weight:700;font-size:16.5px;text-align:center;text-decoration:none;overflow:hidden}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:transparent;color:var(--testo);border:1px solid var(--linea-2)}
+.btn.rosso{background:var(--rosso);color:#1E0806}
+.btn.small{width:auto;min-height:44px;padding:0 16px;border-radius:11px;font-size:15px}
+.btn:disabled{opacity:.33;transform:none}
+.stack{display:grid;gap:10px}
+.center{display:block;margin:14px auto 0}
+.warn{margin:10px 0 12px;color:var(--rosso-2);font-size:14px;font-weight:600}
+.recap{margin:4px 0 0;color:var(--muto);font-size:13.5px;line-height:1.55}
+.recap b{color:var(--testo);font-weight:600}
+.players{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.players li{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea)}
+.players .n{font-family:var(--macch);color:var(--giallo);font-size:13px;width:22px;flex:none}
+.players .nm{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ico{width:34px;height:34px;border-radius:9px;border:0;background:rgba(255,255,255,.05);color:var(--muto);font-size:15px;line-height:1;flex:none}
+.ico:disabled{opacity:.25}
+.scelte{display:grid;gap:8px}
+.scelte.due{grid-template-columns:1fr 1fr}
+.scelte.tre{grid-template-columns:repeat(3,1fr)}
+.scelte button{text-align:left;padding:11px 12px;border-radius:12px;border:1px solid var(--linea-2);background:var(--pozzo);color:var(--testo)}
+.scelte button b{display:block;font-size:15px}
+.scelte button small{display:block;color:var(--muto);font-size:12.5px;line-height:1.4;margin-top:3px}
+.scelte.tre button{text-align:center}
+.scelte button.on{border-color:var(--giallo);background:var(--giallo-ombra)}
+.scelte button.on b{color:var(--giallo-2)}
+.etich{font-family:var(--macch);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muto);margin:14px 0 7px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 13px;border-radius:999px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:600;font-size:14.5px;color:var(--testo)}
+.chip.on{border-color:var(--giallo);background:var(--giallo-ombra);color:var(--giallo-2)}
+
+/* Il caso */
+.fascicolo{position:relative;padding:16px 16px 14px;border-radius:14px;background:var(--carta);border:1px solid var(--linea-2);margin:8px 0 12px;overflow:hidden}
+.fascicolo::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(90deg,var(--giallo) 0 14px,#111 14px 28px);opacity:.85}
+.fascicolo .num{font-family:var(--macch);font-size:12px;letter-spacing:.14em;color:var(--muto);margin-top:4px}
+.fascicolo .luogo{font-family:var(--disp);font-weight:700;font-size:clamp(26px,8vw,34px);line-height:1.05;margin:6px 0 2px}
+.fascicolo .dove{color:var(--muto);font-size:14px}
+.fascicolo .delitto{margin-top:12px;font-family:var(--macch);font-size:15.5px;line-height:1.5;color:var(--testo)}
+.fascicolo .delitto b{color:var(--rosso-2)}
+.pianta{display:block;width:100%;height:auto;margin:4px 0 0}
+.pianta .st{fill:var(--carta-2);stroke:var(--gesso);stroke-opacity:.55;stroke-width:1.1}
+.pianta .st.x{fill:rgba(210,69,58,.16);stroke:var(--rosso)}
+.pianta .st.mia{fill:rgba(242,210,27,.13)}
+.pianta .porta{stroke:var(--pozzo);stroke-width:3.4}
+.pianta .stipite{stroke:var(--gesso);stroke-opacity:.55;stroke-width:1.1}
+.pianta .gancio{fill:var(--gesso);opacity:.5}
+.pianta text{font-family:var(--ui);fill:var(--testo);font-size:8.6px;font-weight:600;text-anchor:middle}
+.pianta text.sg{font-family:var(--macch);font-size:7.5px;fill:var(--muto);font-weight:400;letter-spacing:.06em}
+.pianta text.x{fill:var(--rosso-2);font-family:var(--macch);font-size:7.5px;font-weight:700;letter-spacing:.08em}
+.legenda{margin-top:8px;font-size:13px;color:var(--muto);line-height:1.5}
+.verbale{border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin-bottom:8px;overflow:hidden}
+.verbale summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;cursor:pointer}
+.verbale summary::-webkit-details-marker{display:none}
+.verbale summary b{display:block;font-size:15.5px}
+.verbale summary small{display:block;color:var(--muto);font-size:12.5px;margin-top:1px}
+.verbale summary::after{content:'▸';color:var(--muto)}
+.verbale[open] summary::after{content:'▾'}
+.verbale .righe{padding:0 12px 12px}
+.diario{display:grid;grid-template-columns:auto 1fr;gap:0 12px;font-family:var(--macch);font-size:14.5px;line-height:1.35}
+.diario>div{padding:7px 0;border-top:1px dashed var(--linea-2)}
+.diario>div:nth-child(-n+2){border-top:0}
+.diario .h{color:var(--muto)}
+.diario .s{font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.diario .c{display:block;font-weight:400;text-transform:none;letter-spacing:0;color:#C9CDD3;font-size:13.5px;margin-top:1px}
+.diario .c.no{color:var(--fioco);font-style:italic}
+.diario .c.delitto{color:var(--rosso-2);font-style:normal}
+.diario .s.rifiuto{color:var(--giallo-2);font-weight:400}
+.diario .s.rifiuto .c{display:inline;color:var(--giallo-2);opacity:.85}
+.alibi{margin-top:10px;font-size:14px;line-height:1.5;color:#D4D7DC}
+.alibi b{color:var(--testo)}
+.tempo{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--macch);font-size:12px;color:var(--muto);margin:2px 2px 12px;letter-spacing:.04em;white-space:nowrap}
+.azioni{display:grid;gap:10px}
+
+/* Schermate a tutto schermo */
+.stage{min-height:100dvh;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.stage .top{display:flex;justify-content:space-between;align-items:center;color:var(--muto);font-weight:600;font-size:14px;min-height:40px;gap:10px}
+.stage .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:18px 0}
+.big{font-family:var(--disp);font-weight:800;font-style:italic;font-size:clamp(40px,13vw,60px);line-height:1;word-break:break-word}
+.lede{margin:2px auto 0;color:var(--muto);font-size:15px;line-height:1.5;max-width:34ch}
+.lede b{color:var(--testo)}
+.bottom{display:grid;gap:10px}
+.busta{width:110px;height:78px;margin:0 auto 10px;position:relative;color:var(--giallo)}
+.busta svg{width:100%;height:100%}
+.timbro{display:inline-block;font-family:var(--macch);font-weight:700;font-size:12px;letter-spacing:.2em;padding:4px 9px;border:1.5px solid currentColor;border-radius:4px;color:var(--rosso-2);transform:rotate(-3deg)}
+.testa{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px dashed var(--linea-2);margin-bottom:12px}
+.testa .t{font-family:var(--disp);font-weight:700;font-size:24px}
+.testa .t small{display:block;font-family:var(--macch);font-size:11.5px;letter-spacing:.14em;color:var(--muto);font-weight:400}
+.copri{min-height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--linea-2);background:var(--pozzo);font-weight:700;font-size:15px;color:var(--testo)}
+.ruolo{padding:14px;border-radius:13px;background:var(--giallo-ombra);border:1px solid var(--linea-g);margin-bottom:12px}
+.ruolo .r{font-family:var(--disp);font-weight:800;font-style:italic;font-size:30px;color:var(--giallo-2);line-height:1.05}
+.ruolo p{margin:8px 0 0;font-size:14.5px;line-height:1.5;color:#D4D7DC}
+.ruolo p b{color:var(--testo)}
+.movente{margin:10px 0 0;font-family:var(--macch);font-size:14px;color:var(--muto);line-height:1.45}
+
+/* Taccuino */
+.griglia{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+.griglia table{border-collapse:separate;border-spacing:3px;min-width:100%}
+.griglia th{font-family:var(--macch);font-size:11px;color:var(--muto);font-weight:400;padding:2px 0;white-space:nowrap}
+.griglia th.nm{text-align:left;font-family:var(--ui);font-size:12.5px;color:var(--testo);font-weight:600;max-width:78px;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
+.griglia th.nm small{display:block;font-size:10px;color:var(--muto);font-weight:500}
+.griglia td{padding:0}
+.griglia td button{width:100%;min-width:34px;height:36px;border-radius:7px;border:1px solid var(--linea-2);background:var(--pozzo);font-family:var(--macch);font-weight:700;font-size:13px;color:var(--testo)}
+.griglia td button.pieno{background:var(--carta-2);border-color:rgba(215,219,224,.3)}
+.griglia td button.x{border-color:var(--rosso);color:var(--rosso-2);background:var(--rosso-ombra)}
+.griglia td button.dubbio{color:var(--giallo-2);border-style:dashed}
+.griglia th.T{color:var(--rosso-2);font-weight:700}
+.griglia td.T button{box-shadow:0 0 0 1px rgba(210,69,58,.35)}
+
+/* Soluzione */
+.esito{padding:22px 18px;border-radius:16px;border:1px solid var(--c,var(--linea-g));background:var(--carta);margin:8px 0 12px;text-align:center}
+.esito .t{font-family:var(--disp);font-weight:800;font-style:italic;font-size:clamp(34px,11vw,48px);line-height:1;color:var(--c2,var(--giallo-2))}
+.esito .s{color:var(--muto);font-size:15px;line-height:1.5;margin-top:8px}
+.esito .s b{color:var(--testo)}
+.passi{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:p}
+.passi li{position:relative;padding:10px 12px 10px 40px;border-radius:11px;background:var(--pozzo);font-size:14.5px;line-height:1.5;color:#D4D7DC;counter-increment:p}
+.passi li::before{content:counter(p);position:absolute;left:12px;top:10px;font-family:var(--macch);font-weight:700;color:var(--giallo)}
+.passi li.bugia{border:1px solid rgba(210,69,58,.4)}
+.passi li.bugia::before{color:var(--rosso-2)}
+.passi li.innocente::before{color:var(--muto)}
+.vero td button{cursor:default}
+
+/* Finestre */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(4,5,7,.8);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
+.velo .box{width:100%;max-width:544px;max-height:90dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 16px;border-radius:18px;background:var(--carta);border:1px solid var(--linea-2)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;pointer-events:none;max-width:92vw;padding:11px 16px;border-radius:12px;background:var(--giallo-2);color:#17140A;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.attesa{position:fixed;inset:0;z-index:50;background:rgba(9,10,12,.92);display:grid;place-items:center;text-align:center;padding:24px}
+.attesa .big{color:var(--giallo)}
+.linkbox{font-family:var(--macch);font-size:12.5px;word-break:break-all;padding:10px 12px;border-radius:10px;background:var(--pozzo);border:1px solid var(--linea);color:var(--muto)}
+.codice{font-family:var(--macch);font-weight:700;font-size:40px;letter-spacing:.18em;color:var(--giallo);text-align:center;margin:6px 0 2px}
+
+/* Regolamento */
+.rules h3{font-family:var(--disp);font-weight:700;font-size:21px;margin:26px 0 8px;color:var(--giallo-2);scroll-margin-top:12px}
+.rules h3 .k{display:block;font-family:var(--macch);font-size:11px;letter-spacing:.18em;color:var(--fioco);font-weight:400;margin-bottom:2px}
+.rules p,.rules li{font-size:15px;line-height:1.6;color:#D4D7DC}
+.rules p{margin:0 0 9px}
+.rules ul,.rules ol{margin:0 0 9px;padding-left:21px}
+.rules li{margin:3px 0}
+.rules b{color:var(--testo)}
+.rules .box{padding:12px 14px;border-radius:12px;background:var(--pozzo);border:1px solid var(--linea);margin:8px 0 12px}
+.rules .box.g{border-color:var(--linea-g);background:var(--giallo-ombra)}
+.rules .box p:last-child{margin-bottom:0}
+.rules table{width:100%;border-collapse:collapse;margin:6px 0 12px;font-size:14px}
+.rules th,.rules td{padding:7px 6px;border-bottom:1px solid var(--linea);text-align:left;vertical-align:top}
+.rules th{font-family:var(--macch);font-size:11.5px;letter-spacing:.06em;color:var(--muto);font-weight:400}
+.indice{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 6px}
+.indice a{display:block;padding:9px 10px;border-radius:10px;background:var(--pozzo);border:1px solid var(--linea);color:var(--testo);text-decoration:none;font-size:13.5px;line-height:1.3}
+.indice a span{font-family:var(--macch);font-size:11px;color:var(--giallo);margin-right:6px}
+
+/* Tieni premuto */
+.hold{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(10,8,2,.25);pointer-events:none}
+.btn.sec.hold .fill{background:rgba(242,210,27,.15)}
+.hold.going .fill{transition:transform var(--ms,600ms) linear;transform:scaleX(1)}
+.hold span{position:relative}
+@media (prefers-reduced-motion:reduce){.hold.going .fill{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= Inizio ================= -->
+<main class="wrap" id="inizio">
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
+  <header class="hero">
+    <svg class="pianta-deco" viewBox="0 0 300 210" aria-hidden="true"><g fill="none" stroke="#F2D21B" stroke-width="2"><rect x="6" y="6" width="288" height="198"/><path d="M98 6v64M202 6v130M6 70h288M98 136v68M6 136h196"/><path d="M140 96l20 20M160 96l-20 20" stroke="#D2453A" stroke-width="3"/></g></svg>
+    <div class="kick">Indagine · un caso nuovo ogni volta</div>
+    <h1>Alibi</h1>
+    <p>Una pianta, un delitto, un quarto d’ora alla volta. Ognuno sa dov’era e chi ha visto: mettendo insieme i ricordi, resta <b>un solo colpevole possibile</b>. Ogni caso è costruito e controllato dal telefono.</p>
+  </header>
+
+  <section class="pan g" id="resumePan" hidden>
+    <h2>Caso aperto</h2>
+    <p class="sub" id="resumeInfo"></p>
+    <div class="row">
+      <button class="btn small" id="resumeBtn" style="flex:1">Riprendi</button>
+      <button class="btn small sec hold" id="dropBtn" style="flex:1"><i class="fill"></i><span>Tieni premuto: archivia</span></button>
+    </div>
+  </section>
+
+  <section class="pan">
+    <h2>Chi è il colpevole?</h2>
+    <div class="scelte" id="segModo">
+      <button data-v="traditore"><b>Uno di noi</b><small>Il telefono sceglie in segreto un colpevole tra i giocatori: lui può mentire, gli altri dicono la verità. Da 3 a 8.</small></button>
+      <button data-v="coop"><b>Uno dei personaggi</b><small>Siete tutti testimoni e indagate insieme sui verbali dei sospettati: nessuno mente, ma qualcuno tace. Da 1 a 8, anche da soli.</small></button>
+    </div>
+  </section>
+
+  <section class="pan">
+    <h2>Giocatori</h2>
+    <p class="sub">I nomi di chi è al tavolo, in qualunque ordine.</p>
+    <form class="row" id="addPlayer" autocomplete="off">
+      <input class="in" id="playerName" placeholder="Nome" maxlength="16" enterkeyhint="done">
+      <button class="btn small">Aggiungi</button>
+    </form>
+    <ul class="players" id="players"></ul>
+  </section>
+
+  <section class="pan">
+    <h2>Il caso</h2>
+    <div class="etich" style="margin-top:0">Difficoltà</div>
+    <div class="scelte tre" id="segLivello">
+      <button data-v="facile"><b>Facile</b><small>6 quarti d’ora</small></button>
+      <button data-v="medio"><b>Medio</b><small>7 quarti d’ora</small></button>
+      <button data-v="difficile"><b>Difficile</b><small>8, meno ricordi</small></button>
+    </div>
+    <div class="etich">Luogo</div>
+    <div class="chips" id="segLuogo"></div>
+    <div class="etich">Telefoni</div>
+    <div class="scelte due" id="segTel">
+      <button data-v="uno"><b>Uno che gira</b><small>I fascicoli si leggono passandolo di mano.</small></button>
+      <button data-v="tanti"><b>Ognuno col suo</b><small>Un link apre lo stesso caso su ogni telefono.</small></button>
+    </div>
+  </section>
+
+  <p class="warn" id="setupWarn" hidden></p>
+  <button class="btn" id="playBtn">Apri un nuovo caso</button>
+  <button class="link center" id="rulesBtn">Regolamento</button>
+  <p class="recap" id="storicoInfo" style="text-align:center;margin-top:14px"></p>
+</main>
+
+<!-- ================= Condividi (ognuno col suo) ================= -->
+<main class="wrap" id="condividi" hidden>
+  <div class="toprow"><button class="back" id="coBack">‹ Indietro</button><span class="kick">Ognuno col suo</span></div>
+  <section class="pan g" style="margin-top:8px">
+    <h2>Mandate il caso a tutti</h2>
+    <p class="sub">Chi apre il link ha <b>lo stesso caso</b> sul suo telefono e sceglie chi è. Funziona anche senza rete, una volta aperta l’app.</p>
+    <div class="kick" style="text-align:center">Fascicolo</div>
+    <div class="codice" id="coCodice"></div>
+    <div class="linkbox" id="coLink"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="coShare" style="flex:1">Condividi il link</button><button class="btn sec small" id="coCopia">Copia</button></div>
+  </section>
+  <section class="pan">
+    <h2>E tu chi sei?</h2>
+    <div class="chips" id="coIo"></div>
+  </section>
+  <button class="btn" id="coVai" disabled>Al caso</button>
+</main>
+
+<!-- ================= Unisciti (da link) ================= -->
+<main class="wrap" id="unisciti" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><span class="kick">Caso condiviso</span></div>
+  <div id="unCaso"></div>
+  <section class="pan">
+    <h2>Chi sei?</h2>
+    <p class="sub">Il tuo fascicolo si apre solo da questo telefono. Non sceglierne un altro: si gioca sulla fiducia.</p>
+    <div class="chips" id="unIo"></div>
+  </section>
+  <button class="btn" id="unVai" disabled>Al caso</button>
+</main>
+
+<!-- ================= Passa il telefono ================= -->
+<section class="stage" id="passa" hidden>
+  <div class="top"><span class="kick" id="paKick"></span><button class="link muto" id="paIndietro">Al caso</button></div>
+  <div class="mid">
+    <div class="busta"><svg viewBox="0 0 110 78" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="104" height="64" rx="4"/><path d="M3 14l52 34 52-34"/><path d="M78 4h26v18" opacity=".5"/></svg></div>
+    <div class="kick">Fascicolo riservato per</div>
+    <div class="big" id="paNome"></div>
+    <p class="lede" id="paNota"></p>
+  </div>
+  <div class="bottom"><button class="btn hold" id="paApri"><i class="fill"></i><span id="paBtn"></span></button></div>
+</section>
+
+<!-- ================= Fascicolo personale ================= -->
+<main class="wrap" id="dossier" hidden>
+  <div class="testa"><div class="t" id="doTitolo"></div><span class="timbro">RISERVATO</span></div>
+  <div id="doCorpo"></div>
+  <button class="btn" id="doChiudi" style="margin-top:14px">Chiudi il fascicolo</button>
+</main>
+
+<!-- ================= Il caso (schermo comune) ================= -->
+<main class="wrap" id="caso" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><div class="links"><button class="link muto" id="caRegole">Regole</button><button class="link muto" id="caMenu">Menu</button></div></div>
+  <div id="caTesta"></div>
+  <div class="tempo"><span id="caTempo"></span><span id="caLivello"></span></div>
+  <div class="azioni" style="margin-bottom:12px">
+    <div class="row"><button class="btn" id="caMio" style="flex:1"></button><button class="btn sec" id="caTac" style="flex:1">Taccuino</button></div>
+  </div>
+  <section class="pan"><h2>Pianta</h2><div id="caPianta"></div><p class="legenda">Ogni quarto d’ora si può <b>restare</b> o passare <b>una porta</b>. In rosso la scena del delitto.</p></section>
+  <section class="pan" id="caVerbaliPan"><h2 id="caVerbaliT">Verbali</h2><p class="sub" id="caVerbaliSub"></p><div id="caVerbali"></div></section>
+  <section class="pan" id="caComePan"><h2>Come si indaga</h2><div id="caCome" class="recap" style="margin:0"></div></section>
+  <button class="btn rosso" id="caAccusa">Accusa</button>
+</main>
+
+<!-- ================= Taccuino ================= -->
+<main class="wrap" id="taccuino" hidden>
+  <div class="toprow"><button class="back" id="taBack">‹ Il caso</button><span class="kick">Taccuino</span></div>
+  <section class="pan" style="margin-top:8px">
+    <h2>Chi era dove</h2>
+    <p class="sub">Segnate quello che dicono gli altri. Tocca una casella per scegliere la stanza; il taccuino resta solo su questo telefono.</p>
+    <div class="griglia" id="taGriglia"></div>
+    <p class="recap" id="taLegenda"></p>
+  </section>
+  <button class="btn sec hold" id="taPulisci"><i class="fill"></i><span>Tieni premuto: cancella il taccuino</span></button>
+</main>
+
+<!-- ================= Soluzione ================= -->
+<main class="wrap" id="soluzione" hidden>
+  <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="link muto" id="soCaso">Il caso</button></div>
+  <div id="soCorpo"></div>
+  <div class="stack" style="margin-top:12px">
+    <button class="btn" id="soNuovo">Nuovo caso</button>
+    <button class="btn sec" id="soInizio">Torna all’inizio</button>
+  </div>
+</main>
+
+<!-- ================= Regolamento ================= -->
+<main class="wrap" id="regole" hidden>
+  <div class="toprow"><button class="back" id="reBack">‹ Indietro</button><span class="kick">Regolamento</span></div>
+  <section class="pan rules" style="margin-top:8px" id="reTesto"></section>
+  <button class="btn sec" id="reBack2">Indietro</button>
+</main>
+
+<!-- ================= Finestre ================= -->
+<div class="velo" id="infoVelo" hidden><div class="box">
+  <h2 id="ifTitolo"></h2>
+  <div id="ifCorpo" style="color:#D4D7DC;font-size:14.5px;line-height:1.55"></div>
+  <div class="stack" style="margin-top:14px" id="ifBtns"></div>
+</div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="attesa" id="attesa" hidden><div><div class="kick">Fascicolo in preparazione</div><div class="big" style="font-size:34px;margin-top:6px">Ricostruisco la serata…</div></div></div>
+
+<script>
+'use strict';
+/* La pagina: impostazioni, fascicoli, schermo comune, taccuino, accusa. I casi li fa motore.js (AL). */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const K_PL = 'gds-giocatori', K_CFG = 'gds-alibi', K_P = 'gds-alibi-partita', K_ST = 'gds-alibi-storico';
+function loadJSON(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+const norm = s => String(s).trim().replace(/[|]/g, '').replace(/\s+/g, ' ');
+const chiave = s => norm(s).toLocaleLowerCase('it');
+
+/* ---------------- Dati ---------------- */
+let players = loadJSON(K_PL, []); if (!Array.isArray(players)) players = [];
+players = players.filter(x => typeof x === 'string' && norm(x)).map(norm);
+const savePl = () => saveJSON(K_PL, players);
+let cfg = loadJSON(K_CFG, {}); if (!cfg || typeof cfg !== 'object') cfg = {};
+const CFG0 = { modo: 'traditore', livello: 'medio', luogo: 'caso', telefoni: 'uno' };
+cfg = Object.assign({}, CFG0, cfg);
+if (!AL.MODI[cfg.modo]) cfg.modo = 'traditore'; if (!AL.LIVELLI[cfg.livello]) cfg.livello = 'medio';
+if (!(cfg.luogo === 'caso' || AL.LUOGO[cfg.luogo])) cfg.luogo = 'caso'; if (!['uno', 'tanti'].includes(cfg.telefoni)) cfg.telefoni = 'uno';
+const saveCfg = () => saveJSON(K_CFG, cfg);
+/* Partita: { v, par, caso, telefoni, io, consegna, inizio, accusa, tac, host, spettatore }.
+   Il caso si salva intero (così riaprendo la pagina non si ricostruisce); se è di un'altra versione
+   del motore lo si ricostruisce da par. */
+let P = loadJSON(K_P, null), C = null;
+function carica() {
+  C = null; if (!P || !P.par) return;
+  if (P.caso && P.caso.v === AL.VERSIONE && Array.isArray(P.caso.via)) { C = P.caso; return; }
+  try { C = AL.genera(P.par); P.caso = C; } catch (e) { P = null; C = null; }
+}
+carica();
+const salva = () => { if (P && !saveJSON(K_P, P)) toast('Attenzione: il telefono non riesce a salvare.'); };
+/* Costruire un caso richiede da pochi millesimi a qualche decimo di secondo: prima si mostra l'attesa */
+function costruisci(par, poi) {
+  $('attesa').hidden = false;
+  requestAnimationFrame(() => setTimeout(() => {
+    let caso = null;
+    try { caso = AL.genera(par); } catch (e) { $('attesa').hidden = true; if (e instanceof AL.ErroreCaso) { toast(e.message); return; } throw e; }
+    $('attesa').hidden = true; poi(caso);
+  }, 30));
+}
+
+/* ---------------- Schermate ---------------- */
+const SCHERMATE = ['inizio', 'condividi', 'unisciti', 'passa', 'dossier', 'caso', 'taccuino', 'soluzione', 'regole'];
+let corrente = 'inizio';
+function show(id) {
+  SCHERMATE.forEach(s => { $(s).hidden = s !== id; });
+  $('infoVelo').hidden = true;
+  corrente = id; window.scrollTo(0, 0); $('toast').hidden = true;
+  if (window.gdsAppare) gdsAppare($(id));
+}
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+function tieniPremuto(el, done, ms = 600) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { if (el.disabled) return; e.preventDefault(); stop(); el._tenuto = false; void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); el._tenuto = true; done(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el._tenuto = true; done(); } });
+  el.addEventListener('click', e => { if (e.detail === 0 || el._tenuto || el.disabled) return; avvisoTieni(); });
+}
+let avvisatoT = 0;
+function avvisoTieni() { if (Date.now() - avvisatoT < 1500) return; avvisatoT = Date.now(); toast('Tieni premuto finché la barra si riempie'); }
+function finestra(titolo, corpo, bottoni) {
+  $('ifTitolo').textContent = titolo; $('ifCorpo').innerHTML = corpo;
+  const box = $('ifBtns'); box.innerHTML = '';
+  (bottoni || [{ t: 'Chiudi', cls: 'sec' }]).forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn' + (b.cls ? ' ' + b.cls : ''); el.innerHTML = b.t;
+    if (b.hold) { el.classList.add('hold'); el.innerHTML = `<i class="fill"></i><span>${b.t}</span>`; tieniPremuto(el, () => { $('infoVelo').hidden = true; b.f(); }, b.hold); }
+    else el.onclick = () => { $('infoVelo').hidden = true; if (b.f) b.f(); };
+    box.appendChild(el);
+  });
+  $('infoVelo').hidden = false;
+}
+$('infoVelo').addEventListener('click', e => { if (e.target.id === 'infoVelo') $('infoVelo').hidden = true; });
+
+/* ---------------- Aiuti sul caso ---------------- */
+const L = () => AL.LUOGO[C.luogo];
+const nome = i => C.persone[i].nome;
+const giocatori = () => C.persone.map((_, i) => i).filter(i => C.persone[i].tipo === 'giocatore');
+const conTesto = (r, io) => r.ricorda ? (r.con.length ? 'con ' + r.con.map(j => esc(nome(j))).join(', ') : 'nessun altro') : (io ? 'non ricordi chi c’era' : 'non ricorda chi c’era');
+function diarioHTML(i, opt = {}) {
+  const righe = AL.diario(C, i);
+  let h = '<div class="diario">';
+  for (const r of righe) {
+    if (r.rifiuta) { h += `<div class="h">${r.ora}</div><div class="s rifiuto">— <span class="c no">si rifiuta di rispondere</span></div>`; continue; }
+    const delitto = opt.colpevole && r.t === C.T;
+    h += `<div class="h">${r.ora}</div><div class="s">${esc(r.nomeStanza)}<span class="c${r.ricorda && !delitto ? '' : ' no'}${delitto ? ' delitto' : ''}">${delitto ? 'il delitto: nessuno ti ha visto' : conTesto(r, opt.io)}</span></div>`;
+  }
+  return h + '</div>';
+}
+/* Pianta: stanze, porte nei muri in comune (nel treno, ganci tra le carrozze) */
+function piantaHTML(opt = {}) {
+  const Lg = L();
+  let h = `<svg class="pianta" viewBox="0 0 300 210" role="img" aria-label="Pianta: ${esc(Lg.nome)}">`;
+  Lg.stanze.forEach((s, i) => { h += `<rect class="st${i === C.X && opt.x !== false ? ' x' : ''}${opt.mie && opt.mie.has(i) ? ' mia' : ''}" x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" rx="${Lg.forma === 'treno' ? 7 : 1.5}"/>`; });
+  for (const [a, b] of Lg.porte) {
+    const A = Lg.stanze[a], B = Lg.stanze[b];
+    if (Lg.forma === 'treno') {
+      if (A.y === B.y) { const x1 = Math.min(A.x + A.w, B.x + B.w), x2 = Math.max(A.x, B.x), y = A.y + A.h / 2; h += `<rect class="gancio" x="${x1}" y="${y - 3}" width="${x2 - x1}" height="6" rx="2"/>`; }
+      else { const x = Math.max(A.x, B.x) + Math.min(A.w, B.w) / 2, y1 = Math.min(A.y + A.h, B.y + B.h), y2 = Math.max(A.y, B.y); h += `<rect class="gancio" x="${x - 3}" y="${y1}" width="6" height="${y2 - y1}" rx="2"/>`; }
+      continue;
+    }
+    if (A.x + A.w === B.x || B.x + B.w === A.x) {
+      const x = A.x + A.w === B.x ? B.x : A.x, y1 = Math.max(A.y, B.y), y2 = Math.min(A.y + A.h, B.y + B.h), y = (y1 + y2) / 2;
+      h += `<line class="porta" x1="${x}" y1="${y - 8}" x2="${x}" y2="${y + 8}"/><line class="stipite" x1="${x - 3}" y1="${y - 8}" x2="${x + 3}" y2="${y - 8}"/><line class="stipite" x1="${x - 3}" y1="${y + 8}" x2="${x + 3}" y2="${y + 8}"/>`;
+    } else {
+      const y = A.y + A.h === B.y ? B.y : A.y, x1 = Math.max(A.x, B.x), x2 = Math.min(A.x + A.w, B.x + B.w), x = (x1 + x2) / 2;
+      h += `<line class="porta" x1="${x - 8}" y1="${y}" x2="${x + 8}" y2="${y}"/><line class="stipite" x1="${x - 8}" y1="${y - 3}" x2="${x - 8}" y2="${y + 3}"/><line class="stipite" x1="${x + 8}" y1="${y - 3}" x2="${x + 8}" y2="${y + 3}"/>`;
+    }
+  }
+  Lg.stanze.forEach((s, i) => {
+    const cx = s.x + s.w / 2, max = Math.max(6, Math.floor((s.w - 8) / 4.9)), parole = s.nome.split(' '), righe = [];
+    for (const p of parole) { if (righe.length && (righe[righe.length - 1] + ' ' + p).length <= max) righe[righe.length - 1] += ' ' + p; else righe.push(p); }
+    const y0 = s.y + s.h / 2 - (righe.length - 1) * 5 - 2;
+    righe.forEach((r, k) => { h += `<text x="${cx}" y="${y0 + k * 10}">${esc(r)}</text>`; });
+    h += `<text class="sg" x="${cx}" y="${y0 + righe.length * 10 + 1}">${s.sigla}</text>`;
+    if (i === C.X && opt.x !== false) h += `<text class="x" x="${cx}" y="${s.y + 11}">✕ ${AL.ora(C.T)}</text>`;
+  });
+  return h + '</svg>';
+}
+function testaHTML() {
+  const Lg = L(), d = AL.testoDelitto(C).replace(Lg.stanze[C.X].in, `<b>${Lg.stanze[C.X].in}</b>`);
+  return `<div class="fascicolo"><div class="num">FASCICOLO N. ${C.par.codice} · ${esc(AL.ESITI[C.delitto.t]).toUpperCase()}</div>
+    <div class="luogo">${esc(Lg.nome)}</div><div class="dove">${esc(Lg.dove)} · ${esc(Lg.occasione)}</div>
+    <div class="delitto">${d}</div></div>`;
+}
+
+/* ======================================================================
+   INIZIO
+   ====================================================================== */
+function limiti() { return AL.LIMITI_GIOCATORI[cfg.modo]; }
+function renderInizio() {
+  const n = players.length, [lo, hi] = limiti();
+  document.querySelectorAll('#segModo button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg.modo));
+  document.querySelectorAll('#segLivello button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg.livello));
+  document.querySelectorAll('#segTel button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg.telefoni));
+  $('segLuogo').innerHTML = [['caso', 'A caso']].concat(AL.LUOGHI.map(l => [l.id, l.nome])).map(([v, t]) => `<button class="chip${cfg.luogo === v ? ' on' : ''}" data-v="${v}">${esc(t)}</button>`).join('');
+  $('players').innerHTML = players.map((p, i) => `<li><span class="n">${String(i + 1).padStart(2, '0')}</span><span class="nm">${esc(p)}</span>
+    <button class="ico" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
+  const aperto = P && C && !P.accusa;
+  const warn = n < lo ? `Servono almeno ${lo} giocatori (ora ${n}).` : n > hi ? `Al massimo ${hi} giocatori.` : '';
+  $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn; $('playBtn').disabled = !!warn;
+  $('resumePan').hidden = !aperto;
+  if (aperto) $('resumeInfo').innerHTML = `Fascicolo <b>${C.par.codice}</b>, ${esc(L().nome)}: ${esc(AL.ESITI[C.delitto.t])} ${esc(L().stanze[C.X].in)}. ${P.telefoni === 'tanti' ? 'Ognuno col suo telefono.' : ''}`;
+  const st = loadJSON(K_ST, []), lista = Array.isArray(st) ? st : [];
+  const ris = lista.filter(x => x.giusto).length, dur = lista.filter(x => x.durata).map(x => x.durata);
+  $('storicoInfo').innerHTML = lista.length ? `Casi chiusi su questo telefono: <b>${lista.length}</b>, risolti <b>${ris}</b>${dur.length ? `, in media in ${Math.round(dur.reduce((a, b) => a + b, 0) / dur.length / 60000)} minuti` : ''}.` : '';
+}
+$('segModo').onclick = e => { const b = e.target.closest('button'); if (!b) return; cfg.modo = b.dataset.v; saveCfg(); renderInizio(); };
+$('segLivello').onclick = e => { const b = e.target.closest('button'); if (!b) return; cfg.livello = b.dataset.v; saveCfg(); renderInizio(); };
+$('segTel').onclick = e => { const b = e.target.closest('button'); if (!b) return; cfg.telefoni = b.dataset.v; saveCfg(); renderInizio(); };
+$('segLuogo').onclick = e => { const b = e.target.closest('button'); if (!b) return; cfg.luogo = b.dataset.v; saveCfg(); renderInizio(); };
+$('addPlayer').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = norm($('playerName').value); if (!v) return;
+  if (players.some(p => chiave(p) === chiave(v))) { toast(`${v} c’è già`); return; }
+  if (players.length >= 8) { toast('Al massimo 8 giocatori'); return; }
+  players.push(v); savePl(); $('playerName').value = ''; renderInizio();
+});
+$('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderInizio(); });
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora'; clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000); return; }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  players = []; savePl(); cfg = Object.assign({}, CFG0); saveCfg();
+  P = null; C = null; try { localStorage.removeItem(K_P); } catch (e) {}
+  renderInizio(); toast('Tutto come all’inizio');
+};
+tieniPremuto($('dropBtn'), () => { P = null; C = null; try { localStorage.removeItem(K_P); } catch (e) {} renderInizio(); toast('Caso archiviato'); }, 900);
+$('resumeBtn').onclick = () => vai();
+$('playBtn').onclick = () => nuovo();
+$('rulesBtn').onclick = () => apriRegole('inizio');
+function nuovo(stessi) {
+  const base = stessi && P ? P.par : { nomi: players.slice(), livello: cfg.livello, modo: cfg.modo, luogo: cfg.luogo };
+  const par = Object.assign({}, base, { codice: AL.nuovoCodice() }), tel = stessi && P ? P.telefoni : cfg.telefoni;
+  costruisci(par, caso => {
+    C = caso;
+    P = { v: 2, par: C.par, caso: C, telefoni: tel, io: null, consegna: 0, inizio: null, accusa: null, tac: {}, host: true };
+    salva();
+    if (P.telefoni === 'tanti') { renderCondividi(); show('condividi'); } else vai();
+  });
+}
+/* La schermata giusta per il caso salvato (mai un fascicolo aperto) */
+function vai() {
+  if (!P || !C) { renderInizio(); show('inizio'); return; }
+  if (P.accusa) { renderSoluzione(); show('soluzione'); return; }
+  if (P.telefoni === 'uno' && P.consegna < giocatori().length) { consegna(); return; }
+  if (P.telefoni === 'tanti' && P.io === null && !P.spettatore) { if (P.host) { renderCondividi(); show('condividi'); } else { renderUnisciti(); show('unisciti'); } return; }
+  if (!P.inizio) { P.inizio = Date.now(); salva(); }
+  renderCaso(); show('caso');
+}
+
+/* ======================================================================
+   OGNUNO COL SUO: link del caso
+   ====================================================================== */
+/* Il link porta solo i parametri: ogni telefono ricostruisce da sé lo stesso caso.
+   I nomi non possono contenere «|» (lo toglie norm), quindi fa da separatore. */
+function linkCaso() {
+  const p = C.par, q = new URLSearchParams({ c: p.codice, l: p.livello, m: p.modo, u: p.luogo, v: String(AL.VERSIONE), n: p.nomi.join('|') });
+  return location.origin + location.pathname + '#' + q.toString();
+}
+function renderCondividi() {
+  $('coCodice').textContent = C.par.codice;
+  $('coLink').textContent = linkCaso();
+  const gi = giocatori();
+  $('coIo').innerHTML = gi.map(i => `<button class="chip${P.io === i ? ' on' : ''}" data-i="${i}">${esc(nome(i))}</button>`).join('') + `<button class="chip${P.spettatore ? ' on' : ''}" data-i="-1">Nessuno: guardo e basta</button>`;
+  $('coVai').disabled = P.io === null && !P.spettatore;
+}
+$('coIo').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; const i = +b.dataset.i; P.io = i >= 0 ? i : null; P.spettatore = i < 0; salva(); renderCondividi(); };
+$('coShare').onclick = async () => {
+  const url = linkCaso(), testo = `ALIBI · fascicolo ${C.par.codice}: apri il caso e scegli chi sei.`;
+  try { if (navigator.share) { await navigator.share({ title: 'ALIBI', text: testo, url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  copia(url);
+};
+$('coCopia').onclick = () => copia(linkCaso());
+async function copia(t) { try { await navigator.clipboard.writeText(t); toast('Link copiato'); } catch (e) { toast('Copia il link qui sopra'); } }
+$('coVai').onclick = () => vai();
+$('coBack').onclick = () => { renderInizio(); show('inizio'); };
+function leggiLink() {
+  const h = location.hash.slice(1); if (!/(^|&)c=/.test(h)) return null;
+  const q = new URLSearchParams(h);
+  const nomi = (q.get('n') || '').split('|').filter(Boolean);
+  return { codice: q.get('c'), livello: q.get('l'), modo: q.get('m'), luogo: q.get('u'), nomi, v: +q.get('v') || 0 };
+}
+function renderUnisciti() {
+  $('unCaso').innerHTML = testaHTML();
+  const gi = giocatori();
+  $('unIo').innerHTML = gi.map(i => `<button class="chip${P.io === i ? ' on' : ''}" data-i="${i}">${esc(nome(i))}</button>`).join('') + `<button class="chip${P.spettatore ? ' on' : ''}" data-i="-1">Nessuno: guardo e basta</button>`;
+  $('unVai').disabled = P.io === null && !P.spettatore;
+}
+$('unIo').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; const i = +b.dataset.i; P.io = i >= 0 ? i : null; P.spettatore = i < 0; salva(); renderUnisciti(); };
+$('unVai').onclick = () => vai();
+
+/* ======================================================================
+   FASCICOLI: consegna, rilettura
+   ====================================================================== */
+let passaOpt = null;
+function passa(i, opt) {
+  passaOpt = opt;
+  $('paKick').textContent = opt.kick || '';
+  $('paNome').textContent = nome(i);
+  $('paNota').innerHTML = opt.nota || 'Solo tu guardi lo schermo.';
+  $('paBtn').textContent = `Tieni premuto: sono ${nome(i)}`;
+  $('paIndietro').hidden = !opt.indietro;
+  show('passa');
+}
+tieniPremuto($('paApri'), () => { if (passaOpt && passaOpt.poi) passaOpt.poi(); }, 650);
+$('paIndietro').onclick = () => { if (passaOpt && passaOpt.indietro) passaOpt.indietro(); };
+function consegna() {
+  const gi = giocatori(), k = P.consegna;
+  if (k >= gi.length) { vai(); return; }
+  const i = gi[k];
+  passa(i, { kick: `Fascicoli · ${k + 1} di ${gi.length}`, nota: C.par.modo === 'traditore' ? 'Dentro c’è dove eri, chi hai visto e <b>se sei il colpevole</b>. Gli altri guardano altrove.' : 'Dentro c’è dove eri e chi hai visto. Gli altri guardano altrove.',
+    poi: () => apriDossier(i, () => { P.consegna = k + 1; salva(); consegna(); }, true) });
+}
+let dossierRitorno = null, inattivo = null;
+function apriDossier(i, dopo, prima) {
+  dossierRitorno = dopo;
+  const tr = C.par.modo === 'traditore', colp = tr && i === C.colpevole, mov = C.persone[i].movente;
+  $('doTitolo').innerHTML = `<small>FASCICOLO ${C.par.codice}</small>${esc(nome(i))}`;
+  let h = '';
+  if (tr && colp) {
+    const al = (C.alibi || []).map(s => esc(L().stanze[s].nome));
+    h += `<div class="ruolo"><div class="r">Il colpevole sei tu.</div>
+      <p>${esc(AL.testoDelitto(C))} <b>Nessuno ti ha visto</b> ${esc(L().stanze[C.X].in)}. Puoi mentire su tutto, ma chi ti ha visto altrove può smentirti: costruisci un alibi che regga.</p>
+      <p class="alibi">Per le ${AL.ora(C.T)} puoi dichiarare ${al.length > 1 ? 'una di queste stanze' : 'questa stanza'} senza contraddire i tuoi quarti d’ora prima e dopo: <b>${al.join(', ')}</b>. Occhio a chi c’era davvero.</p></div>`;
+  } else if (tr) h += `<div class="ruolo"><div class="r">Sei innocente.</div>
+    <p>Devi dire la verità su dove eri e su chi hai visto: puoi scegliere quando parlare, ma non puoi inventare. Solo il colpevole mente.</p></div>`;
+  else h += `<div class="ruolo"><div class="r">Sei un testimone.</div><p>Tutto quello che ricordi è vero, e anche i verbali: <b>nessuno mente</b>. Ma qualche sospettato si è rifiutato di dire dov’era. Il colpevole è tra quelli che tacciono all’ora del delitto.</p></div>`;
+  h += `<p class="recap" style="margin:-4px 2px 12px">Il fascicolo non si mostra: si racconta.</p>`;
+  h += `<section class="pan" style="margin-bottom:10px"><h2 style="font-size:18px">La tua serata</h2>${diarioHTML(i, { io: true, colpevole: colp })}
+    <p class="recap" style="margin-top:10px">«Non ricordi chi c’era» vuol dire solo che non ci hai fatto caso: dove eri lo sai sempre.</p></section>`;
+  if (mov) h += `<p class="movente">Movente: ${esc(mov)}${tr ? ' Lo hanno anche gli altri, in un modo o nell’altro.' : ''}</p>`;
+  h += `<section class="pan" style="margin-top:10px"><h2 style="font-size:18px">I tuoi passi</h2>${piantaHTML({ mie: new Set(C.via[i]) })}<p class="legenda">In giallo le stanze dove sei stato.</p></section>`;
+  $('doCorpo').innerHTML = h;
+  $('doChiudi').textContent = prima ? 'Chiudi il fascicolo e passa' : 'Chiudi il fascicolo';
+  show('dossier'); sveglia();
+}
+function chiudiDossier() { clearTimeout(inattivo); $('doCorpo').innerHTML = ''; const f = dossierRitorno; dossierRitorno = null; if (f) f(); else vai(); }
+$('doChiudi').onclick = () => chiudiDossier();
+document.addEventListener('visibilitychange', () => { if (document.hidden && corrente === 'dossier') { $('doCorpo').innerHTML = ''; if (P && P.telefoni === 'uno' && P.consegna < giocatori().length) consegna(); else vai(); } });
+window.addEventListener('pagehide', () => { if (corrente === 'dossier') $('doCorpo').innerHTML = ''; });
+function sveglia() { clearTimeout(inattivo); if (corrente === 'dossier' && P && P.telefoni === 'uno') inattivo = setTimeout(() => { if (corrente === 'dossier') { toast('Fascicolo chiuso dopo 3 minuti senza tocchi'); chiudiDossier(); } }, 180000); }
+document.addEventListener('pointerdown', sveglia, true);
+
+/* ======================================================================
+   IL CASO (schermo comune)
+   ====================================================================== */
+let tempoT = null;
+function renderCaso() {
+  const tr = C.par.modo === 'traditore', Lv = AL.LIVELLI[C.par.livello];
+  $('caTesta').innerHTML = testaHTML();
+  $('caLivello').textContent = `${Lv.nome} · ${C.Q} quarti`;
+  $('caPianta').innerHTML = piantaHTML();
+  const pub = AL.pubblici(C);
+  $('caVerbaliPan').hidden = !pub.length;
+  $('caVerbaliT').textContent = tr ? 'Verbali del personale' : 'Verbali dei sospettati';
+  const tacc = tr ? [] : C.sospettati.filter(i => C.vuoti[i][C.T]);
+  $('caVerbaliSub').innerHTML = tr ? 'Non sono sospettati e dicono la verità. Valgono come testimoni.'
+    : `<b>Nessuno mente</b>, ma i sospettati possono rifiutarsi di rispondere. Alle ${AL.ora(C.T)} hanno taciuto in ${tacc.length}: il colpevole è uno di loro.${C.persone.some(p => p.tipo === 'png') ? ' Il personale non è sospettato.' : ''}`;
+  $('caVerbali').innerHTML = pub.map(i => `<details class="verbale"><summary><span><b>${esc(nome(i))}</b><small>${esc(C.persone[i].ruolo || '')}${C.persone[i].tipo === 'sospetto' ? ' · sospettato' : ''}${C.vuoti[i][C.T] ? ' · <span style="color:var(--giallo-2)">tace alle ' + AL.ora(C.T) + '</span>' : ''}</small></span></summary><div class="righe">${diarioHTML(i)}</div></details>`).join('');
+  $('caCome').innerHTML = tr
+    ? `<p style="margin:0 0 8px">Raccontate a turno dov’eravate e chi avete visto, un quarto d’ora alla volta. Il colpevole dirà una storia falsa: se due racconti si smentiscono, uno dei due è il colpevole.</p><p style="margin:0">Non sempre l’alibi del colpevole si può smentire: allora si esclude uno alla volta chi <b>non poteva</b> essere sulla scena (visto altrove, o troppo lontano per arrivarci). Chi resta è il colpevole.</p>`
+    : `<p style="margin:0 0 8px">Leggete ad alta voce i vostri fascicoli: dentro ci sono i sospettati che avete incrociato. Per ognuno di quelli che tacciono all’ora del delitto cercate dove si sa che era prima e dopo.</p><p style="margin:0">Se da lì la scena è troppo lontana (una porta al massimo ogni quarto d’ora), è innocente. Chi resta è il colpevole.</p>`;
+  $('caMio').textContent = P.telefoni === 'tanti' ? 'Il mio fascicolo' : 'Fascicoli';
+  $('caMio').disabled = P.telefoni === 'tanti' && P.io === null;
+  aggiornaTempo(); clearInterval(tempoT); tempoT = setInterval(() => { if (corrente === 'caso') aggiornaTempo(); }, 20000);
+}
+function aggiornaTempo() { const m = P.inizio ? Math.floor((Date.now() - P.inizio) / 60000) : 0; $('caTempo').textContent = m < 1 ? 'Indagine aperta ora' : `Indagine da ${m} min`; }
+$('caMio').onclick = () => {
+  if (P.telefoni === 'tanti') { if (P.io === null) return; passa(P.io, { kick: 'Il tuo fascicolo', nota: 'Copri lo schermo dagli sguardi.', poi: () => apriDossier(P.io, () => vai()), indietro: () => vai() }); return; }
+  const gi = giocatori();
+  finestra('Chi rilegge il fascicolo?', `<div class="chips" id="rlChips">${gi.map(i => `<button class="chip" data-i="${i}">${esc(nome(i))}</button>`).join('')}</div>`, [{ t: 'Annulla', cls: 'sec' }]);
+  $('rlChips').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; $('infoVelo').hidden = true; const i = +b.dataset.i; passa(i, { kick: 'Rilettura', nota: 'Solo tu guardi lo schermo.', poi: () => apriDossier(i, () => vai()), indietro: () => vai() }); };
+};
+$('caTac').onclick = () => { renderTaccuino(); show('taccuino'); };
+$('caRegole').onclick = () => apriRegole('caso');
+$('caMenu').onclick = () => {
+  const bt = [];
+  if (P.telefoni === 'tanti') bt.push({ t: 'Condividi di nuovo il link', f: () => { renderCondividi(); show('condividi'); } });
+  bt.push({ t: 'Torna all’inizio', cls: 'sec', f: () => { renderInizio(); show('inizio'); } });
+  bt.push({ t: 'Chiudi', cls: 'sec' });
+  finestra('Menu', `<p style="margin:0">Fascicolo <b class="macch">${C.par.codice}</b> · ${esc(AL.MODI[C.par.modo])} · ${esc(AL.LIVELLI[C.par.livello].nome)}.</p>`, bt);
+};
+$('caAccusa').onclick = () => {
+  const sos = C.sospettati;
+  finestra('Chi accusate?', `<p style="margin:0 0 10px">Un’accusa sola: se è giusta il caso è risolto, se è sbagliata il colpevole la fa franca. Mettetevi d’accordo prima.</p><div class="chips" id="acChips">${sos.map(i => `<button class="chip" data-i="${i}">${esc(nome(i))}</button>`).join('')}</div>`, [{ t: 'Non ancora', cls: 'sec' }]);
+  $('acChips').onclick = e => {
+    const b = e.target.closest('[data-i]'); if (!b) return; const i = +b.dataset.i;
+    finestra(`Accusate ${nome(i)}?`, '<p style="margin:0">Non si torna indietro: subito dopo il telefono svela la soluzione.</p>', [{ t: `Tieni premuto: accusiamo ${esc(nome(i))}`, hold: 1100, f: () => accusa(i) }, { t: 'Ci ripensiamo', cls: 'sec' }]);
+  };
+};
+function accusa(i) {
+  P.accusa = { chi: i, giusto: i === C.colpevole, t: Date.now() }; salva();
+  const st = loadJSON(K_ST, []), lista = Array.isArray(st) ? st : [];
+  if (!lista.some(x => x.codice === C.par.codice)) { lista.push({ codice: C.par.codice, t: Date.now(), modo: C.par.modo, livello: C.par.livello, luogo: C.luogo, n: C.par.nomi.length, giusto: P.accusa.giusto, durata: P.inizio ? Date.now() - P.inizio : null }); saveJSON(K_ST, lista.slice(-200)); }
+  renderSoluzione(); show('soluzione');
+}
+
+/* ======================================================================
+   TACCUINO
+   ====================================================================== */
+function righeTaccuino() { return C.persone.map((_, i) => i); }
+function renderTaccuino() {
+  const Lg = L(), tac = P.tac || (P.tac = {});
+  let h = '<table><tr><th></th>' + Array.from({ length: C.Q }, (_, t) => `<th class="${t === C.T ? 'T' : ''}">${AL.ora(t)}</th>`).join('') + '</tr>';
+  for (const i of righeTaccuino()) {
+    const tipo = C.persone[i].tipo;
+    h += `<tr><th class="nm">${esc(nome(i).split(' ')[0])}<small>${tipo === 'giocatore' ? (C.par.modo === 'traditore' ? 'sospettato' : 'testimone') : tipo === 'sospetto' ? 'sospettato' : 'personale'}</small></th>`;
+    for (let t = 0; t < C.Q; t++) {
+      const v = tac[i + ':' + t], s = v == null ? '' : v === '?' ? '?' : Lg.stanze[v] ? Lg.stanze[v].sigla : '';
+      h += `<td class="${t === C.T ? 'T' : ''}"><button data-k="${i}:${t}" class="${v != null && v !== '?' ? 'pieno' : ''}${v === C.X && t === C.T ? ' x' : ''}${v === '?' ? ' dubbio' : ''}">${s}</button></td>`;
+    }
+    h += '</tr>';
+  }
+  $('taGriglia').innerHTML = h + '</table>';
+  $('taLegenda').innerHTML = Lg.stanze.map(s => `<b class="macch">${s.sigla}</b> ${esc(s.nome)}`).join(' · ') + ' · <b class="macch">?</b> dubbio';
+}
+$('taGriglia').onclick = e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  const k = b.dataset.k, [i, t] = k.split(':').map(Number), Lg = L();
+  finestra(`${nome(i)} alle ${AL.ora(t)}`, `<div class="chips" id="tcChips">${Lg.stanze.map((s, r) => `<button class="chip${P.tac[k] === r ? ' on' : ''}" data-r="${r}"><b class="macch">${s.sigla}</b> ${esc(s.nome)}</button>`).join('')}<button class="chip${P.tac[k] === '?' ? ' on' : ''}" data-r="?">? Non si sa</button></div>`, [{ t: 'Svuota la casella', cls: 'sec', f: () => { delete P.tac[k]; salva(); renderTaccuino(); } }]);
+  $('tcChips').onclick = ev => { const c = ev.target.closest('[data-r]'); if (!c) return; P.tac[k] = c.dataset.r === '?' ? '?' : +c.dataset.r; salva(); $('infoVelo').hidden = true; renderTaccuino(); };
+};
+$('taBack').onclick = () => { renderCaso(); show('caso'); };
+tieniPremuto($('taPulisci'), () => { P.tac = {}; salva(); renderTaccuino(); toast('Taccuino pulito'); }, 900);
+
+/* ======================================================================
+   SOLUZIONE
+   ====================================================================== */
+function renderSoluzione() {
+  const a = P.accusa, c = C.colpevole, Lg = L();
+  let h = `<div class="esito" style="--c:${a.giusto ? 'var(--linea-g)' : 'rgba(210,69,58,.5)'};--c2:${a.giusto ? 'var(--giallo-2)' : 'var(--rosso-2)'}">
+    <div class="kick">Fascicolo ${C.par.codice}</div><div class="t">${a.giusto ? 'Caso risolto' : 'L’ha fatta franca'}</div>
+    <div class="s">${a.giusto ? `Avete accusato <b>${esc(nome(a.chi))}</b>, ed era colpevole.` : `Avete accusato <b>${esc(nome(a.chi))}</b>. Il colpevole era <b>${esc(nome(c))}</b>.`}</div></div>`;
+  h += `<section class="pan"><h2>Il ragionamento</h2><ol class="passi">${AL.soluzione(C).map(p => `<li class="${p.k}">${esc(p.testo)}</li>`).join('')}</ol>
+    <p class="recap" style="margin-top:10px">Bastavano queste testimonianze: tutto il resto confermava.</p></section>`;
+  // ricostruzione completa
+  let g = '<div class="griglia vero"><table><tr><th></th>' + Array.from({ length: C.Q }, (_, t) => `<th class="${t === C.T ? 'T' : ''}">${AL.ora(t)}</th>`).join('') + '</tr>';
+  for (let i = 0; i < C.N; i++) {
+    g += `<tr><th class="nm">${esc(nome(i).split(' ')[0])}${i === c ? '<small style="color:var(--rosso-2)">colpevole</small>' : ''}</th>`;
+    for (let t = 0; t < C.Q; t++) { const s = C.via[i][t]; g += `<td class="${t === C.T ? 'T' : ''}"><button class="pieno${s === C.X && t === C.T ? ' x' : ''}" tabindex="-1">${Lg.stanze[s].sigla}</button></td>`; }
+    g += '</tr>';
+  }
+  g += '</table></div>';
+  h += `<section class="pan"><h2>Chi era dove, davvero</h2>${g}<p class="recap">${Lg.stanze.map(s => `<b class="macch">${s.sigla}</b> ${esc(s.nome)}`).join(' · ')}</p></section>`;
+  h += `<section class="pan"><h2>I passi di ${esc(nome(c))}</h2>${piantaHTML({ mie: new Set(C.via[c]) })}</section>`;
+  $('soCorpo').innerHTML = h;
+}
+$('soNuovo').onclick = () => { if (P && P.host === false) { renderInizio(); show('inizio'); return; } nuovo(true); };
+$('soInizio').onclick = () => { renderInizio(); show('inizio'); };
+$('soCaso').onclick = () => { renderCaso(); show('caso'); };
+
+/* ======================================================================
+   REGOLAMENTO
+   ====================================================================== */
+let reRitorno = 'inizio';
+function apriRegole(da) { reRitorno = da; $('reTesto').innerHTML = htmlRegole(); show('regole'); }
+$('reBack').onclick = $('reBack2').onclick = () => { if (reRitorno === 'caso') { renderCaso(); show('caso'); } else { renderInizio(); show('inizio'); } };
+$('reTesto').addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); const el = document.getElementById(a.getAttribute('href').slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth' }); });
+function htmlRegole() {
+  const cap = (id, n, t) => `<h3 id="r-${id}"><span class="k">CAPITOLO ${n}</span>${t}</h3>`;
+  const CAP = [['idea', 'L’idea'], ['preparazione', 'Preparazione'], ['fascicolo', 'Il fascicolo'], ['verita', 'Chi può mentire'], ['movimento', 'Muoversi'], ['indagine', 'Indagare'], ['accusa', 'L’accusa'], ['coop', 'Uno dei personaggi'], ['telefoni', 'Ognuno col suo telefono'], ['giusto', 'Perché ogni caso è giusto']];
+  let h = `<p>Gioco investigativo per il tavolo. Il telefono costruisce un caso nuovo ogni volta e lo controlla prima di darvelo.</p><div class="indice">${CAP.map((x, i) => `<a href="#r-${x[0]}"><span>${i + 1}</span>${x[1]}</a>`).join('')}</div>`;
+  h += cap('idea', 1, 'L’idea') + `<p>Una sera, un luogo con le sue stanze, un delitto a un’ora precisa. Tutti si sono mossi per il luogo, un quarto d’ora alla volta. Ognuno sa dov’era e, quasi sempre, chi c’era con lui. Mettendo insieme i ricordi resta <b>un solo colpevole possibile</b>.</p>`;
+  h += cap('preparazione', 2, 'Preparazione') + `<ul><li><b>Uno di noi</b> (da 3 a 8): il telefono sceglie in segreto un colpevole tra i giocatori. Gli altri sono innocenti.</li><li><b>Uno dei personaggi</b> (da 1 a 8, anche da soli): i sospettati sono personaggi con un verbale pubblico, e voi siete testimoni che indagano insieme.</li><li><b>Difficoltà:</b> Facile 6 quarti d’ora e molti ricordi; Medio 7; Difficile 8, con più vuoti di memoria e, nel modo cooperativo, più sospettati che tacciono.</li><li><b>Telefoni:</b> uno che gira (i fascicoli si consegnano passandolo, si rileggono quando serve) oppure ognuno col suo (vedi il capitolo 9).</li></ul>`;
+  h += cap('fascicolo', 3, 'Il fascicolo') + `<p>Per ogni quarto d’ora c’è la stanza dove eri e chi c’era con te. «Nessun altro» vuol dire che eri solo; «non ricordi chi c’era» vuol dire solo che non ci hai fatto caso: <b>dove eri lo sai sempre</b>. Il movente è colore: ce l’hanno tutti.</p><div class="box"><p><b>Il fascicolo non si mostra: si racconta.</b> Mostrare lo schermo direbbe subito chi è innocente e rovina il gioco.</p></div>`;
+  h += cap('verita', 4, 'Chi può mentire') + `<div class="box g"><p><b>Uno di noi:</b> gli innocenti dicono sempre la verità su dove erano e su chi hanno visto, se glielo si chiede. Possono scegliere quando parlare, ma non inventare. <b>Il colpevole può mentire su tutto</b>: dove era, chi ha visto, chi non ha visto.</p><p><b>Uno dei personaggi:</b> nessuno mente. I sospettati però possono <b>rifiutarsi di rispondere</b> su qualche quarto d’ora.</p></div><p>Il personale (maggiordomo, custode…) dice la verità nei suoi verbali e non è mai sospettato.</p>`;
+  h += cap('movimento', 5, 'Muoversi') + `<p>Tra un quarto d’ora e il successivo si resta nella stessa stanza o si passa <b>una porta</b>. Le porte sono quelle della pianta; nel treno si passa da una carrozza a quella accanto. Due persone nella stessa stanza nello stesso quarto d’ora si vedono.</p><p>Nella scena del delitto, all’ora del delitto, c’era solo il colpevole.</p>`;
+  h += cap('indagine', 6, 'Indagare') + `<ul><li>Raccontate a turno la vostra serata. Il taccuino aiuta a segnare chi era dove.</li><li>Una contraddizione vuol dire che qualcuno mente: tra due persone che si smentiscono, una è il colpevole. Quale?</li><li>Non sempre l’alibi del colpevole si può smentire direttamente. Allora si va per <b>eliminazione</b>: chi è stato visto altrove all’ora del delitto, o era troppo lontano per arrivare alla scena (una porta al massimo ogni quarto d’ora), è innocente. Chi resta è il colpevole.</li><li>Il colpevole ascolta e si adatta: spesso conviene chiedergli i dettagli per primo.</li></ul>`;
+  h += cap('accusa', 7, 'L’accusa') + `<p>Quando siete pronti, toccate <b>Accusa</b>. Un’accusa sola: giusta, caso risolto; sbagliata, il colpevole ha vinto. Se non siete d’accordo si vota per alzata di mano e vince la maggioranza (il colpevole vota come tutti); a parità si discute ancora due minuti e si rivota, e se è ancora parità il colpevole l’ha fatta franca. Poi il telefono mostra il ragionamento completo, chi era dove davvero e i passi del colpevole.</p>`;
+  h += cap('coop', 8, 'Uno dei personaggi') + `<p>Nessuno di voi è colpevole: siete testimoni con un fascicolo vero e incompleto, e giocate tutti insieme contro il caso. I sospettati hanno un verbale pubblico <b>vero</b>, ma in qualche quarto d’ora si rifiutano di rispondere. All’ora del delitto tacciono in diversi: chi invece ha detto dov’era è innocente, perché nessuno mente.</p><p>Per ognuno di quelli che tacciono cercate dove si sa che era prima e dopo: nei vostri fascicoli, nei verbali, nel suo stesso verbale. Se da lì la scena del delitto era troppo lontana, è innocente. I verbali da soli non bastano mai: servono i vostri fascicoli.</p>`;
+  h += cap('telefoni', 9, 'Ognuno col suo telefono') + `<p>Chi apre il caso lo condivide con un link (WhatsApp, messaggio…). Il link contiene solo il codice del fascicolo, i nomi e le impostazioni: <b>ogni telefono ricostruisce lo stesso caso da sé</b>, senza server e senza rete. Ognuno sceglie chi è e legge il suo fascicolo quando vuole. Si gioca sulla fiducia: niente sbirciare i fascicoli degli altri. Se due telefoni hanno versioni diverse dell’app, il link lo dice.</p>`;
+  h += cap('giusto', 10, 'Perché ogni caso è giusto') + `<p>Il caso non è scritto, è <b>simulato</b>: prima le mosse di tutti, poi i ricordi, poi la verifica. Il telefono rifà per intero il ragionamento dei giocatori («se il colpevole fosse lui, tutto il resto torna?») e scarta il caso se non valgono queste regole:</p>
+    <ul><li><b>Un solo colpevole possibile</b> con tutto quello che si sa. Nel modo «uno di noi» vale <b>qualunque bugia</b> racconti il colpevole: ogni innocente è scagionato da testimonianze di altri innocenti, mai dalla sua parola.</li>
+    <li><b>Una ragione semplice per ogni innocente</b>, da dire a voce: visto altrove all’ora del delitto, oppure troppo lontano per arrivarci in tempo.</li>
+    <li><b>Niente scorciatoie.</b> I verbali pubblici da soli non bastano. A Medio e Difficile, da 5 giocatori in su (o con almeno 2 testimoni nel modo cooperativo), nessuno ci arriva da solo col suo fascicolo: bisogna parlarsi.</li>
+    <li>Il colpevole ha sempre almeno una stanza dove dire di essere stato senza smentirsi da solo.</li></ul>
+    <p>Con 3 o 4 giocatori il «nessuno da solo» non si può avere: ogni innocente è scagionato da uno degli altri, e chi scagiona sa già molto. Lì la sfida è convincere gli altri, perché anche il colpevole dirà di sapere.</p>
+    <p>Un risolutore indipendente ricontrolla tutto su migliaia di casi, anche contro una ricerca a forza bruta e contro bugie a caso del colpevole (<b>prove/alibi.test.js</b>). Quello che non si può garantire per legge è il divertimento: quello lo dicono le vostre serate.</p>`;
+  return h;
+}
+
+/* ---------------- Avvio ---------------- */
+(function avvio() {
+  const l = leggiLink();
+  if (!l) { vai(); return; }
+  history.replaceState(null, '', location.pathname + location.search);
+  let par = null;
+  try { par = AL.parametri(l); } catch (e) { vai(); toast('Il link del caso non è valido'); return; }
+  if (l.v && l.v !== AL.VERSIONE) {
+    // stesso codice, motore diverso: i due telefoni avrebbero casi diversi
+    vai();
+    finestra('Versioni diverse', `<p style="margin:0">Questo caso è stato creato con ${l.v > AL.VERSIONE ? 'una versione più nuova' : 'un’altra versione'} di ALIBI: su questo telefono verrebbe un caso diverso. Aggiornate l’app (chiudetela e riapritela con la rete) e riaprite il link.</p>`);
+    return;
+  }
+  if (P && P.par && JSON.stringify(P.par) === JSON.stringify(par)) { vai(); return; }
+  costruisci(par, caso => {
+    C = caso;
+    P = { v: 2, par: C.par, caso: C, telefoni: 'tanti', io: null, consegna: 0, inizio: null, accusa: null, tac: {}, host: false };
+    salva(); vai();
+  });
+})();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

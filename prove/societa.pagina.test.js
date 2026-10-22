@@ -179,6 +179,23 @@ const BASE = 'http://localhost:8765/';
   await page.goto(BASE + 'giochi/societa/'); assert.ok(await vis('fine'));
   assert.ok(/Già nel conteggio/.test(await page.textContent('#fi7w')));
   bene('punti portati nella riga Extra del conteggio di 7 Wonders');
+  // si annulla il finale e lo si rifà con una missione diversa: la riga Extra si corregge, non raddoppia
+  if (st.soc) {
+    const prima = st.punti;                              // punti del primo finale (con la missione segnata)
+    await tieni('#fiAnnulla'); assert.ok(await vis('verifica'));
+    await tieni('#veOk'); assert.ok(await vis('fine'));   // stavolta nessuna missione segnata
+    const dopo = (await St()).punti;
+    assert.notDeepEqual(dopo, prima, 'la missione tolta cambia i punti');
+    assert.ok(/Aggiorna i punti/.test(await page.textContent('#fi7w')));
+    await page.click('#fi7w'); await page.click('#ifBtns .btn:first-child');
+    await page.waitForURL(/7wonders/); await page.waitForTimeout(300);
+    const w2 = await page.evaluate(() => JSON.parse(localStorage.getItem('giochidisimo:7wonders')));
+    assert.deepEqual(w2.players.map(p => p.ext), dopo, 'Extra = punti nuovi, non la somma');
+    const sto = await page.evaluate(() => JSON.parse(localStorage.getItem('gds-societa-storico')));
+    assert.equal(sto.length, 1); assert.deepEqual(sto[0].punti, dopo, 'lo storico si aggiorna invece di duplicarsi');
+    await page.goto(BASE + 'giochi/societa/');
+    bene('finale annullato e rifatto: Extra e storico corretti, niente doppioni');
+  }
 
   await page.click('#fiNuova'); assert.ok(await vis('inizio'));
   assert.equal(errori.length, 0, errori.join('\n'));

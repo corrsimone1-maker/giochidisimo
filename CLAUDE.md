@@ -41,7 +41,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
-- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine);
+- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, ALIBI);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
@@ -123,7 +123,8 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
-     Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`);
+     Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`,
+     ALIBI giallo evidenziatore `#F2D21B`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -154,7 +155,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Niente schermate intermedie** di impostazioni se non le chiede: si entra subito nel gioco, e le impostazioni stanno in un tasto piccolo.
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:
-  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics, Secret Societies e il versus a un telefono di Claude Machine);
+  - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics, Secret Societies, ALIBI e il versus a un telefono di Claude Machine);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
@@ -162,6 +163,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
   - `gds-codenames` (`cfg` e `primo`), `gds-codenames-partita` (partita: mappa segreta ed eventi), `gds-codenames-storico` (risultati, per bilanciare);
   - `gds-societa` (`cfg`), `gds-societa-partita` (partita: società, decreti, eventi, schede segrete comprese, e `ui`), `gds-societa-storico` (riassunti, per bilanciare);
+  - `gds-alibi` (modo, livello, luogo, telefoni), `gds-alibi-partita` (`par` e `caso` intero, telefoni, `io`, consegna, accusa, taccuino `tac`), `gds-alibi-storico` (casi chiusi: risolto o no, durata);
   - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
@@ -183,7 +185,7 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
   - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`,
-    `gds-codenames-storico`, `gds-societa-storico`);
+    `gds-codenames-storico`, `gds-societa-storico`, `gds-alibi-storico`);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -292,6 +294,47 @@ Il gioco vero resta intatto: carte, monete, conflitti e punteggio sono quelli fi
 - **Prove:** `node prove/societa.test.js` (generazione, fasi, validazioni, elezione, matrice dei Patti, poteri, missioni, privacy, annullamenti,
   5.000 partite casuali); nel browser `prove/societa.pagina.test.js` (serve `python3 -m http.server 8765`). Se cambi una regola aggiungi un caso.
 - Il regolamento sta in `htmlRegole()` (12 capitoli): se cambi una meccanica o un parametro, aggiornalo lì.
+
+### ALIBI → `giochi/alibi/`
+
+Gioco investigativo nato da un dossier di progetto di Simo (scritto con un'altra IA, «progetto sospeso»); direzione artistica e
+regole lasciate a Claude. Tema «giallo di notte»: grafite fredda (`#0D0F12`, piani `#15181D`/`#1C2026`), giallo evidenziatore
+`#F2D21B` come unico accento, rosso `#D2453A` solo per la scena del delitto e i timbri, pianta disegnata col gesso; font Playfair
+Display (titoli in corsivo), Courier Prime (fascicoli e verbali) e Figtree solo in questa pagina.
+- **Idea:** il caso non si scrive, si **simula**. Un luogo (pianta con stanze e porte); le posizioni di tutti all'ora del delitto, poi
+  passeggiate a caso all'indietro e in avanti (si resta o si passa una porta per quarto d'ora); nella scena, all'ora del delitto, solo il
+  colpevole. Le dichiarazioni dicono dov'era ognuno e, se se lo ricorda, chi c'era (i verbali pubblici ricordano meno: `memoriaPub`).
+- **Due modi, due modi di nascondere la verità:**
+  - `traditore`: i sospettati sono i giocatori; il colpevole mente a voce come vuole, gli innocenti dicono il vero; il personale ha
+    verbali pubblici veri. Il caso regge **qualunque bugia**: ogni innocente è scagionato da un testimone che non è né lui né il
+    colpevole (G2). La «trappola» G1 (alibi smentibile direttamente) c'è solo in circa un caso su quattro: negli altri si arriva per
+    eliminazione, e il regolamento lo dice. Il fascicolo del colpevole suggerisce le stanze dichiarabili senza smentirsi (`alibi`).
+  - `coop`: i sospettati sono personaggi con un verbale pubblico **vero ma con dei rifiuti** («si rifiuta di rispondere», `vuoti`);
+    all'ora del delitto tacciono il colpevole e altri `rifiuti` sospettati. Nessuno mente. (Una prima versione con un sospettato
+    bugiardo era sbagliata: siccome mentiva solo il colpevole, qualunque contraddizione lo indicava subito.)
+- **`motore.js`** (in `extra`, `self.AL`): `genera({ codice, nomi, livello, modo, luogo })` è **deterministico** (seme da `VERSIONE` e
+  parametri, mulberry32): lo stesso link dà lo stesso caso su ogni telefono, senza rete. `candidati(caso, dich, disponibili)` rifà il
+  ragionamento completo («se il colpevole fosse i, tutto torna?»; nel modo traditore non ci si fida di i). Un caso si accetta se:
+  - ha una spiegazione semplice per ogni innocente (`spiega`: `dice`, `con`, `prima`, `dopo`);
+  - i soli verbali pubblici non bastano (`candidati(pubblici)` ≥ 2);
+  - a Medio e Difficile nessun giocatore ci arriva da solo col suo fascicolo: nel modo traditore solo da 5 giocatori (con 2 o 3
+    innocenti è impossibile insieme alle ragioni semplici: dimostrazione nel commento in `tentativo`), nel coop con almeno 2 giocatori;
+  - nel traditore: qualche innocente non l'ha visto nessuno all'ora del delitto (`soli`) e il colpevole ha almeno una stanza alibi;
+  - nel coop: con tutto quello che si sa il colpevole è uno solo.
+  **Se cambi la generazione, alza `VERSIONE`**: va nel link (`v=`), e un telefono con un'altra versione avvisa invece di aprire un caso
+  diverso.
+- **Luoghi** in `LUOGHI` (Villa Ardenza, Teatro Politeama, Espresso del Brennero, Museo Civico): stanze come rettangoli 300×210 (la pagina le
+  disegna), `porte` solo tra stanze con un muro in comune (nel treno carrozze in fila), `in` con la preposizione, sigle di due lettere per il
+  taccuino. Per aggiungere un luogo: stanze, porte, sigle, personale, sospettati e delitti, poi `node prove/alibi.test.js`.
+- **Pagina:** un telefono che gira (consegna dei fascicoli tenendo premuto, rilettura dal tasto «Fascicoli», fascicolo che si chiude se il
+  telefono si blocca o dopo 3 minuti) oppure **ognuno col suo**: il link `#c=…&l=…&m=…&u=…&v=…&n=Nome|Nome` (con `URLSearchParams`)
+  rigenera il caso; chi lo apre sceglie chi è (`io`). Il link si toglie dalla barra dopo la lettura. Il caso intero si salva in
+  `P.caso`; la costruzione mostra «Ricostruisco la serata…». Taccuino per telefono (`tac`), accusa unica tenendo premuto (a maggioranza,
+  dice il regolamento), soluzione ragionata (`AL.soluzione`), ricostruzione completa e passi del colpevole sulla pianta.
+- **Prove:** `node prove/alibi.test.js` (parametri, codici, determinismo, salvataggio, `candidati` contro una **forza bruta** sui percorsi,
+  bugie a caso del colpevole, 3.000 casi con tutte le garanzie e la spiegazione controllata frase per frase; circa 3 minuti); nel browser
+  `prove/alibi.pagina.test.js` (serve `python3 -m http.server 8765`; nomi con accenti, apostrofi, `+` e `#` nel link, avviso di versione).
+- Il regolamento sta in `htmlRegole()`: se cambi una regola o un livello, aggiornalo lì.
 
 ### Hex ad Aste → `giochi/hex/index.html`
 
