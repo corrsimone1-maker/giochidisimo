@@ -36,7 +36,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
-| `giochi/mental/sfide/` e `strumenti/mental.js` | **Sfide di MENTAL**, un file per mese, e lo strumento che ne prepara di nuove (vedi la sezione MENTAL). |
+| `giochi/mental/sfide/`, `strumenti/mental.js` e `strumenti/mental-enigmi.js` | **Sfide di MENTAL**, un file per mese, lo strumento che ne prepara di nuove e il catalogo degli enigmi scritti a mano (vedi la sezione MENTAL). |
 | `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide a tre livelli sospesi, dado, stelle). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
 
 Categorie in `giochi.js`:
@@ -343,57 +343,92 @@ Display (titoli in corsivo), Courier Prime (fascicoli e verbali) e Figtree solo 
 La sfida del giorno, da un progetto scritto con un'altra IA («MENTAL», report di Simo) adattato: **niente server e
 niente classifica** (scelta di Simo: gli basta salvarsi tempi e giorni completati e confrontarsi a mano). Ogni giorno
 (giorno di Roma, cambio a mezzanotte italiana anche con l'ora legale) c'è **una sola sfida, uguale per tutti**, già
-preparata e controllata; la #1 è il 22 ottobre 2026 (`LANCIO`). Tema «notte d'inchiostro»: indaco `#0D0F22` (piani
-`#15183A`/`#1C2048`), menta `#3DDCA0` per azioni e sfide risolte, lavanda `#B2A7FF` per note e selezioni, ambra `#F2B84B`
-per il tempo, corallo `#FF6B6B` solo per errori e mine; font Bricolage Grotesque e Figtree.
+preparata e controllata; la #1 è il 22 ottobre 2026 (`LANCIO`). **Simo vuole varietà**: i giochi del progetto erano solo
+idee, va bene qualunque cosa dove bisogna pensare (rompicapi, enigmi, indovinelli, problemi…), e lo stesso tipo deve
+tornare di rado. Tema «notte d'inchiostro»: indaco `#0D0F22` (piani `#15183A`/`#1C2048`), menta `#3DDCA0` per azioni e
+sfide risolte, lavanda `#B2A7FF` per note e selezioni, ambra `#F2B84B` per il tempo, corallo `#FF6B6B` solo per errori e
+mine; font Bricolage Grotesque e Figtree.
 - **File:**
   - `comune.js` (`self.MENTAL`): date di Roma (`giornoRoma`, `prossimaMezzanotte`, `numero`), `prng` riproducibile,
-    livelli, **palinsesto** (`giocoDelGiorno`, `livelloDelGiorno`), titoli (`TITOLI`, 15 per gioco), `quadratoLatino`.
+    livelli, **palinsesto** (`scegliDelGiorno`, `tipoSfida`, `famigliaSfida`, `MINIMO`), titoli (`TITOLI`, per tipo),
+    `quadratoLatino`.
   - `motori/<gioco>.js`: un motore per gioco, senza pagina, stessa interfaccia: `id`, `nome`, `tipo` (come si disegna:
-    `segni`, `binario`, `cifre`, `campo`, `nonogramma`, `testo`), `TECNICHE` (con `peso`), `MISURE`, `breve`, `regole`,
-    `nuovoStato`, `conflitti`, `completo`, `statoRisolto`, `conta(p, cap)` (ricerca **completa**, con `conta.ultima`),
-    `risolvi(p)` (risolutore «umano»: solo tecniche dichiarate, mai tentativi; `{ risolto, sol, passi, conteggio }`),
-    `livello(p, ris)`, `genera(r, livello, tentativi, seme)`, `valida(p)`.
+    `segni`, `binario`, `cifre`, `campo`, `nonogramma`, `testo`, `risposta`, `codice`, `calcolatrice`, `travasi`),
+    `famiglia`, `TECNICHE` (con `peso`), `MISURE`, `breve`, `regole`, `nuovoStato`, `conflitti`, `completo`,
+    `statoRisolto`, `conta(p, cap)` (ricerca **completa**, con `conta.ultima`), `risolvi(p)` (risolutore «umano»: solo
+    tecniche dichiarate, mai tentativi; `{ risolto, sol, passi, conteggio }`), `livello(p, ris)`,
+    `genera(r, livello, tentativi, seme)`, `valida(p)`. Facoltativi: `tipoDi`, `famigliaDi`, `nomeDi`, `breveDi` (un
+    motore con più tipi) e, per le sfide che si consegnano, `giusta`, `vuota`, `soluzione`, `testoHTML`, `figura`, `forma`.
     Giochi: `corone` (Queens), `stelle` (Star Battle a due stelle), `binario` (Takuzu), `sudoku`, `campo` (prato fiorito
     senza fortuna: le mine sono scritte mescolate col seme, solo per non leggerle per sbaglio), `grattacieli`,
-    `futoshiki`, `nonogramma`, `cavalieri` (nella pagina «Sinceri e bugiardi»: si consegna, ogni consegna sbagliata +1 minuto).
+    `futoshiki`, `nonogramma`, `cavalieri` («Sinceri e bugiardi»), `codice` (tipi `codice:lucchetto`, cifre tutte
+    diverse e risposte a parole, e `codice:colori`, alla Mastermind; ogni tentativo serve), `linea` («In fila»: ordinare
+    da indizi; ogni indizio serve), `bilancia` («La moneta falsa» da pesate già fatte; ogni pesata serve),
+    `calcolatrice` («La calcolatrice rotta»: minimo di mosse, al massimo 2–3 strade minime), `travasi` (brocche senza
+    tacche: minimo di mosse), `enigma` (gli enigmi del catalogo, tipi `enigma:<categoria>`).
+  - `viste.js`: i tipi che non sono griglie (`VISTE.risposta`, `codice`, `calcolatrice`, `travasi`: `disegna`,
+    `strumenti`, `esito`). Le griglie le disegna `disegnaGioco` in `index.html`.
+  - `strumenti/mental-enigmi.js`: il **catalogo degli enigmi scritti a mano** (regole in cima al file). Campi: `id`
+    (unico, non si cambia), `cat` (vedi `CATEGORIE` in `motori/enigma.js`: indovinello, sciarada, anagramma, cifrario,
+    problema, probabilita, contare, geometria, logica, strategia), `livello`, `titolo`, `forma` (`numero`, `frazione`,
+    `parola`, `parole`, `ordine`, `scelta`), `testo`, `risposta`, `accetta`, `spiegazione` e `verifica` (funzione che
+    ricalcola la risposta da zero) oppure, per i giochi di parole, `controllo` (perché la risposta è unica). Ogni voce
+    va in calendario **una volta sola**; nei file delle sfide la soluzione è mescolata (`ve`), non si legge a occhio.
+  - `strumenti/mental-riserva.json`: sfide generate e già controllate, tenute da parte; lo strumento le usa prima di
+    generarne di nuove.
   - `sfide/AAAA-MM.js` (`MENTAL.mese('AAAA-MM', [sfide])`) e `sfide/indice.js` (`self.MENTAL_INDICE`: mesi, primo, ultimo).
     Una sfida: `{ data, n, gioco, livello, titolo, tecniche, p }`. **Non si modificano a mano.**
   - `index.html`: oggi (con conto alla rovescia), partita, esito (tempo, condividi senza spoiler, soluzione, «le chiavi»
-    cioè le tecniche che servivano, passi del ragionamento per Sinceri e bugiardi), calendario, «I miei tempi».
+    cioè le tecniche che servivano, passi del ragionamento per Sinceri e bugiardi), calendario, «I miei tempi» (per tipo).
     Indirizzi: `#gioca=AAAA-MM-GG`, `#prova=…` (allenamento), `#esito=…`, `#calendario=AAAA-MM`, `#tempi`.
 - **Regole della pagina:** il tempo parte con «Inizia» e **non si ferma** (orologio vero: `inizio` nello storico);
   conta il **primo tentativo** di ogni giorno, poi si rigioca per allenamento senza cambiare il tempo; un giorno passato
   si recupera dal calendario e vale come «recuperata» (`giornata: false`); finita dopo mezzanotte vale come «dopo
-  mezzanotte». Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel calendario; un giorno
-  senza sfida pronta mostra un avviso, mai una sfida inventata. La serie conta i giorni di fila risolti il giorno stesso.
-- **Palinsesto** (in `comune.js`, le prove lo ricontrollano): mai lo stesso gioco due giorni di fila e, se si può, non
-  prima di 8 giorni; mai tre giochi di cifre (sudoku, grattacieli, futoshiki) di fila; un `cavalieri` a settimana in un
-  giorno a rotazione; sabato esperta, domenica estrema, in settimana ogni gioco alterna impegnativa ed esperta; il primo
-  giorno Corone.
+  mezzanotte». Nelle sfide che si consegnano (enigmi, codici, in fila, moneta falsa, Sinceri e bugiardi) ogni consegna
+  sbagliata aggiunge un minuto. Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel
+  calendario; un giorno senza sfida pronta mostra un avviso, mai una sfida inventata. La serie conta i giorni di fila
+  risolti il giorno stesso. Lo storico salva anche `nome` e `firma` (impronta della sfida): una partita a metà di una
+  sfida che nel frattempo è cambiata riparte pulita.
+- **Palinsesto** (`scegliDelGiorno` in `comune.js`; le prove lo ricontrollano dal 24 ottobre 2026, perché i primi due
+  giorni sono usciti col palinsesto vecchio): ogni sfida ha un **tipo** (il gioco, oppure `codice:…` o `enigma:…`) e una
+  **famiglia** (griglia, cifre, logica, numeri, parole, figure). Mai la stessa famiglia due giorni di fila; lo stesso
+  tipo mai prima di `MINIMO` (6) giorni e in generale il più tardi possibile; domenica estrema, sabato esperta o
+  estrema, in settimana metà impegnativa e metà esperta.
 - **Sfide nuove** → `strumenti/mental.js`:
   ```
   node strumenti/mental.js --scorta 60     # sfide fino a oggi + 60 giorni (se ci sono già, non fa niente)
-  node strumenti/mental.js --controlla     # ricontrolla da zero tutte le sfide pubblicate
+  node strumenti/mental.js --rimescola     # rifà i giorni dopo oggi e mescola tutto (vedi sotto)
+  node strumenti/mental.js --controlla     # ricontrolla da zero le sfide pubblicate e il catalogo
   ```
-  Aggiunge solo giorni **dopo l'ultimo** (una sfida pubblicata non cambia mai, qualcuno potrebbe averla iniziata),
-  con un seme fatto dalla data (chiunque lo lanci ottiene le stesse sfide), e scrive solo se ogni sfida passa i controlli:
-  dati validi, soluzione unica (ricerca completa), risolta dal risolutore umano con la stessa soluzione, livello giusto.
+  `--scorta` aggiunge solo giorni **dopo l'ultimo** (una sfida pubblicata non cambia mai): per ogni giorno il palinsesto
+  sceglie tra le categorie del catalogo con enigmi non ancora usati e i giochi generati (prima dalla riserva, poi con un
+  seme fatto dalla data: chiunque lo lanci ottiene le stesse sfide). Scrive solo se ogni sfida passa i controlli: dati
+  validi, soluzione unica (ricerca completa) o minimo di mosse verificato, risolta dal risolutore umano con la stessa
+  soluzione, livello giusto; per gli enigmi la loro verifica.
+  `--rimescola` cambia solo i giorni **dopo oggi** (o dopo `--dopo AAAA-MM-GG`; i giorni futuri non si vedono nel
+  calendario, quindi nessuno li ha giocati): tiene le sfide già pronte (al massimo 4 per tipo generato, le altre vanno in
+  riserva), aggiunge gli enigmi del catalogo non usati e 4 sfide per ogni gioco che non c'era, genera le estreme che
+  mancano per le domeniche e rimette tutto in calendario col palinsesto; si ferma quando le regole non si possono più
+  rispettare (il resto lo prepara `--scorta`). Va lanciato quando si aggiunge un gioco o tanti enigmi.
   Simo ha in mente un'**azione programmata** che lo lancia ogni settimana; il testo da darle è:
-  > Lavora sulla repo corrsimone1-maker/giochidisimo seguendo CLAUDE.md. Lancia `node strumenti/mental.js --scorta 60`.
-  > Se dice «Niente da fare», fermati senza commit. Altrimenti lancia `node prove/mental.test.js`: se passa, fai commit
-  > («MENTAL: sfide fino al <ultimo giorno>») e push su main e aspetta che la pubblicazione finisca. Non modificare le
-  > sfide già pubblicate, i motori o la pagina. Se qualcosa fallisce non fare push e scrivi cosa è successo.
-- **Gioco nuovo:** motore in `motori/` con la stessa interfaccia, titoli in `TITOLI`, nome nell'elenco `GIOCHI` di
-  `strumenti/mental.js`, script in `index.html` e in `extra` di `giochi.js`, un disegno per il suo `tipo` (o uno nuovo in
-  `disegnaGioco`), un caso con forza bruta in `prove/mental.test.js`. Il palinsesto lo prende da solo dal giorno dopo
-  l'ultimo pubblicato. Le stime alla Fermi del progetto originale non ci sono: servono dati veri con fonti e un
-  controllo che non si può automatizzare con la stessa sicurezza.
-- **Prove:** `node prove/mental.test.js` (date e ora legale, ogni motore contro una forza bruta, il prato fiorito
-  controllato passo per passo su tutti i campi compatibili, palinsesto su due anni, tutte le sfide pubblicate, lo
-  strumento in una cartella temporanea; circa 40 s); nel browser `prove/mental.pagina.test.js` (serve
-  `python3 -m http.server 8765`; orologio del browser spostato: lancio, ricaricamento, tutti i giochi finiti
-  dall'interfaccia, mina, resa, consegna sbagliata, calendario, mezzanotte a partita aperta).
+  > Lavora sulla repo corrsimone1-maker/giochidisimo seguendo CLAUDE.md (sezione MENTAL). 1) Scrivi da 3 a 5 enigmi
+  > nuovi in `strumenti/mental-enigmi.js`, originali e diversi da quelli che ci sono, seguendo le regole in cima al file
+  > (una sola risposta giusta; `verifica` che la ricalcola da zero quando si può); non cambiare le voci esistenti.
+  > 2) Lancia `node strumenti/mental.js --scorta 60`. 3) Lancia `node prove/mental.test.js`: se passa, fai commit
+  > («MENTAL: enigmi nuovi e sfide fino al <ultimo giorno>») e push su main e aspetta che la pubblicazione finisca.
+  > Non modificare le sfide già pubblicate, i motori o la pagina. Se qualcosa fallisce non fare push e scrivi cosa è successo.
+- **Gioco nuovo:** motore in `motori/` con la stessa interfaccia (e la sua `famiglia`), titoli in `TITOLI`, nome
+  nell'elenco `GIOCHI` di `strumenti/mental.js`, script in `index.html` e in `extra` di `giochi.js`, un disegno (in
+  `disegnaGioco` per le griglie, in `viste.js` per il resto), un caso con forza bruta in `prove/mental.test.js`, poi
+  `--rimescola`. **Enigma nuovo:** una voce nel catalogo e `node prove/mental.test.js`; entra in calendario con la
+  prossima `--scorta` (o subito con `--rimescola`). Le stime alla Fermi del progetto originale non ci sono: servono dati
+  veri con fonti e un controllo che non si può automatizzare con la stessa sicurezza.
+- **Prove:** `node prove/mental.test.js` (date e ora legale, ogni motore contro una forza bruta o una ricerca
+  indipendente, il prato fiorito passo per passo, il catalogo con le sue verifiche e le risposte lette all'italiana,
+  palinsesto su due anni, tutte le sfide pubblicate e la riserva, lo strumento in una cartella temporanea anche col
+  rimescolamento; circa 45 s); nel browser `prove/mental.pagina.test.js` (serve `python3 -m http.server 8765`; orologio
+  del browser spostato: lancio, ricaricamento, ogni tipo di sfida finito dall'interfaccia, consegne sbagliate, mina,
+  resa, calendario, mezzanotte a partita aperta).
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

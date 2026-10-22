@@ -1,7 +1,8 @@
 // Prove di MENTAL senza browser: date di Roma (anche nei giorni dell'ora legale), casualità riproducibile,
-// ogni motore contro una forza bruta indipendente su griglie piccole, i risolutori «umani» che non sbagliano
-// mai (anche passo per passo nel prato fiorito), il palinsesto su anni simulati, tutte le sfide pubblicate
-// ricontrollate da zero, e lo strumento che aggiunge giorni senza toccare quelli già pubblicati.
+// ogni motore contro una forza bruta indipendente (griglie piccole, codici, file, monete, tasti, brocche),
+// i risolutori «umani» che non sbagliano mai (anche passo per passo nel prato fiorito), gli enigmi del
+// catalogo con le loro verifiche, il palinsesto su anni simulati, tutte le sfide pubblicate e quelle in
+// riserva ricontrollate da zero, e lo strumento che aggiunge o rimescola giorni senza toccare quelli già passati.
 // Uso, dalla cartella della repo:  node prove/mental.test.js
 'use strict';
 const assert = require('assert');
@@ -247,53 +248,220 @@ prova('sinceri e bugiardi: il risolutore non sbaglia mai e le frasi sono dette g
   assert.equal(K.testo(p, 0), 'Tra Bruno e me c’è almeno un bugiardo.');
 });
 
+/* ---------------- Giochi nuovi contro forze brute ---------------- */
+// Codice: la risposta di un tentativo calcolata in un altro modo (accoppiando i simboli uno per uno)
+function rispostaLenta(t, s) {
+  const usatoT = t.map(() => false), usatoS = s.map(() => false); let n = 0, b = 0;
+  t.forEach((x, i) => { if (x === s[i]) { n++; usatoT[i] = usatoS[i] = true; } });
+  t.forEach((x, i) => { if (usatoT[i]) return; const j = s.findIndex((y, k) => !usatoS[k] && y === x); if (j >= 0) { usatoS[j] = true; b++; } });
+  return [n, b];
+}
+function tuttiICodici(L, K, rip) {
+  let out = [[]];
+  for (let i = 0; i < L; i++) out = [].concat(...out.map(c => [...Array(K).keys()].filter(k => rip || !c.includes(k)).map(k => c.concat([k]))));
+  return out;
+}
+const compatibiliCodice = (p, prove) => tuttiICodici(p.L, p.K, p.rip).filter(s => prove.every(x => J(rispostaLenta(x.c, s)) === J([x.n, x.b])));
+prova('codice: risposte contro un conteggio indipendente; codice unico, nessun tentativo è il codice, ogni tentativo serve', () => {
+  for (let k = 0; k < 3000; k++) {
+    const L = 3 + R(3), K = 6 + R(5), t = Array.from({ length: L }, () => R(K)), c = Array.from({ length: L }, () => R(K));
+    assert.deepEqual(E.codice.risposta(t, c, K), rispostaLenta(t, c));
+  }
+  assert.equal(E.codice.aParole(0, 0), 'nessuna cifra giusta');
+  assert.equal(E.codice.aParole(0, 1), 'una cifra giusta, al posto sbagliato');
+  for (const liv of ['impegnativa', 'esperta', 'esperta', 'estrema']) for (let q = 0; q < 3; q++) {
+    const x = E.codice.genera(M.prng(`prova-codice|${liv}|${q}`), liv), p = x.p;
+    const c = compatibiliCodice(p, p.prove);
+    assert.equal(c.length, 1, `${liv} ${q}`);
+    assert.ok(E.codice.giusta(p, c[0]) && !E.codice.giusta(p, c[0].map((v, i) => (i ? v : (v + 1) % p.K))));
+    assert.ok(p.prove.every(x => J(x.c) !== J(c[0])), 'un tentativo è già il codice');
+    p.prove.forEach((_, i) => assert.ok(compatibiliCodice(p, p.prove.filter((__, j) => j !== i)).length > 1, `${liv}: il tentativo ${i + 1} non serve`));
+    if (!p.rip) assert.ok(p.prove.every(x => new Set(x.c).size === x.c.length), 'lucchetto con cifre ripetute');
+    assert.equal(E.codice.livello(p), liv);
+  }
+});
+// In fila: la stessa semantica degli indizi riscritta a parte (con le posizioni come lista)
+function valeLento(x, ordine) {
+  const pos = e => ordine.indexOf(e), a = pos(x.a), b = x.b == null ? -1 : pos(x.b), n = ordine.length;
+  switch (x.t) {
+    case 'prima': return a < b;
+    case 'subito': return b - a === 1;
+    case 'lontani': return a - b > 1 || b - a > 1;
+    case 'tra': return ordine.slice(Math.min(a, b) + 1, Math.max(a, b)).length === x.k;
+    case 'posto': return a === x.k;
+    case 'nonposto': return a !== x.k;
+    case 'estremo': return a === 0 || a === n - 1;
+    case 'mezzo': { const c = pos(x.c); return Math.min(b, c) < a && a < Math.max(b, c); }
+  }
+  throw new Error('indizio sconosciuto ' + x.t);
+}
+const ordiniCompatibili = (p, ind) => permutazioni(p.nomi.length).filter(o => ind.every(x => valeLento(x, o)));
+prova('in fila: ordine unico contro una forza bruta scritta a parte; ogni indizio serve; il risolutore trova lo stesso ordine', () => {
+  const tipi = new Set();
+  for (const liv of ['impegnativa', 'esperta', 'estrema']) for (let q = 0; q < 4; q++) {
+    const x = E.linea.genera(M.prng(`prova-linea|${liv}|${q}`), liv), p = x.p;
+    const c = ordiniCompatibili(p, p.ind);
+    assert.equal(c.length, 1, `${liv} ${q}`);
+    assert.equal(E.linea.conta(p), 1); assert.deepEqual(E.linea.conta.ultima, c[0]);
+    assert.ok(x.ris.risolto); assert.deepEqual(x.ris.sol, c[0]);
+    assert.ok(E.linea.giusta(p, c[0]));
+    p.ind.forEach((_, i) => assert.ok(ordiniCompatibili(p, p.ind.filter((__, j) => j !== i)).length > 1, `${liv}: l’indizio ${i + 1} non serve`));
+    for (const ind of p.ind) { tipi.add(ind.t); assert.ok(E.linea.testoIndizio(p, ind).length > 10); }
+    assert.equal(E.linea.livello(p, x.ris), liv);
+  }
+  assert.ok(tipi.size >= 6, 'tipi di indizi usati: ' + [...tipi]);
+});
+prova('moneta falsa: pesi simulati sui due piatti; risposta unica; ogni pesata serve', () => {
+  const simula = (p, k, h, pesate = p.pesate) => pesate.every(ps => {
+    const peso = m => (m === k ? 10 + h : 10), sx = ps.s.reduce((a, m) => a + peso(m), 0), dx = ps.d.reduce((a, m) => a + peso(m), 0);
+    return (sx > dx ? 'S' : sx < dx ? 'D' : '=') === ps.e;
+  });
+  const tutte = (p, pesate) => { const out = []; for (let k = 0; k < p.n; k++) for (const h of [1, -1]) if (simula(p, k, h, pesate)) out.push({ k, h }); return out; };
+  for (const liv of ['impegnativa', 'esperta', 'estrema']) for (let q = 0; q < 5; q++) {
+    const x = E.bilancia.genera(M.prng(`prova-bilancia|${liv}|${q}`), liv), p = x.p;
+    const c = tutte(p, p.pesate);
+    assert.equal(c.length, 1, `${liv} ${q}`);
+    assert.ok(E.bilancia.giusta(p, c[0]) && !E.bilancia.giusta(p, { k: c[0].k, h: -c[0].h }));
+    p.pesate.forEach((ps, i) => { assert.equal(ps.s.length, ps.d.length); assert.ok(tutte(p, p.pesate.filter((_, j) => j !== i)).length > 1, `${liv}: la pesata ${i + 1} non serve`); });
+    assert.equal(E.bilancia.livello(p), liv);
+    assert.match(E.bilancia.figura(p), /^<svg/);
+  }
+});
+prova('calcolatrice rotta: tasti su esempi; il minimo di mosse contro una ricerca in profondità indipendente', () => {
+  const P = (v, t) => E.calcolatrice.premi(v, t);
+  assert.equal(P(12, { t: 'app', k: 5 }), 125); assert.equal(P(-12, { t: 'app', k: 5 }), -125); assert.equal(P(0, { t: 'app', k: 7 }), 7);
+  assert.equal(P(125, { t: 'canc' }), 12); assert.equal(P(7, { t: 'canc' }), 0); assert.equal(P(-37, { t: 'canc' }), -3);
+  assert.equal(P(120, { t: 'inv' }), 21); assert.equal(P(-123, { t: 'inv' }), -321);
+  assert.equal(P(9408, { t: 'somma' }), 21); assert.equal(P(56, { t: 'quad' }), 3136); assert.equal(P(5, { t: 'neg' }), -5); assert.equal(P(0, { t: 'neg' }), 0);
+  assert.equal(P(7, { t: '/', k: 2 }), null); assert.equal(P(8, { t: '/', k: 2 }), 4);
+  assert.equal(P(1213, { t: 'sost', a: 1, b: 4 }), 4243);
+  assert.equal(P(999999, { t: '+', k: 1 }), null);                                      // oltre il limite del display
+  const minimo = (p, max) => {                                                           // approfondimento iterativo
+    for (let d = 0; d <= max; d++) {
+      const giu = (v, r) => { if (r === 0) return v === p.a; return p.tasti.some(t => { const x = P(v, t); return x != null && giu(x, r - 1); }); };
+      if (giu(p.da, d)) return d;
+    }
+    return null;
+  };
+  for (const liv of ['impegnativa', 'esperta', 'estrema']) for (let q = 0; q < 4; q++) {
+    const x = E.calcolatrice.genera(M.prng(`prova-calc|${liv}|${q}`), liv), p = x.p;
+    assert.equal(minimo(p, p.mosse), p.mosse, `${liv} ${q}`);
+    assert.ok(E.calcolatrice.completo(p, E.calcolatrice.statoRisolto(p, x.ris.sol)));
+    assert.equal(E.calcolatrice.livello(p, x.ris), liv);
+  }
+});
+prova('travasi: il minimo di mosse contro una ricerca in profondità indipendente', () => {
+  const versa = (cap, v, i, j) => { const w = v.slice(), q = Math.min(w[i], cap[j] - w[j]); w[i] -= q; w[j] += q; return w; };
+  const minimo = (p, max) => {
+    for (let d = 0; d <= max; d++) {
+      const giu = (v, r) => {
+        if (v.includes(p.obiettivo)) return true;
+        if (r === 0) return false;
+        const n = p.cap.length;
+        for (let i = 0; i < n; i++) {
+          if (p.fontana && giu(v.map((x, k) => (k === i ? p.cap[i] : x)), r - 1)) return true;
+          if (p.fontana && giu(v.map((x, k) => (k === i ? 0 : x)), r - 1)) return true;
+          for (let j = 0; j < n; j++) if (j !== i && giu(versa(p.cap, v, i, j), r - 1)) return true;
+        }
+        return false;
+      };
+      if (giu(p.ini, d)) return d;
+    }
+    return null;
+  };
+  for (const liv of ['impegnativa', 'esperta', 'estrema']) for (let q = 0; q < 3; q++) {
+    const x = E.travasi.genera(M.prng(`prova-travasi|${liv}|${q}`), liv), p = x.p;
+    assert.equal(minimo(p, p.mosse), p.mosse, `${liv} ${q}`);
+    assert.ok(E.travasi.completo(p, E.travasi.statoRisolto(p, x.ris.sol)));
+    assert.equal(E.travasi.livello(p), liv);
+  }
+});
+prova('enigmi: ogni voce del catalogo verificata; risposte lette all’italiana; soluzione nascosta nei dati', () => {
+  const N = E.enigma, ids = new Set();
+  for (const e of S.CATALOGO) {
+    assert.equal(S.controllaVoce(e), null, e.id);
+    assert.ok(!ids.has(e.id), 'id doppio ' + e.id); ids.add(e.id);
+    assert.ok(N.CATEGORIE[e.cat], e.id + ': categoria');
+    const p = N.daCatalogo(e, 'prova|' + e.id);
+    assert.ok(!('risposta' in p) && !('spiegazione' in p), e.id + ': soluzione in chiaro');
+    const giusta = Array.isArray(e.risposta) ? e.risposta : e.risposta;
+    assert.ok(N.giusta(p, giusta), e.id + ': la risposta del catalogo non è accettata');
+    assert.ok(!N.vuota(p, giusta), e.id);
+    assert.ok(N.vuota(p, N.nuovoStato(p).v), e.id + ': lo stato iniziale non è vuoto');
+    // una risposta sbagliata non passa
+    const sbagliata = e.forma === 'numero' || e.forma === 'frazione' ? '987654321' : e.forma === 'parola' ? 'zzzz' : e.forma === 'parole' ? e.risposta.map(() => 'zzzz') : e.forma === 'ordine' ? e.risposta.slice().reverse() : -1;
+    assert.ok(!N.giusta(p, sbagliata), e.id + ': accetta una risposta sbagliata');
+    // le parole della risposta non si leggono nel file
+    const parole = [].concat(e.risposta).filter(x => typeof x === 'string' && x.length > 3);
+    for (const w of parole) assert.ok(!J(p).toLowerCase().includes(w.toLowerCase()) || J(e.testo).toLowerCase().includes(w.toLowerCase()), e.id + ': «' + w + '» si legge nei dati');
+    assert.equal(N.soluzione(p).risposta.length > 0, true);
+  }
+  // numeri e frazioni all'italiana
+  const num = { id: 't', cat: 'problema', forma: 'numero', testo: 'x', risposta: 1392, livello: 'impegnativa' };
+  const pn = N.daCatalogo(num, 's');
+  for (const v of ['1392', '1.392', ' 1392 ', '1392,0']) assert.ok(N.giusta(pn, v), v);
+  for (const v of ['139', '13920', '', 'mille']) assert.ok(!N.giusta(pn, v), v);
+  const fr = N.daCatalogo({ id: 'f', cat: 'probabilita', forma: 'frazione', testo: 'x', risposta: '61/216', livello: 'impegnativa' }, 's');
+  for (const v of ['61/216', '122/432', '61 / 216']) assert.ok(N.giusta(fr, v), v);
+  for (const v of ['61/217', '0,28', '216/61', '61']) assert.ok(!N.giusta(fr, v), v);
+  const pa = N.daCatalogo({ id: 'p', cat: 'indovinello', forma: 'parola', testo: 'x', risposta: 'mazzo di carte', accetta: ['carte'], livello: 'impegnativa' }, 's');
+  for (const v of ['mazzo di carte', 'Il mazzo di carte', 'MAZZO DI CARTE ', 'le carte', 'mazzo  di carte']) assert.ok(N.giusta(pa, v), v);
+  assert.ok(!N.giusta(pa, 'mazzo')); assert.ok(!N.giusta(pa, ''));
+  assert.equal(N.normParola('L’àncora'), 'ancora'); assert.equal(N.normParola('gli Uffizi'), 'uffizi');
+});
+
 /* ---------------- Ogni motore: generati e ricontrollati ---------------- */
 prova('ogni motore e ogni livello: generato, soluzione unica, risolto dal risolutore umano, livello giusto', () => {
   for (const g of S.GIOCHI) for (const liv of ['impegnativa', 'esperta', 'estrema']) {
     if (g === 'stelle' && liv !== 'impegnativa') continue;                   // lente: le ricontrollano le sfide pubblicate
-    const r = M.prng(`prova|${g}|${liv}`);
-    let x = null; for (let k = 0; k < 20 && !x; k++) x = E[g].genera(r, liv, undefined, '2027-01-01');
-    assert.ok(x, `${g} ${liv}`);
-    const s = { data: '2027-01-01', n: M.numero('2027-01-01'), gioco: g, livello: liv, p: x.p };
+    const x = S.generaSfida(g, liv, `prova|${g}|${liv}`);
+    const s = { data: '2027-01-01', n: M.numero('2027-01-01'), gioco: g, livello: liv, titolo: 'Prova', tecniche: x.tecniche, p: x.p };
     assert.equal(S.controlla(s), null, `${g} ${liv}`);
-    assert.ok(E[g].completo(x.p, E[g].statoRisolto(x.p, x.ris.sol)));
-    assert.ok(!E[g].completo(x.p, E[g].nuovoStato(x.p)) || g === 'cavalieri', `${g}: lo stato iniziale non è già completo`);
+    const st = E[g].nuovoStato(x.p);
+    if (E[g].giusta) assert.ok(E[g].vuota(x.p, st.v), `${g}: lo stato iniziale non è vuoto`);
+    else assert.ok(!E[g].completo(x.p, st) || g === 'cavalieri', `${g}: lo stato iniziale non è già completo`);
+    assert.ok(Object.keys(x.tecniche).every(t => E[g].TECNICHE[t]), `${g}: tecniche`);
   }
 });
 
 /* ---------------- Palinsesto ---------------- */
-function controllaPalinsesto(storia, primo) {
-  const date = Object.keys(storia).sort();
-  date.forEach((d, k) => {
-    const x = storia[d], ieri = storia[M.piuGiorni(d, -1)], altro = storia[M.piuGiorni(d, -2)];
-    if (ieri) assert.notEqual(x.gioco, ieri.gioco, d + ': due giorni di fila');
-    if (ieri && altro) assert.ok(!(M.CIFRE.has(x.gioco) && M.CIFRE.has(ieri.gioco) && M.CIFRE.has(altro.gioco)), d + ': tre giochi di cifre di fila');
-    const gs = M.giornoSettimana(d);
-    if (gs === 0) assert.equal(x.livello, 'estrema', d); else if (gs === 6) assert.equal(x.livello, 'esperta', d);
-    void k;
-  });
-  // in settimana ogni gioco alterna impegnativa ed esperta
-  const ultimo = {};
-  for (const d of date) { const x = storia[d], gs = M.giornoSettimana(d); if (gs === 0 || gs === 6) continue; if (ultimo[x.gioco]) assert.notEqual(x.livello, ultimo[x.gioco], d + ' ' + x.gioco + ': livello che non alterna'); ultimo[x.gioco] = x.livello; }
-  // un gioco di parole in ogni settimana intera dopo il lancio
-  for (let lun = M.piuGiorni(primo, (8 - M.giornoSettimana(primo)) % 7); M.piuGiorni(lun, 6) <= date[date.length - 1]; lun = M.piuGiorni(lun, 7)) {
-    let c = 0; for (let k = 0; k < 7; k++) { const x = storia[M.piuGiorni(lun, k)]; if (x && x.gioco === 'cavalieri') c++; }
-    assert.equal(c, 1, 'settimana del ' + lun);
+// Le regole del palinsesto valgono dal primo giorno rimescolato (i primi due giorni sono usciti col palinsesto vecchio)
+const PRIMO_NUOVO = '2026-10-24';
+function controllaPalinsesto(storia, da) {
+  const date = Object.keys(storia).filter(d => d >= da).sort();
+  for (const d of date) {
+    const x = storia[d], ieri = storia[M.piuGiorni(d, -1)];
+    if (ieri) assert.notEqual(x.famiglia, ieri.famiglia, d + ': stessa famiglia di ieri (' + x.tipo + ', ' + ieri.tipo + ')');
+    const gd = M.giorniDa(d, storia, 'tipo', x.tipo);
+    assert.ok(gd == null || gd >= M.MINIMO, `${d}: ${x.tipo} di nuovo dopo ${gd} giorni`);
+    assert.ok(M.livelliAmmessi(d).includes(x.livello), `${d}: livello ${x.livello} di ${M.GIORNI[M.giornoSettimana(d)]}`);
   }
 }
-prova('palinsesto: due anni simulati rispettano tutte le regole e usano tutti i giochi', () => {
-  const storia = {}, prec = {};
-  for (let d = M.LANCIO; d <= '2028-10-21'; d = M.piuGiorni(d, 1)) {
-    const g = M.giocoDelGiorno(d, prec, S.GIOCHI);
-    storia[d] = { gioco: g, livello: M.livelloDelGiorno(d, g, storia) }; prec[d] = g;
+prova('palinsesto: due anni simulati dopo l’ultimo giorno pronto rispettano tutte le regole', () => {
+  const storia = S.storiaDi(M.dati), usati = new Set(Object.values(M.dati).filter(s => s.gioco === 'enigma').map(s => s.p.id));
+  const ultimo = Object.keys(M.dati).sort().pop(), inizio = M.piuGiorni(ultimo, 1), cnt = {};
+  for (let d = inizio, k = 0; k < 730; k++, d = M.piuGiorni(d, 1)) {
+    const sc = M.scegliDelGiorno(d, storia, S.candidatiDelGiorno(usati), M.prng('giorno|' + d));
+    assert.equal(sc.rilassa, 0, d + ': regole rilassate');
+    if (sc.c.voci) usati.add((sc.c.voci.find(e => e.livello === sc.livello) || sc.c.voci[0]).id);
+    storia[d] = { tipo: sc.c.tipo, famiglia: sc.c.famiglia, livello: sc.livello };
+    cnt[sc.c.tipo] = (cnt[sc.c.tipo] || 0) + 1;
   }
-  controllaPalinsesto(storia, M.LANCIO);
-  assert.equal(storia[M.LANCIO].gioco, 'corone');
-  const cnt = {}; for (const x of Object.values(storia)) { const c = cnt[x.gioco] || (cnt[x.gioco] = { impegnativa: 0, esperta: 0, estrema: 0 }); c[x.livello]++; }
-  for (const g of S.GIOCHI) { assert.ok(cnt[g], g); assert.ok(cnt[g].impegnativa > 10 && cnt[g].esperta > 10 && cnt[g].estrema > 3, g + ' ' + J(cnt[g])); }
-  // il gioco di parole cambia giorno: in due anni capita in ogni giorno della settimana
-  const giorni = new Set(Object.entries(storia).filter(([, x]) => x.gioco === 'cavalieri').map(([d]) => M.giornoSettimana(d)));
-  assert.equal(giorni.size, 7);
+  controllaPalinsesto(storia, inizio);
+  for (const g of S.GIOCHI) assert.ok(Object.keys(cnt).some(t => t.split(':')[0] === g), g + ' non esce mai');
+  // anche se tutti gli enigmi fossero ancora da usare
+  const storia2 = {}, usati2 = new Set();
+  for (let d = '2027-03-01', k = 0; k < 120; k++, d = M.piuGiorni(d, 1)) {
+    const sc = M.scegliDelGiorno(d, storia2, S.candidatiDelGiorno(usati2), M.prng('g2|' + d));
+    assert.equal(sc.rilassa, 0, d);
+    if (sc.c.voci) usati2.add((sc.c.voci.find(e => e.livello === sc.livello) || sc.c.voci[0]).id);
+    storia2[d] = { tipo: sc.c.tipo, famiglia: sc.c.famiglia, livello: sc.livello };
+  }
+  controllaPalinsesto(storia2, '2027-03-01');
+  // livelli: sabato esperta o estrema, domenica estrema, in settimana un po' e un po'
+  const fer = Object.entries(storia).filter(([d]) => d >= inizio && M.giornoSettimana(d) % 6 !== 0).map(([, x]) => x.livello);
+  const imp = fer.filter(l => l === 'impegnativa').length;
+  assert.ok(Math.abs(imp - fer.length / 2) < fer.length * 0.1, `impegnative in settimana: ${imp} su ${fer.length}`);
 });
 
 /* ---------------- Sfide pubblicate ---------------- */
@@ -303,50 +471,89 @@ prova('sfide pubblicate: tutte ricontrollate da zero, numeri di fila, palinsesto
   assert.ok(date.length >= 30, 'almeno 30 giorni pronti');
   assert.equal(date[0], M.LANCIO); assert.equal(I.primo, date[0]); assert.equal(I.ultimo, date[date.length - 1]);
   assert.deepEqual(I.mesi, [...new Set(date.map(d => d.slice(0, 7)))]);
-  const visti = new Set(), titoli = {};
+  // i primi due giorni sono già usciti: non cambiano più
+  assert.equal(M.dati['2026-10-22'].gioco, 'corone'); assert.equal(M.dati['2026-10-23'].gioco, 'cavalieri');
+  const visti = new Set(), titoli = {}, enigmi = new Set();
   date.forEach((d, k) => {
     const s = M.dati[d];
     assert.equal(s.data, d); if (k) assert.equal(M.differenza(date[k - 1], d), 1, 'manca un giorno prima del ' + d);
     assert.equal(S.controlla(s), null, d + ' ' + s.gioco);
     const firma = s.gioco + J(s.p); assert.ok(!visti.has(firma), d + ': sfida doppia'); visti.add(firma);
+    if (s.gioco === 'enigma') { assert.ok(!enigmi.has(s.p.id), d + ': enigma già usato'); enigmi.add(s.p.id); assert.ok(!('risposta' in s.p)); }
     assert.ok(typeof s.titolo === 'string' && s.titolo.length > 2, d + ': titolo');
-    const usati = titoli[s.gioco] || (titoli[s.gioco] = []);
-    assert.ok(!usati.slice(-(M.TITOLI[s.gioco].length - 1)).includes(s.titolo), d + ': titolo ripetuto troppo presto');
-    usati.push(s.titolo);
+    const tipo = M.tipoSfida(s.gioco, s.p), lista = M.TITOLI[tipo] || M.TITOLI[s.gioco];
+    if (lista) {
+      const usati = titoli[tipo] || (titoli[tipo] = []);
+      assert.ok(!usati.slice(-(lista.length - 1)).includes(s.titolo), d + ': titolo ripetuto troppo presto');
+      usati.push(s.titolo);
+    }
     assert.ok(s.tecniche && Object.keys(s.tecniche).every(t => E[s.gioco].TECNICHE[t]), d + ': tecniche');
-    // (gioco e livello non si ricalcolano qui: se un giorno si aggiunge un gioco o si ritocca il palinsesto, le sfide
-    // già pubblicate restano come sono; valgono le regole controllate qui sotto)
   });
-  controllaPalinsesto(M.dati, M.LANCIO);
+  controllaPalinsesto(S.storiaDi(M.dati), PRIMO_NUOVO);
+  // varietà: nelle prime dieci settimane rimescolate almeno 20 tipi diversi
+  const tipi = new Set(date.filter(d => d >= PRIMO_NUOVO).slice(0, 70).map(d => M.tipoSfida(M.dati[d].gioco, M.dati[d].p)));
+  assert.ok(tipi.size >= 20, 'tipi: ' + tipi.size);
   // le mine del campo non si leggono a occhio nel file
   for (const s of Object.values(M.dati).filter(x => x.gioco === 'campo')) assert.ok(!/\[/.test(s.p.mine));
 });
+prova('riserva: ogni sfida messa da parte è ancora valida', () => {
+  const R0 = S.leggiRiserva();
+  for (const x of R0) {
+    if (x.gioco === 'stelle' && x.livello !== 'impegnativa') continue;      // lente: ricontrollate quando entrano in calendario
+    const s = { data: '2027-06-01', n: M.numero('2027-06-01'), gioco: x.gioco, livello: x.livello, titolo: 'Riserva', tecniche: x.tecniche || {}, p: x.p };
+    assert.equal(S.controlla(s), null, x.gioco + ' ' + x.livello);
+  }
+});
 
 /* ---------------- Lo strumento ---------------- */
-prova('strumento: aggiunge giorni dopo l’ultimo senza toccare quelli già pubblicati; stesso giorno, stessa sfida', () => {
+function copiaRepo() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mental-'));
   fs.mkdirSync(path.join(tmp, 'strumenti')); fs.mkdirSync(path.join(tmp, 'giochi'));
-  fs.copyFileSync(path.join(RADICE, 'strumenti', 'mental.js'), path.join(tmp, 'strumenti', 'mental.js'));
+  for (const f of ['mental.js', 'mental-enigmi.js', 'mental-riserva.json']) fs.copyFileSync(path.join(RADICE, 'strumenti', f), path.join(tmp, 'strumenti', f));
   fs.cpSync(path.join(RADICE, 'giochi', 'mental'), path.join(tmp, 'giochi', 'mental'), { recursive: true });
+  return tmp;
+}
+const leggiCartella = c => Object.fromEntries(fs.readdirSync(c).map(f => [f, fs.readFileSync(path.join(c, f), 'utf8')]));
+prova('strumento: aggiunge giorni dopo l’ultimo senza toccare quelli già pubblicati; chiunque lo lanci ottiene le stesse sfide', () => {
+  const tmp = copiaRepo(), tmp2 = copiaRepo();
   const cart = path.join(tmp, 'giochi', 'mental', 'sfide');
-  const prima = Object.fromEntries(fs.readdirSync(cart).map(f => [f, fs.readFileSync(path.join(cart, f), 'utf8')]));
+  const prima = leggiCartella(cart);
   const ultimo = Object.keys(M.dati).sort().pop();
   const out = execFileSync('node', [path.join(tmp, 'strumenti', 'mental.js'), '--giorni', '3'], { encoding: 'utf8' });
   assert.match(out, /Fatto/);
-  const dopo = Object.fromEntries(fs.readdirSync(cart).map(f => [f, fs.readFileSync(path.join(cart, f), 'utf8')]));
+  const dopo = leggiCartella(cart);
   const meseNuovo = M.piuGiorni(ultimo, 1).slice(0, 7);
   for (const f of Object.keys(prima)) if (f !== 'indice.js' && f !== meseNuovo + '.js') assert.equal(dopo[f], prima[f], f + ' non cambia');
-  // le righe già scritte restano identiche anche nel mese toccato
   if (prima[meseNuovo + '.js']) for (const riga of prima[meseNuovo + '.js'].split('\n').filter(x => x.startsWith('{'))) assert.ok(dopo[meseNuovo + '.js'].includes(riga.replace(/,$/, '')));
   const ctl = execFileSync('node', [path.join(tmp, 'strumenti', 'mental.js'), '--controlla'], { encoding: 'utf8' });
   assert.match(ctl, /sono a posto/);
-  // rifatto da capo, lo stesso giorno viene uguale
-  const ctx = {}; new Function('self', fs.readFileSync(path.join(cart, 'indice.js'), 'utf8'))(ctx);
+  const ctx = {}; new Function('self', dopo['indice.js'])(ctx);
   assert.equal(ctx.MENTAL_INDICE.ultimo, M.piuGiorni(ultimo, 3));
-  const nuovo = M.piuGiorni(ultimo, 1);
-  const testo = dopo[meseNuovo + '.js'], riga = testo.split('\n').find(x => x.includes(`"data":"${nuovo}"`));
-  const a = S.preparaGiorno(nuovo), b = S.preparaGiorno(nuovo);
-  assert.equal(J(a), J(b)); assert.equal(J(a), riga.replace(/,$/, ''));
+  // un'altra copia, stesso comando: file identici
+  execFileSync('node', [path.join(tmp2, 'strumenti', 'mental.js'), '--giorni', '3'], { encoding: 'utf8' });
+  assert.deepEqual(leggiCartella(path.join(tmp2, 'giochi', 'mental', 'sfide')), dopo);
+  // di nuovo con le sfide che ci sono già: niente da fare
+  const ancora = execFileSync('node', [path.join(tmp, 'strumenti', 'mental.js'), '--fino', ultimo], { encoding: 'utf8' });
+  assert.match(ancora, /Niente da fare/);
+  for (const t of [tmp, tmp2]) fs.rmSync(t, { recursive: true, force: true });
+});
+prova('strumento: il rimescolamento non tocca i giorni passati e rispetta il palinsesto', () => {
+  const tmp = copiaRepo(), cart = path.join(tmp, 'giochi', 'mental', 'sfide');
+  const limite = '2026-11-15';
+  const out = execFileSync('node', [path.join(tmp, 'strumenti', 'mental.js'), '--rimescola', '--dopo', limite], { encoding: 'utf8' });
+  assert.match(out, /Fatto/);
+  const vecchi = { ...M.dati };
+  const D = {}; const ctx = { mese: (m, l) => { for (const s of l) D[s.data] = s; } };
+  const dopo = leggiCartella(cart);
+  for (const f of Object.keys(dopo).filter(f => /^\d{4}-\d\d\.js$/.test(f))) new Function('MENTAL', dopo[f])(ctx);
+  for (const d of Object.keys(vecchi)) if (d <= limite) assert.equal(J(D[d]), J(vecchi[d]), d + ' è cambiato');
+  // tutto il resto: valido e con le regole del palinsesto
+  M.dati = D;
+  for (const d of Object.keys(D).filter(x => x > limite)) assert.equal(S.controlla(D[d]), null, d);
+  controllaPalinsesto(S.storiaDi(D), M.piuGiorni(limite, 1));
+  const id = Object.values(D).filter(s => s.gioco === 'enigma').map(s => s.p.id);
+  assert.equal(new Set(id).size, id.length, 'enigma usato due volte');
+  S.leggiTutto();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 

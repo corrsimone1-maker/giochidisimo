@@ -91,57 +91,62 @@ const LIVELLI = {
 };
 
 /* ---------------- Palinsesto ----------------
-   Che gioco e che livello esce in un giorno: lo decide lo strumento quando prepara le sfide,
-   con queste regole (le controllano anche le prove):
-   - mai lo stesso gioco due giorni di fila, né due volte in 8 giorni se si può;
-   - mai più di due giochi «di cifre» (sudoku, grattacieli, futoshiki) di fila;
-   - ogni settimana (da lunedì a domenica) un gioco di parole (cavalieri), in un giorno a caso;
-   - il primo giorno (LANCIO) escono le Corone;
-   - livelli: sabato esperta, domenica estrema; in settimana ogni gioco alterna impegnativa ed esperta. */
-const CIFRE = new Set(['sudoku', 'grattacieli', 'futoshiki']);
-/* Livello del giorno s per il gioco già scelto. storia: mappa data → { gioco, livello } dei giorni prima.
-   In settimana ogni gioco alterna: se l'ultima volta (in settimana) era impegnativa ora è esperta e
-   viceversa; la prima volta decide il numero della sfida. */
-function livelloDelGiorno(s, gioco, storia) {
-  const g = giornoSettimana(s);
+   Ogni giorno, se si può, una sfida di un tipo diverso. Un «tipo» è un gioco generato (corone,
+   sudoku, lucchetto…) o una categoria di enigmi scritti a mano (enigma:problema, enigma:sciarada…);
+   ogni tipo ha una famiglia (griglia, cifre, logica, numeri, parole, figure).
+   Regole (le controllano le prove):
+   - mai la stessa famiglia due giorni di fila, se si può;
+   - lo stesso tipo torna il più tardi possibile: si sceglie il tipo più «in ritardo» rispetto al
+     suo ritmo (giorni dall'ultima volta / intervallo ideale), e mai prima di MINIMO giorni se si può;
+   - livelli: domenica estrema; sabato esperta o estrema; in settimana impegnativa o esperta,
+     un po' dell'una e un po' dell'altra. */
+const FAMIGLIE = { corone: 'griglia', stelle: 'griglia', binario: 'griglia', campo: 'griglia', nonogramma: 'griglia', sudoku: 'cifre', grattacieli: 'cifre', futoshiki: 'cifre', cavalieri: 'logica' };
+const MINIMO = 6;
+function tipoSfida(gioco, p) { const E = M.motori[gioco]; return E && E.tipoDi && p ? E.tipoDi(p) : gioco; }
+function famigliaSfida(gioco, p) { const E = M.motori[gioco]; return (E && E.famigliaDi && p ? E.famigliaDi(p) : E && E.famiglia) || FAMIGLIE[gioco] || 'altro'; }
+function nomeSfida(s) { const E = M.motori[s.gioco]; return E ? (E.nomeDi ? E.nomeDi(s.p) : E.nome) : s.gioco; }
+function livelliAmmessi(data) { const g = giornoSettimana(data); return g === 0 ? ['estrema'] : g === 6 ? ['esperta', 'estrema'] : ['impegnativa', 'esperta']; }
+/* Livello preferito per un giorno feriale: quello meno usato da lunedì a ieri; a parità, l'opposto di ieri */
+function livelloPreferito(data, storia) {
+  const g = giornoSettimana(data);
   if (g === 0) return 'estrema';
   if (g === 6) return 'esperta';
-  if (gioco && storia) {
-    for (let k = 1; k <= 400; k++) {
-      const d = piuGiorni(s, -k), x = storia[d];
-      if (!x) { if (d < LANCIO) break; continue; }
-      const gg = giornoSettimana(d);
-      if (x.gioco === gioco && gg !== 0 && gg !== 6) return x.livello === 'impegnativa' ? 'esperta' : 'impegnativa';
-    }
-  }
-  return numero(s) % 2 ? 'impegnativa' : 'esperta';
+  const conta = { impegnativa: 0, esperta: 0 };
+  for (let k = 1; k <= (g + 6) % 7; k++) { const x = storia[piuGiorni(data, -k)]; if (x && conta[x.livello] != null) conta[x.livello]++; }
+  if (conta.impegnativa !== conta.esperta) return conta.impegnativa < conta.esperta ? 'impegnativa' : 'esperta';
+  const ieri = storia[piuGiorni(data, -1)];
+  return ieri && ieri.livello === 'impegnativa' ? 'esperta' : 'impegnativa';
 }
-/* Sceglie il gioco del giorno s conoscendo quelli dei giorni prima (mappa data → id).
-   Il gioco di parole ha un giorno suo in ogni settimana: a blocchi di 7 settimane, ogni giorno
-   della settimana una volta in ordine sparso (così cambia giorno e livello senza capitare sempre di
-   domenica); negli altri giorni non esce. */
-function giornoDiParole(lun) {                                       // 0 = lunedì … 6 = domenica
-  const lun0 = piuGiorni(LANCIO, -((giornoSettimana(LANCIO) + 6) % 7));
-  const k = Math.floor(differenza(lun0, lun) / 7), blocco = Math.floor(k / 7);
-  return prng('parole|' + blocco).mescola([0, 1, 2, 3, 4, 5, 6])[((k % 7) + 7) % 7];
+function giorniDa(data, storia, chiave, valore, max = 400) {
+  for (let k = 1; k <= max; k++) { const x = storia[piuGiorni(data, -k)]; if (x && x[chiave] === valore) return k; }
+  return null;
 }
-function giocoDelGiorno(s, precedenti, disponibili) {
-  if (s === LANCIO && disponibili.includes('corone')) return 'corone';          // si parte con le Corone
-  const r = prng('palinsesto|' + s);
-  const ieri = precedenti[piuGiorni(s, -1)], altroieri = precedenti[piuGiorni(s, -2)];
-  // giochi usati negli ultimi 7 giorni (per variare, anche il giorno della settimana) e nella settimana in corso
-  const recenti = new Set(); for (let k = 1; k <= 7; k++) { const x = precedenti[piuGiorni(s, -k)]; if (x) recenti.add(x); }
-  const g = (giornoSettimana(s) + 6) % 7, lun = piuGiorni(s, -g);
-  const settimana = []; for (let d = lun; d < s; d = piuGiorni(d, 1)) if (precedenti[d]) settimana.push(precedenti[d]);
-  if (disponibili.includes('cavalieri')) {
-    // il suo giorno (o il primo utile dopo, se ieri c'era già) se nella settimana non c'è ancora stato
-    const giorno = giornoDiParole(lun), primo = differenza(lun, LANCIO);
-    if (giorno >= primo && g >= giorno && !settimana.includes('cavalieri') && ieri !== 'cavalieri') return 'cavalieri';
+/* Sceglie tra i candidati quello del giorno.
+   candidati: [{ tipo, famiglia, livelli: [livelli disponibili], periodo, ultimo (data «virtuale» se non c'è nella storia) }]
+   storia: mappa data → { tipo, famiglia, livello }. Restituisce { c, livello, u, rilassa } o null
+   (rilassa 0: tutte le regole rispettate; 1: tipo troppo vicino o stessa famiglia di ieri; 2: livello fuori dal giorno). */
+function scegliDelGiorno(data, storia, candidati, r) {
+  const ammessi = livelliAmmessi(data), pref = livelloPreferito(data, storia);
+  const ieri = storia[piuGiorni(data, -1)], altroieri = storia[piuGiorni(data, -2)];
+  const valuta = (c, rilassa) => {
+    const livs = c.livelli.filter(l => ammessi.includes(l));
+    if (!livs.length && rilassa < 2) return null;
+    let gd = giorniDa(data, storia, 'tipo', c.tipo);
+    if (gd == null) gd = c.ultimo ? differenza(c.ultimo, data) : c.periodo;
+    if (gd < MINIMO && rilassa < 1) return null;
+    if (ieri && ieri.famiglia === c.famiglia && rilassa < 1) return null;
+    let u = gd / c.periodo;
+    if (altroieri && altroieri.famiglia === c.famiglia) u -= 0.15;
+    if (ieri && ieri.famiglia === c.famiglia) u -= 5;
+    u += r.f() * 0.05;
+    const livello = livs.length ? (livs.includes(pref) ? pref : livs.includes('estrema') && ammessi.includes('estrema') ? 'estrema' : livs[0]) : (c.livelli.includes('esperta') ? 'esperta' : c.livelli[0]);
+    return { c, livello, u, rilassa };
+  };
+  for (const rilassa of [0, 1, 2]) {
+    const v = candidati.map(c => valuta(c, rilassa)).filter(Boolean);
+    if (v.length) { v.sort((a, b) => b.u - a.u); return v[0]; }
   }
-  let pool = disponibili.filter(x => x !== ieri && x !== 'cavalieri');
-  if (CIFRE.has(ieri) && CIFRE.has(altroieri)) pool = pool.filter(x => !CIFRE.has(x));
-  const nuovi = pool.filter(x => !recenti.has(x));
-  return r.scegli(nuovi.length ? nuovi : pool);
+  return null;
 }
 
 /* ---------------- Titoli ----------------
@@ -155,11 +160,17 @@ const TITOLI = {
   grattacieli: ['Orizzonte cieco', 'Skyline', 'Torri', 'Vista dall’alto', 'La città verticale', 'Chi vede chi', 'Prospettive', 'Il belvedere', 'Profili', 'Palazzi', 'Dal tetto', 'La quinta torre', 'Panorama', 'Linea di vista', 'Altezze'],
   futoshiki: ['Più o meno', 'Disuguaglianze', 'Maggiore di', 'Catene', 'Il verso giusto', 'Frecce', 'Ordine sparso', 'Scalini', 'Pendenze', 'Gerarchie', 'La salita', 'Minore uguale', 'Confronti', 'Sotto e sopra', 'La scala'],
   nonogramma: ['Pixel nascosti', 'L’immagine sepolta', 'Mosaico', 'Ricamo', 'Tessere', 'Il disegno segreto', 'Punti e linee', 'Trama', 'Il negativo', 'Pixel per pixel', 'Ombre', 'Intarsio', 'La tela', 'Puntinismo', 'Ordito'],
+  'codice:lucchetto': ['La combinazione', 'Il lucchetto', 'Cassaforte', 'Il catenaccio', 'Lo scrigno', 'Chiuso a chiave', 'Il forziere', 'La valigetta', 'Lucchetto da bici', 'Il diario segreto', 'Tre cifre', 'Il portone'],
+  'codice:colori': ['Codice a colori', 'Pioli', 'Tentativi', 'Il codice segreto', 'Arcobaleno nascosto', 'Pennarelli', 'Biglie', 'Vetrate', 'Tavolozza', 'Coriandoli', 'Gettoni', 'Perline'],
+  linea: ['In fila', 'Chi arriva prima', 'L’ordine giusto', 'Uno dopo l’altro', 'La coda', 'Scaffali', 'Il condominio', 'Il traguardo', 'Prima e dopo', 'Sopra e sotto', 'La processione', 'In ordine sparso'],
+  bilancia: ['La moneta falsa', 'Il falsario', 'Pesi e contrappesi', 'Due piatti', 'La zecca', 'L’intruso', 'Equilibri', 'Il tesoretto', 'Monete sospette', 'La bilancia', 'Il conio', 'Il sacchetto'],
+  calcolatrice: ['La calcolatrice rotta', 'Tasti strani', 'Il display', 'Mosse contate', 'Cifre al contrario', 'Quattro tasti', 'Il numero giusto', 'Scorciatoie', 'La tastiera matta', 'Calcoli storti', 'Solo questi tasti', 'Pochi tasti'],
+  travasi: ['Travasi', 'La brocca giusta', 'Mezzo pieno', 'Senza tacche', 'L’oste', 'Alla fontana', 'Le botti', 'Misure', 'Litri contati', 'La cantina', 'Il pozzo', 'Acqua e pazienza'],
   cavalieri: ['Se mento, dico il vero', 'L’isola dei bugiardi', 'Parola d’onore', 'Mezze verità', 'Il villaggio', 'Chi mente?', 'Giuramenti', 'Testimoni', 'La riunione', 'Fiducia', 'Al tramonto', 'Voci di piazza', 'Il patto', 'Accuse', 'Sulla spiaggia']
 };
-function titoloDelGiorno(gioco, s, usati) {
-  const lista = TITOLI[gioco] || [gioco];
-  const liberi = lista.filter(t => !usati.has(gioco + '|' + t));
+function titoloDelGiorno(tipo, s, usati) {
+  const lista = TITOLI[tipo] || TITOLI[tipo.split(':')[0]] || [tipo];
+  const liberi = lista.filter(t => !usati.has(t));
   const r = prng('titolo|' + s);
   return r.scegli(liberi.length ? liberi : lista);
 }
@@ -212,9 +223,10 @@ function combinazioni(arr, k, f) {                    // chiama f su ogni sottoi
 }
 
 Object.assign(M, {
-  LANCIO, FUSO, LIVELLI, CIFRE, TITOLI,
+  LANCIO, FUSO, LIVELLI, TITOLI,
   giornoRoma, piuGiorni, differenza, numero, dataDelNumero, dataValida, prossimaMezzanotte, dataLunga, dataCorta, meseDi, giornoSettimana, MESI, GIORNI,
-  tempo, prng, livelloDelGiorno, giocoDelGiorno, titoloDelGiorno, giornoDiParole, intorno, combinazioni, quadratoLatino
+  tempo, prng, titoloDelGiorno, intorno, combinazioni, quadratoLatino,
+  FAMIGLIE, MINIMO, tipoSfida, famigliaSfida, nomeSfida, livelliAmmessi, livelloPreferito, giorniDa, scegliDelGiorno
 });
 if (typeof module !== 'undefined' && module.exports) module.exports = M;
 })();

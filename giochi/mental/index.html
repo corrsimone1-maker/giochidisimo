@@ -111,6 +111,7 @@ button:disabled{cursor:default;opacity:.45}
 .gtop{gap:6px}
 .gcentro{flex:1;min-width:0;text-align:center}
 .gcentro .t1{font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcentro .t1.lungo{font-size:11.5px;letter-spacing:.05em}
 .gcentro .orologio{font-weight:800;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ambra);letter-spacing:.02em}
 .gcentro .orologio.prova{color:var(--lavanda)}
 .gsotto{display:flex;justify-content:center;gap:8px;align-items:center;padding:2px 16px 4px;color:var(--spento);font-size:13px;font-weight:600}
@@ -255,6 +256,99 @@ button:disabled{cursor:default;opacity:.45}
 .elenco .t.ko{color:var(--corallo)}
 .vuoto-msg{color:var(--tenue);text-align:center;padding:16px 8px}
 
+
+/* ---------- Enigmi e risposte ---------- */
+.carta-enigma{max-width:520px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:2px 2px 10px}
+.enigma-testo{font-size:16.5px;line-height:1.55;color:#DDE0FF}
+.enigma-testo p{margin:0 0 10px}
+.enigma-testo p:last-child{margin-bottom:0}
+.enigma-testo b{color:var(--testo)}
+.indizi-lista{margin:4px 0 0;padding:0 0 0 22px;display:flex;flex-direction:column;gap:7px}
+.indizi-lista li::marker{color:var(--ambra);font-weight:800}
+.enigma-figura{display:flex;justify-content:center;padding:10px;border-radius:16px;background:var(--piano);border:1px solid var(--linea)}
+.enigma-figura svg{width:100%;max-width:420px;height:auto;max-height:52vh}
+.display-num{display:flex;align-items:baseline;justify-content:center;gap:8px;min-height:64px;padding:10px 14px;border-radius:16px;background:var(--piano-2);border:1px solid var(--linea-2);font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.display-num.vuoto{color:var(--spento)}
+.display-num .unita{font-size:16px;color:var(--tenue);font-weight:700}
+.campo-testo{width:100%;min-height:52px;padding:12px 14px;border-radius:14px;border:1px solid var(--linea-2);background:var(--piano-2);color:var(--testo);font:inherit;font-size:17px;font-weight:700;-webkit-user-select:text;user-select:text;outline:none}
+.campo-testo:focus{border-color:var(--lavanda)}
+.campi{display:flex;flex-direction:column;gap:8px}
+.campo-riga{display:flex;align-items:center;gap:10px}
+.campo-riga>span{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--piano-3);font-weight:800;font-size:13px}
+.campo-riga.giusto>span{background:var(--menta);color:var(--su-menta)}
+.campo-riga.giusto .campo-testo{border-color:var(--menta);color:var(--menta-2)}
+.ordine-messo,.ordine-da{display:flex;flex-wrap:wrap;gap:7px}
+.ordine-messo{padding:10px;border-radius:14px;background:var(--piano);border:1px dashed var(--linea-2)}
+.chip{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:7px 12px;border-radius:12px;background:var(--piano-2);border:1px solid var(--linea-2);font-weight:700;font-size:15px}
+.chip b{font-size:12px;color:var(--ambra)}
+.chip.messo{background:var(--lavanda-fondo);border-color:var(--lavanda)}
+.chip.vuoto{color:var(--spento);border-style:dashed;background:transparent;min-width:44px;justify-content:center}
+.ordine-da .chip:disabled{opacity:.25}
+.scelte{display:flex;flex-direction:column;gap:7px}
+.scelta-btn{min-height:46px;padding:10px 14px;border-radius:13px;background:var(--piano-2);border:1px solid var(--linea-2);font-weight:700;text-align:left}
+.scelta-btn.on{background:var(--lavanda-fondo);border-color:var(--lavanda)}
+.monete{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.moneta{aspect-ratio:1;border-radius:50%;background:#E6B25E;color:#2B1B05;font-weight:800;font-size:15px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.moneta.on{outline:3px solid var(--menta);outline-offset:2px}
+.interr{display:flex;background:var(--fondo);border:1px solid var(--linea);border-radius:999px;padding:3px}
+.interr button{flex:1;border-radius:999px;padding:9px 12px;font-size:14px;font-weight:800;color:var(--tenue)}
+.interr button[aria-pressed="true"]{background:var(--lavanda-fondo);color:var(--lavanda)}
+.gia{color:var(--tenue);font-size:13.5px}
+.gia b{color:#FF9C9C}
+.tastiera-num{grid-template-columns:repeat(7,1fr)}
+.tastiera-num .tasto{min-height:44px;font-size:19px}
+.risposta-giusta{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;border-radius:14px;background:var(--menta-fondo);border:1px solid rgba(61,220,160,.4);text-align:center}
+.risposta-giusta > span{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--menta-2)}
+.risposta-giusta b{font-size:20px}
+.spiegazione{color:#D9DCFF;font-size:15px;line-height:1.55}
+.sol-testo .enigma-testo{font-size:15px}
+/* ---------- Codice ---------- */
+.prove-codice{display:flex;flex-direction:column;gap:8px}
+.prova-codice{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--piano);border:1px solid var(--linea)}
+.simboli{display:flex;gap:6px;flex:none}
+.simboli.grandi .piolo,.simboli.grandi .cifra-lucchetto{width:44px;height:44px;font-size:20px}
+.esito-prova{flex:1;min-width:0;font-size:14px;line-height:1.35;color:#D9DCFF;display:flex;flex-direction:column;gap:2px}
+.esito-prova .pallini{font-size:20px;letter-spacing:.08em;color:var(--testo)}
+.esito-prova small{color:var(--tenue);font-weight:700}
+.piolo{width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:800;color:#0B0D22;background:transparent;box-shadow:inset 0 0 0 2px var(--linea-3)}
+.cifra-lucchetto{width:30px;height:38px;border-radius:8px;display:inline-grid;place-items:center;font-size:19px;font-weight:800;background:var(--piano-3);color:var(--testo);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.risposta-codice{display:flex;justify-content:center;gap:10px}
+.slot{padding:5px;border-radius:12px;border:2px solid transparent}
+.slot.sel{border-color:var(--lavanda);background:var(--lavanda-fondo)}
+.slot.errore{border-color:var(--corallo)}
+.slot .piolo,.slot .cifra-lucchetto{width:40px;height:40px;font-size:18px}
+.tavolozza{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:520px;margin:0 auto}
+.tavolozza .tasto{min-width:42px;min-height:44px;padding:0 6px;display:grid;place-items:center}
+/* ---------- Calcolatrice e travasi ---------- */
+.calcolatrice,.travasi{max-width:420px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.calc-obiettivo{text-align:center;color:var(--tenue);font-size:15px}
+.calc-obiettivo b{color:var(--ambra);font-size:18px}
+.calc-display{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:14px 16px;border-radius:18px;background:#0A0C1C;border:1px solid var(--linea-2);font-variant-numeric:tabular-nums}
+.calc-display small{color:var(--spento);font-weight:700;font-size:12.5px;min-height:16px;text-align:right;word-break:break-all}
+.calc-display span{font-weight:800;font-size:44px;line-height:1.1;letter-spacing:.02em}
+.calc-display.fatto{border-color:var(--menta)}
+.calc-display.fatto span{color:var(--menta)}
+.calc-mosse{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--tenue);font-size:13px;font-weight:700;flex-wrap:wrap}
+.calc-mosse i{width:10px;height:10px;border-radius:50%;background:var(--linea-3)}
+.calc-mosse i.usata{background:var(--ambra)}
+.calc-mosse span{margin-left:6px}
+.calc-tasti{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.calc-tasto{min-height:64px;border-radius:16px;background:var(--piano-2);border:1px solid var(--linea-2);font-weight:800;font-size:24px}
+.calc-tasto:active{background:var(--piano-3)}
+.calc-legenda{display:flex;flex-direction:column;gap:3px;color:var(--tenue);font-size:13px}
+.calc-legenda b{color:var(--testo)}
+.brocche{display:flex;justify-content:center;align-items:flex-end;gap:14px}
+.brocca-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.brocca:disabled{opacity:1}
+.brocca{position:relative;width:78px;border-radius:10px 10px 16px 16px;border:2px solid var(--linea-3);background:var(--piano);overflow:hidden;display:flex;align-items:flex-end;justify-content:center}
+.brocca .acqua{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#7B95E8,#5266C9);transition:height .2s ease}
+.brocca span{position:relative;font-weight:800;font-size:22px;margin-bottom:8px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.brocca.sel{border-color:var(--ambra);box-shadow:0 0 0 3px var(--ambra-fondo)}
+.brocca.giusta{border-color:var(--menta)}
+.brocca-cap{color:var(--tenue);font-size:12.5px;font-weight:700}
+.brocca-azioni{display:flex;flex-direction:column;gap:5px;width:78px}
+.mini-btn{min-height:34px;border-radius:10px;background:var(--piano-2);border:1px solid var(--linea-2);font-size:12.5px;font-weight:800}
+
 /* Finestre e avvisi */
 .velo{position:fixed;inset:0;z-index:20;background:rgba(3,4,14,.78);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
 .velo .box{width:100%;max-width:536px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 14px;border-radius:20px;background:var(--piano);border:1px solid var(--linea-2);display:flex;flex-direction:column;gap:12px}
@@ -334,6 +428,13 @@ button:disabled{cursor:default;opacity:.45}
 <script src="motori/futoshiki.js"></script>
 <script src="motori/nonogramma.js"></script>
 <script src="motori/cavalieri.js"></script>
+<script src="motori/enigma.js"></script>
+<script src="motori/codice.js"></script>
+<script src="motori/linea.js"></script>
+<script src="motori/bilancia.js"></script>
+<script src="motori/calcolatrice.js"></script>
+<script src="motori/travasi.js"></script>
+<script src="viste.js"></script>
 <script src="sfide/indice.js"></script>
 <script>
 'use strict';
@@ -392,6 +493,23 @@ const ICO = {
   futoshiki: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l-6 6 6 6M14 6l6 6-6 6" opacity=".45"/><path d="M10 6l-6 6 6 6"/></svg>',
   nonogramma: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="4" width="4.5" height="4.5" rx="1" opacity=".35"/><rect x="15.5" y="4" width="4.5" height="4.5" rx="1"/><rect x="4" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="15.5" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="4" y="15.5" width="4.5" height="4.5" rx="1" opacity=".35"/><rect x="9.75" y="15.5" width="4.5" height="4.5" rx="1"/><rect x="15.5" y="15.5" width="4.5" height="4.5" rx="1" opacity=".35"/></svg>',
   cavalieri: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5.5h11a2 2 0 012 2V13a2 2 0 01-2 2H9l-4 3.5V15H4a2 2 0 01-2-2V7.5a2 2 0 012-2z"/><path d="M19.5 9H21a1.5 1.5 0 011.5 1.5v5A1.5 1.5 0 0121 17h-.5v2.5L17.5 17H13" opacity=".5"/></svg>',
+  codice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 018 0v3"/><circle cx="12" cy="15.5" r="1.6" fill="currentColor"/></svg>',
+  colori: '<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.6" fill="#3DDCA0"/><circle cx="12" cy="12" r="3.6" fill="#B2A7FF"/><circle cx="18" cy="12" r="3.6" fill="#F2B84B"/></svg>',
+  linea: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="8" r="2.4"/><circle cx="12" cy="8" r="2.4"/><circle cx="19" cy="8" r="2.4"/><path d="M2 18a3 3 0 016 0zM9 18a3 3 0 016 0zM16 18a3 3 0 016 0z"/></svg>',
+  bilancia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M4 8h16"/><path d="M4 8l-2.5 6h5zM20 8l-2.5 6h5z"/></svg>',
+  calcolatrice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="4" rx="1" fill="currentColor"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 17h.01M12 17h.01M15.5 17h.01" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  travasi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 6h9l-1 15H6z"/><path d="M14 9h2.5a2 2 0 010 4H13.6"/><path d="M6.4 14h7.2l-.5 7H6.9z" fill="currentColor" stroke="none"/></svg>',
+  indovinello: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8.5 9a3.5 3.5 0 117 0c0 2.5-3.5 3-3.5 5.5"/><path d="M12 19h.01" stroke-width="3"/></svg>',
+  sciarada: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h6V7a2 2 0 114 0v2h2v6h2a2 2 0 110 4h-2v2H3z" opacity=".9"/></svg>',
+  anagramma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="8" height="8" rx="1.5"/><rect x="13.5" y="12" width="8" height="8" rx="1.5"/><path d="M15 4.5c3 0 4.5 1.5 4.5 4.5M17.5 7l2 2 2-2M9 19.5c-3 0-4.5-1.5-4.5-4.5M6.5 17l-2-2-2 2"/></svg>',
+  cifrario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="4.5"/><path d="M12.5 12H22M18.5 12v3.5M21.5 12v2.5"/></svg>',
+  problema: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h6M8 4v6M14 7h5M5 17l5-5M10 17l-5-5M14 15h5M14 19h5"/></svg>',
+  probabilita: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
+  contare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5v14M9 5v14M13 5v14M17 5v14M3 17L19 7"/></svg>',
+  geometria: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 17H3z"/><circle cx="12" cy="14" r="3.5"/></svg>',
+  logica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>',
+  strategia: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 21h11v-2.5H7zM8 17.5h9c0-3-1.5-4.5-1.5-7.5 0-3-2-6-6-6.5L8 5l1.5 1.5L7 9.5l1.5 1.5 2.5-1c0 3-3 4-3 7.5z"/></svg>',
+  enigma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8.5 9a3.5 3.5 0 117 0c0 2.5-3.5 3-3.5 5.5"/><path d="M12 19h.01" stroke-width="3"/></svg>',
   annulla: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9.5a5 5 0 010 10H12"/></svg>',
   matita: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M15.5 4.5l4 4L9 19l-5 1 1-5z"/><path d="M13.5 6.5l4 4"/></svg>',
   gomma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8.5 19.5L3.8 14.8a1.8 1.8 0 010-2.6l8.4-8.4a1.8 1.8 0 012.6 0l5.4 5.4a1.8 1.8 0 010 2.6l-8.2 7.7z"/><path d="M8 9.5l6.5 6.5M8.5 19.5H20"/></svg>',
@@ -405,6 +523,12 @@ const ICO = {
   condividi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8"/><path d="M5 12.5V19a1.5 1.5 0 001.5 1.5h11A1.5 1.5 0 0019 19v-6.5"/></svg>'
 };
 const nomeGioco = g => (M.motori[g] ? M.motori[g].nome : g);
+const nomeDi = s => M.nomeSfida(s);
+const breveDi = s => { const E = M.motori[s.gioco]; return E.breveDi ? E.breveDi(s.p) : E.breve; };
+const regoleDi = s => { const E = M.motori[s.gioco]; return E.regoleDi ? E.regoleDi(s.p) : E.regole; };
+function icona(s) { const t = M.tipoSfida(s.gioco, s.p); return ICO[t] || ICO[t.split(':')[1]] || ICO[s.gioco] || ICO.enigma; }
+/* Impronta di una sfida: se il file cambiasse sotto una partita a metà, la tavola si ricomincia */
+function firma(p) { const x = JSON.stringify(p); let h = 2166136261; for (let i = 0; i < x.length; i++) { h ^= x.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
 const pip = l => `<span class="pip">${[1, 2, 3].map(k => `<i class="${k <= (LIV[l] ? LIV[l].pip : 0) ? 'on' : ''}"></i>`).join('')}</span>`;
 const livTesto = l => (LIV[l] ? LIV[l].nome : l);
 
@@ -530,9 +654,9 @@ function disegnaOggi() {
     else if (r && r.esito === 'risolta') { stato = `<span class="ok">Risolta</span> in <b>${M.tempo(r.ms)}</b>${r.giornata ? '' : ' · dopo mezzanotte'}`; cta = 'Risultato'; }
     else if (r) { stato = `<span class="ko">${ESITI[r.esito]}</span> · <b>${M.tempo(r.ms)}</b>`; cta = 'Risultato'; }
     h = `<article class="eroe">
-      <div class="riga1"><span class="cat">${ICO[s.gioco] || ''}${esc(E.nome)}</span><span class="liv">${livTesto(s.livello)} ${pip(s.livello)}</span></div>
+      <div class="riga1"><span class="cat">${icona(s)}${esc(nomeDi(s))}</span><span class="liv">${livTesto(s.livello)} ${pip(s.livello)}</span></div>
       <h1>${esc(s.titolo)}</h1>
-      <p class="breve">${esc(E.breve)}</p>
+      <p class="breve">${esc(breveDi(s))}</p>
       ${stato ? `<div class="stato">${stato}</div>` : ''}
       <button class="btn" id="oCta">${cta}</button>
       ${!r ? '<p class="nota">Il tempo parte quando inizi e non si ferma, nemmeno se chiudi l’app.</p>' : ''}
@@ -562,15 +686,16 @@ function aggiornaConto() {
 }
 function inizia(data) {
   const s = M.dati[data]; if (!s) return;
-  if (!rec(data)) { STO.giorni[data] = { n: s.n, gioco: s.gioco, livello: s.livello, esito: 'corso', inizio: Date.now(), pen: 0 }; salvaSto(); }
+  if (!rec(data)) { STO.giorni[data] = { n: s.n, gioco: s.gioco, nome: nomeDi(s), livello: s.livello, esito: 'corso', inizio: Date.now(), pen: 0, firma: firma(s.p) }; salvaSto(); }
   vai('#gioca=' + data);
 }
 $('oCal').onclick = () => vai('#calendario');
 $('oTempi').onclick = () => vai('#tempi');
 $('oCome').onclick = () => finestra(`<div class="kick">MENTAL</div><h2>Come funziona</h2><ol class="regole">
   <li>Ogni giorno c’è <b>una sfida nuova, uguale per tutti</b>: cambia a mezzanotte, ora italiana.</li>
-  <li>Nove giochi di logica a rotazione e tre livelli: in settimana impegnativa o esperta, il sabato esperta, la domenica <b>estrema</b>.</li>
-  <li>Ogni sfida ha <b>una sola soluzione</b> e si risolve ragionando: prima di pubblicarla un programma la risolve con le stesse mosse di ragionamento che puoi fare tu, senza mai tirare a indovinare.</li>
+  <li>Ogni giorno un tipo di sfida diverso: griglie di logica, enigmi, indovinelli, problemi di numeri, codici da scoprire, cose da mettere in ordine… Lo stesso gioco torna di rado. Tre livelli: in settimana impegnativa o esperta, il sabato esperta, la domenica <b>estrema</b>.</li>
+  <li>Ogni sfida ha <b>una sola soluzione</b> (o un minimo di mosse) e si risolve ragionando: prima di pubblicarla un programma la ricontrolla da capo, senza mai tirare a indovinare.</li>
+  <li>Dove si consegna una risposta, ogni consegna sbagliata aggiunge <b>un minuto</b>.</li>
   <li>Il tempo parte con «Inizia» e <b>non si ferma</b>, nemmeno se chiudi l’app. Conta il primo tentativo; dopo puoi rigiocarla per allenamento.</li>
   <li>I giorni passati si recuperano dal <b>calendario</b>: valgono come «recuperata».</li>
   <li>Niente classifica: i tuoi tempi restano su questo telefono, in <b>I miei tempi</b>. Per confrontarti con gli altri usa «Condividi» a fine sfida o «Copia l’elenco».</li>
@@ -589,13 +714,15 @@ async function apriGioco(data, prova) {
   if (prova && r.esito === 'corso') return vai('#gioca=' + data);           // prima si finisce il tentativo vero
   const E = M.motori[s.gioco], chiave = prova ? data + '|prova' : data;
   let P = PAR[chiave];
-  if (!P || !P.st || (prova && P.finito != null)) {
-    P = PAR[chiave] = { st: E.nuovoStato(s.p), storia: [], inizio: prova ? Date.now() : r.inizio, pen: 0 };
+  const f = firma(s.p);
+  if (!P || !P.st || (prova && P.finito != null) || (P.firma && P.firma !== f)) {
+    P = PAR[chiave] = { st: E.nuovoStato(s.p), storia: [], inizio: prova ? Date.now() : r.inizio, pen: 0, firma: f };
     salvaPar();
   }
   G = { data, prova, s, E, P, r: prova ? null : r, chiave, sel: -1, modo: '', aux: preparaAux(s), avvisato: false };
   mostra('sGioco');
-  $('gT1').textContent = `${tre(s.n)} · ${E.nome}`;
+  $('gT1').textContent = `${tre(s.n)} · ${nomeDi(s)}`;
+  $('gT1').classList.toggle('lungo', $('gT1').textContent.length > 22);
   $('gTempo').classList.toggle('prova', prova);
   $('gSotto').innerHTML = `${prova ? '<span class="etichetta">Allenamento</span>' : ''}<span>${esc(s.titolo)}</span><span>·</span><span>${livTesto(s.livello)}</span>`;
   disegnaStrumenti();
@@ -634,7 +761,7 @@ function annulla() {
 function controllaFine() {
   const { E, s, P } = G;
   if (s.gioco === 'campo' && P.st.boom != null) return fine('persa');
-  if (E.tipo === 'testo') return;
+  if (E.tipo === 'testo' || E.tipo === 'risposta' || E.tipo === 'codice') return;     // si consegna
   if (E.completo(s.p, P.st)) fine('risolta');
 }
 function fine(esito) {
@@ -671,6 +798,12 @@ function ricomincia() {
 /* ---------------- Barra degli strumenti ---------------- */
 function disegnaStrumenti() {
   const { E, s } = G, box = $('gStru');
+  if (VISTE[E.tipo]) {
+    VISTE[E.tipo].strumenti(box);
+    if (G.P.finito != null) box.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    aggiornaConsegna();
+    return;
+  }
   const bAnnulla = `<button class="stru" id="sAnn">${ICO.annulla}Annulla</button>`;
   let h = '';
   if (E.tipo === 'cifre') {
@@ -708,11 +841,13 @@ function disegnaGioco() {
   if (!G) return;
   const { E } = G, tav = $('tav');
   tav.onpointerdown = tav.onpointermove = tav.onpointerup = tav.onpointercancel = null;
-  $('gArea').classList.toggle('lista', E.tipo === 'testo');
+  $('gArea').classList.toggle('lista', ['testo', 'risposta', 'codice', 'calcolatrice', 'travasi'].includes(E.tipo));
   tav.className = 'tav';
   tav.removeAttribute('style');
-  const fn = { segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto }[E.tipo];
+  const fn = VISTE[E.tipo] ? VISTE[E.tipo].disegna : { segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto }[E.tipo];
   fn(tav, G.s, G.P.st, { interattivo: G.P.finito == null, ...misura() });
+  if (E.tipo === 'codice' && $('gStru').querySelector('.risposta-codice')) VISTE.codice.strumenti($('gStru'));
+  if (E.tipo === 'risposta' || E.tipo === 'codice') aggiornaConsegna();
   if (E.tipo === 'campo' && $('sMine')) {
     const band = G.P.st.s.filter(x => x === 2).length;
     $('sMine').innerHTML = `${ICO.mina.replace('<svg', '<svg style="width:17px;height:17px;color:var(--corallo)"')} Mine <b>${G.aux.mine.size - band}</b>`;
@@ -956,14 +1091,27 @@ function tavTesto(tav, s, st, o) {
   });
 }
 function consegna() {
-  if (!G || fermo() || G.E.tipo !== 'testo') return;
-  const sol = soluzione(G.s);
-  if (!G.E.completo(G.s.p, G.P.st)) { toast('Decidi per tutti, poi consegna'); return; }
-  if (G.E.sbagliati(G.s.p, G.P.st, sol) === 0) return fine('risolta');
-  if (G.prova) { G.P.pen = (G.P.pen || 0) + PENALITA; G.P.consegne = (G.P.consegne || 0) + 1; salvaPar(); }
+  if (!G || fermo()) return;
+  const { E, s, P } = G;
+  let giusta;
+  if (E.tipo === 'testo') {
+    if (!E.completo(s.p, P.st)) { toast('Decidi per tutti, poi consegna'); return; }
+    giusta = E.sbagliati(s.p, P.st, soluzione(s)) === 0;
+  } else {
+    if (E.vuota && E.vuota(s.p, P.st.v)) { toast('Prima scrivi la risposta'); return; }
+    giusta = E.giusta(s.p, P.st.v);
+  }
+  if (giusta) return fine('risolta');
+  if (G.prova) { G.P.pen = (G.P.pen || 0) + PENALITA; G.P.consegne = (G.P.consegne || 0) + 1; }
   else { G.r.pen = (G.r.pen || 0) + PENALITA; G.r.consegne = (G.r.consegne || 0) + 1; salvaSto(); }
+  if (E.tipo !== 'testo') {
+    const vista = E.tipo === 'codice' ? P.st.v.map(k => (s.p.stile === 'lucchetto' ? k : k + 1)).join(s.p.stile === 'lucchetto' ? '' : '-') : mostraValore(E, s.p, P.st.v);
+    P.st.prove = (P.st.prove || []).concat([vista]).slice(-8);
+    if (E.campiGiusti) P.st.giusti = E.campiGiusti(s.p, P.st.v);
+  }
+  salvaPar();
   disegnaGioco(); aggiornaTempo();
-  toast('Qualcosa non torna: +1 minuto');
+  toast('Non è giusto: +1 minuto');
 }
 
 /* ---------------- Gesti ---------------- */
@@ -1103,8 +1251,8 @@ document.addEventListener('keydown', e => {
 /* Regole e uscita */
 function regoleHTML(s) {
   const E = M.motori[s.gioco];
-  return `<div class="kick">${esc(E.nome)} · ${livTesto(s.livello)}</div><h2>Regole</h2>
-    <ol class="regole">${E.regole.map(x => `<li>${x}</li>`).join('')}</ol>
+  return `<div class="kick">${esc(nomeDi(s))} · ${livTesto(s.livello)}</div><h2>Regole</h2>
+    <ol class="regole">${regoleDi(s).map(x => `<li>${x}</li>`).join('')}</ol>
     <p class="piccolo">Ogni sfida ha <b>una sola soluzione</b>, che si trova ragionando: non serve mai tirare a indovinare. Il tempo parte quando inizi e non si ferma; conta il primo tentativo, poi puoi rigiocarla per allenamento.</p>`;
 }
 $('gRegole').onclick = () => {
@@ -1124,7 +1272,7 @@ window.addEventListener('resize', () => { if (corrente === 'sGioco') disegnaGioc
    ===================================================================== */
 function testoCondividi(d) {
   const s = M.dati[d], r = rec(d);
-  const righe = [`MENTAL ${tre(s.n)} · ${nomeGioco(s.gioco)}`, `${livTesto(s.livello)} ${'◆'.repeat(LIV[s.livello].pip)}${'◇'.repeat(3 - LIV[s.livello].pip)}`];
+  const righe = [`MENTAL ${tre(s.n)} · ${nomeDi(s)}`, `${livTesto(s.livello)} ${'◆'.repeat(LIV[s.livello].pip)}${'◇'.repeat(3 - LIV[s.livello].pip)}`];
   if (r.esito === 'risolta') righe.push(`✅ Risolta in ${M.tempo(r.ms)}${r.giornata ? '' : ' (non il giorno stesso)'}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a' : 'e'} sbagliat${r.consegne === 1 ? 'a' : 'e'}` : ''}`);
   else if (r.esito === 'persa') righe.push(`💥 Una mina dopo ${M.tempo(r.ms)}`);
   else righe.push(`🏳️ Non risolta (${M.tempo(r.ms)})`);
@@ -1145,14 +1293,15 @@ async function apriEsito(d) {
   mostra('sEsito');
   const E = M.motori[s.gioco], male = r.esito !== 'risolta';
   let h = `<div class="esito festa${male ? ' male' : ''}">
-    <div class="k">${tre(s.n)} · ${esc(E.nome)} · ${livTesto(s.livello)}</div>
+    <div class="k">${tre(s.n)} · ${esc(nomeDi(s))} · ${livTesto(s.livello)}</div>
     <div class="parola">${r.esito === 'persa' ? 'Una mina' : ESITI[r.esito]}</div>
     <div class="grande">${M.tempo(r.ms)}</div>
     <div class="dett">${esc(s.titolo)} · ${M.dataLunga(d)}<br>${r.esito === 'risolta' ? (r.giornata ? 'Il giorno stesso' : (d === M.giornoRoma(r.inizio) ? 'Finita dopo mezzanotte' : 'Recuperata dal calendario')) : ''}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a sbagliata' : 'e sbagliate'} (+${r.consegne} min)` : ''}</div>
   </div>
   <div class="riga-btn"><button class="btn" id="eCond">${ICO.condividi}Condividi</button></div>`;
   // la soluzione
-  h += `<section class="pannello"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2><div class="mini"><div class="tav" id="eTav"></div></div></section>`;
+  if (VISTE[E.tipo]) h += `<section class="pannello sol-testo"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2>${VISTE[E.tipo].esito(s)}</section>`;
+  else h += `<section class="pannello"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2><div class="mini"><div class="tav" id="eTav"></div></div></section>`;
   // le chiavi
   const tec = Object.entries(s.tecniche || {}).filter(([t]) => E.TECNICHE[t]).sort((a, b) => E.TECNICHE[b[0]].peso - E.TECNICHE[a[0]].peso);
   if (tec.length) h += `<section class="pannello"><h2>Le chiavi di questa sfida</h2><p>Le mosse di ragionamento che servivano, dalla più difficile.</p><ul class="chiavi">${tec.map(([t, q]) => `<li><span class="q">×${q}</span><span class="n">${esc(E.TECNICHE[t].nome)}</span><span class="d">${esc(E.TECNICHE[t].descr)}</span></li>`).join('')}</ul></section>`;
@@ -1160,6 +1309,11 @@ async function apriEsito(d) {
   h += `<div class="riga-btn"><button class="btn sec" id="eProva">Rigioca per allenamento</button></div>
     <div class="riga-btn"><button class="btn sec piccolo" id="eCal">Calendario</button><button class="btn sec piccolo" id="eTempi">I miei tempi</button></div>`;
   $('eCorpo').innerHTML = h;
+  $('eCond').onclick = () => condividi(testoCondividi(d));
+  $('eProva').onclick = () => vai('#prova=' + d);
+  $('eCal').onclick = () => vai('#calendario=' + M.meseDi(d));
+  $('eTempi').onclick = () => vai('#tempi');
+  if (VISTE[E.tipo]) return;
   const sol = soluzione(s);
   let st;
   if (s.gioco === 'campo') { st = E.statoRisolto(s.p, sol); if (r.esito === 'persa' && r.boom != null) st.boom = r.boom; }
@@ -1168,10 +1322,6 @@ async function apriEsito(d) {
   const box = $('eTav'), lar = Math.min(window.innerWidth - 64, 420);
   ({ segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto })[E.tipo](box, s, st, { interattivo: false, W: lar, H: lar * 1.25 });
   if (E.tipo === 'nonogramma') box.classList.add('finito');
-  $('eCond').onclick = () => condividi(testoCondividi(d));
-  $('eProva').onclick = () => vai('#prova=' + d);
-  $('eCal').onclick = () => vai('#calendario=' + M.meseDi(d));
-  $('eTempi').onclick = () => vai('#tempi');
 }
 $('eEsci').onclick = indietro;
 function passiCavalieri(s) {
@@ -1229,7 +1379,7 @@ async function dettaglioGiorno(d) {
   else { stato = `${ESITI[r.esito]}${r.esito === 'persa' ? ' (una mina)' : ''} · <b>${M.tempo(r.ms)}</b>${r.esito === 'risolta' && !r.giornata ? ' · non il giorno stesso' : ''}.`; bott = [{ t: 'Risultato', f: () => vai('#esito=' + d) }, { t: 'Rigioca per allenamento', cls: 'sec', f: () => vai('#prova=' + d) }]; }
   bott.push({ t: 'Chiudi', cls: 'sec' });
   finestra(`<div class="kick">${tre(s.n)} · ${M.dataLunga(d)}</div><h2>${esc(s.titolo)}</h2>
-    <div class="cat">${ICO[s.gioco] || ''}${esc(E.nome)}</div><div class="liv">${livTesto(s.livello)} ${pip(s.livello)}</div>
+    <div class="cat">${icona(s)}${esc(nomeDi(s))}</div><div class="liv">${livTesto(s.livello)} ${pip(s.livello)}</div>
     <p class="piccolo">${stato}</p>`, bott);
 }
 
@@ -1244,14 +1394,14 @@ function apriTempi() {
   if (!voci.length) { $('tCorpo').innerHTML = h + '<p class="vuoto-msg">Qui finiscono i tuoi tempi, sfida per sfida. Restano su questo telefono: per confrontarti con gli altri usa «Copia l’elenco» o «Condividi» a fine sfida.</p>'; return; }
   // per gioco: risolte, miglior tempo e tempo tipico (mediana) delle risolte
   const per = {};
-  for (const [, r] of voci) { const x = per[r.gioco] || (per[r.gioco] = { g: 0, t: [] }); x.g++; if (r.esito === 'risolta') x.t.push(r.ms); }
+  for (const [, r] of voci) { const nome = r.nome || nomeGioco(r.gioco), x = per[nome] || (per[nome] = { g: 0, t: [] }); x.g++; if (r.esito === 'risolta') x.t.push(r.ms); }
   const mediana = a => { const b = a.slice().sort((x, y) => x - y), k = b.length >> 1; return b.length % 2 ? b[k] : (b[k - 1] + b[k]) / 2; };
-  h += `<section class="pannello"><h2>Per gioco</h2><table class="tabella"><tr><th>Gioco</th><th class="dx">Risolte</th><th class="dx">Migliore</th><th class="dx">Tipico</th></tr>${Object.entries(per).sort((a, b) => b[1].g - a[1].g).map(([g, x]) => `<tr><td>${esc(nomeGioco(g))}</td><td class="dx">${x.t.length}/${x.g}</td><td class="dx">${x.t.length ? M.tempo(Math.min(...x.t)) : '—'}</td><td class="dx">${x.t.length ? M.tempo(mediana(x.t)) : '—'}</td></tr>`).join('')}</table>
+  h += `<section class="pannello"><h2>Per gioco</h2><table class="tabella"><tr><th>Gioco</th><th class="dx">Risolte</th><th class="dx">Migliore</th><th class="dx">Tipico</th></tr>${Object.entries(per).sort((a, b) => b[1].g - a[1].g).map(([g, x]) => `<tr><td>${esc(g)}</td><td class="dx">${x.t.length}/${x.g}</td><td class="dx">${x.t.length ? M.tempo(Math.min(...x.t)) : '—'}</td><td class="dx">${x.t.length ? M.tempo(mediana(x.t)) : '—'}</td></tr>`).join('')}</table>
     <p>«Tipico» è la mediana dei tuoi tempi. I tempi di giochi diversi non si confrontano tra loro.</p></section>`;
   h += `<section class="pannello"><h2>Sfida per sfida</h2><ul class="elenco">${voci.map(([d, r]) => {
     const ok = r.esito === 'risolta';
     const quando = r.esito === 'corso' ? 'in corso' : ok ? (r.giornata ? 'il giorno stesso' : 'recuperata') : (r.esito === 'persa' ? 'una mina' : 'non risolta');
-    return `<li data-d="${d}"><span class="n">${tre(r.n)}</span><span class="g">${esc(nomeGioco(r.gioco))}</span><span class="t ${ok ? 'ok' : r.esito === 'corso' ? '' : 'ko'}">${r.esito === 'corso' ? '…' : M.tempo(r.ms)}</span><span class="s">${M.dataCorta(d)} · ${livTesto(r.livello)} · ${quando}</span></li>`;
+    return `<li data-d="${d}"><span class="n">${tre(r.n)}</span><span class="g">${esc(r.nome || nomeGioco(r.gioco))}</span><span class="t ${ok ? 'ok' : r.esito === 'corso' ? '' : 'ko'}">${r.esito === 'corso' ? '…' : M.tempo(r.ms)}</span><span class="s">${M.dataCorta(d)} · ${livTesto(r.livello)} · ${quando}</span></li>`;
   }).join('')}</ul></section>`;
   h += `<button class="btn sec" id="tCopia">${ICO.condividi}Copia l’elenco</button><p class="piccolo" style="text-align:center">I tempi restano su questo telefono e non si cancellano con «Pulisci tutto».</p>`;
   $('tCorpo').innerHTML = h;
@@ -1260,7 +1410,7 @@ function apriTempi() {
     const righe = ['MENTAL · i miei tempi'];
     for (const [d, r] of voci.slice().reverse()) {
       if (r.esito === 'corso') continue;
-      righe.push(`${tre(r.n)} ${M.dataCorta(d)} · ${nomeGioco(r.gioco)} · ${livTesto(r.livello)} · ${r.esito === 'risolta' ? M.tempo(r.ms) + (r.giornata ? '' : ' (recuperata)') : ESITI[r.esito].toLowerCase()}`);
+      righe.push(`${tre(r.n)} ${M.dataCorta(d)} · ${r.nome || nomeGioco(r.gioco)} · ${livTesto(r.livello)} · ${r.esito === 'risolta' ? M.tempo(r.ms) + (r.giornata ? '' : ' (recuperata)') : ESITI[r.esito].toLowerCase()}`);
     }
     condividi(righe.join('\n'));
   };
