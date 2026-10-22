@@ -34,7 +34,7 @@ self.GIOCHI = {
   categorie: [
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
-    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, Perudo, Hex ad Aste, Claude\u00A0Machine e ALIBI', simbolo: 'maschera' },
+    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, Perudo, Hex ad Aste, Claude\u00A0Machine, MENTAL e ALIBI', simbolo: 'maschera' },
     { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
     { id: 'expansions', nome: 'Expansions', descrizione: 'Espansioni nostre per i giochi da tavolo che abbiamo già', simbolo: 'fascicolo', unita: ['espansione', 'espansioni'] }
   ],
@@ -49,6 +49,9 @@ self.GIOCHI = {
     { categoria: 'giochi', nome: 'Perudo', descrizione: 'I tuoi dadi sotto il bicchiere, quando quelli veri non bastano', link: 'giochi/perudo/', colore: '#E0249A', dati: ['gds-perudo'] },
     { categoria: 'giochi', nome: 'Hex ad Aste', descrizione: 'Hex con le carte vere: chi vince l’asta mette la pedina', link: 'giochi/hex/', colore: '#006BFF', dati: ['gds-hex', 'gds-hex-partita'] },
     { categoria: 'giochi', nome: 'Claude Machine', descrizione: 'Deduci il codice segreto interrogando i verificatori', link: 'giochi/machine/', colore: '#D97757', extra: ['giochi/machine/motore.js'], dati: ['gds-machine', 'gds-machine-partita', 'gds-machine-stanze', 'gds-giocatori'] },
+    { categoria: 'giochi', nome: 'MENTAL', descrizione: 'La sfida del giorno: un rompicapo di logica, uguale per tutti', link: 'giochi/mental/', colore: '#3DDCA0',
+      extra: ['giochi/mental/comune.js', 'giochi/mental/sfide/indice.js'].concat(['corone', 'stelle', 'binario', 'sudoku', 'campo', 'grattacieli', 'futoshiki', 'nonogramma', 'cavalieri'].map(m => 'giochi/mental/motori/' + m + '.js')),
+      dati: ['gds-mental-partite'] },
     { categoria: 'giochi', nome: 'ALIBI', descrizione: 'Un delitto, una pianta, un quarto d’ora alla volta: trova chi non può essere dove dice', link: 'giochi/alibi/', colore: '#F2D21B', extra: ['giochi/alibi/motore.js'], dati: ['gds-alibi', 'gds-alibi-partita', 'gds-giocatori'] },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A', dati: [{ poker: true }] },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70', dati: ['giochidisimo:7wonders'] },

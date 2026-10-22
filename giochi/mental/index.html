@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0D0F22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<title>MENTAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* MENTAL, la sfida del giorno. Tema «notte d'inchiostro»: indaco profondo, un accento menta per
+   le azioni e le sfide risolte, lavanda per note e selezioni, ambra per il tempo e i momenti decisivi,
+   corallo solo per errori e mine. Le tavole stanno al centro; poche scritte intorno. */
+:root{
+  --fondo:#0D0F22; --piano:#15183A; --piano-2:#1C2048; --piano-3:#262B5C;
+  --linea:rgba(200,205,255,.08); --linea-2:rgba(200,205,255,.16); --linea-3:rgba(200,205,255,.3);
+  --testo:#ECEEFF; --tenue:#A3A8D6; --spento:#6C71A3;
+  --menta:#3DDCA0; --menta-2:#7BEBC0; --menta-fondo:rgba(61,220,160,.13); --su-menta:#05261A;
+  --lavanda:#B2A7FF; --lavanda-fondo:rgba(178,167,255,.16);
+  --ambra:#F2B84B; --ambra-fondo:rgba(242,184,75,.14);
+  --corallo:#FF6B6B; --corallo-fondo:rgba(255,107,107,.16);
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--fondo);color:var(--testo);font-family:var(--ui);font-size:15px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;border:0;background:none;padding:0}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:2px solid var(--menta);outline-offset:2px}
+.schermo{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--fondo)}
+
+/* Barra in alto */
+.top{display:flex;align-items:center;gap:8px;min-height:48px;padding:max(6px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left))}
+.back{flex:none;color:var(--menta-2);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0;white-space:nowrap}
+.marchio{flex:1;text-align:center;font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:.2em;padding-left:.2em}
+.marchio.pagina{letter-spacing:0;padding-left:0;font-size:19px}
+.icone{flex:none;display:flex;gap:2px;margin-right:-8px}
+.ico{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;color:var(--tenue)}
+.ico svg{width:21px;height:21px}
+.linkbtn{flex:none;padding:8px 0;color:var(--tenue);font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.scorri{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:8px max(16px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.colonna{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+/* Pulsanti */
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:52px;padding:12px 16px;border-radius:15px;background:var(--menta);color:var(--su-menta);font-weight:800;font-size:16.5px}
+.btn.sec{background:var(--piano-2);color:var(--testo);border:1px solid var(--linea-2)}
+.btn.piccolo{min-height:42px;font-size:14.5px;border-radius:12px;padding:9px 12px}
+.btn svg{width:19px;height:19px}
+.riga-btn{display:flex;gap:8px}
+.riga-btn .btn{flex:1}
+.hold{position:relative;overflow:hidden}
+.hold .fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:rgba(255,107,107,.22);pointer-events:none}
+.hold.going .fill{transition:transform var(--ms,800ms) linear;transform:scaleX(1)}
+.hold span{position:relative}
+@media (prefers-reduced-motion:reduce){.hold.going .fill{transition:none}}
+
+/* ---------- Oggi ---------- */
+.testata{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:4px}
+.testata .num{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;letter-spacing:-.01em;color:var(--testo);font-variant-numeric:tabular-nums}
+.testata .data{color:var(--tenue);font-size:14.5px;font-weight:600;text-align:right}
+.eroe{position:relative;overflow:hidden;border-radius:22px;padding:18px 18px 16px;background:linear-gradient(160deg,#1E2350 0%,#161A3E 55%,#121534 100%);border:1px solid var(--linea-2);display:flex;flex-direction:column;gap:10px}
+.eroe::after{content:'';position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(61,220,160,.16),transparent 70%);pointer-events:none}
+.eroe .riga1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cat{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--menta-2)}
+.cat svg{width:20px;height:20px}
+.liv{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--tenue)}
+.pip{display:inline-flex;gap:3px}
+.pip i{width:7px;height:7px;border-radius:2px;background:var(--linea-3);transform:rotate(45deg)}
+.pip i.on{background:var(--ambra)}
+.eroe h1{margin:2px 0 0;font-family:var(--display);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.02;letter-spacing:-.015em}
+.eroe .breve{margin:0;color:var(--tenue);font-size:15px}
+.eroe .stato{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--tenue);min-height:20px}
+.eroe .stato b{color:var(--testo);font-variant-numeric:tabular-nums}
+.eroe .stato .ok{color:var(--menta)}
+.eroe .stato .ko{color:var(--corallo)}
+.eroe .nota{margin:0;color:var(--spento);font-size:12.5px;text-align:center}
+.conto{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--tenue);font-size:14px}
+.conto b{color:var(--ambra);font-variant-numeric:tabular-nums;font-size:16px;letter-spacing:.02em}
+.settimana{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.giornino{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 0 9px;border-radius:12px;background:var(--piano);border:1px solid var(--linea);color:var(--tenue);font-size:11.5px;font-weight:700}
+.giornino.oggi{border-color:var(--linea-3);color:var(--testo)}
+.giornino .g{font-size:15px;font-weight:800;color:var(--testo);font-variant-numeric:tabular-nums}
+.segno{width:10px;height:10px;border-radius:50%;background:var(--linea-2)}
+.segno.risolta{background:var(--menta)}
+.segno.archivio{background:transparent;box-shadow:inset 0 0 0 2.5px var(--menta)}
+.segno.corso{background:var(--ambra)}
+.segno.persa,.segno.arresa{background:transparent;box-shadow:inset 0 0 0 2.5px var(--corallo)}
+.segno.vuoto{background:transparent}
+.serie{display:flex;justify-content:center;gap:18px;color:var(--tenue);font-size:13.5px}
+.serie b{color:var(--testo);font-size:15px}
+.attesa-sfida{padding:22px 18px;border-radius:20px;background:var(--piano);border:1px solid var(--linea-2);text-align:center;color:var(--tenue)}
+.attesa-sfida h2{margin:0 0 6px;font-family:var(--display);font-size:22px;color:var(--testo)}
+
+/* ---------- Gioco ---------- */
+.gtop{gap:6px}
+.gcentro{flex:1;min-width:0;text-align:center}
+.gcentro .t1{font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcentro .orologio{font-weight:800;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ambra);letter-spacing:.02em}
+.gcentro .orologio.prova{color:var(--lavanda)}
+.gsotto{display:flex;justify-content:center;gap:8px;align-items:center;padding:2px 16px 4px;color:var(--spento);font-size:13px;font-weight:600}
+.etichetta{padding:2px 8px;border-radius:999px;background:var(--lavanda-fondo);color:var(--lavanda);font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.area{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 10px;overflow:hidden}
+.area.lista{align-items:stretch;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.strumenti{display:flex;flex-direction:column;gap:8px;padding:6px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.barra{display:flex;gap:8px;max-width:520px;width:100%;margin:0 auto}
+.stru{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;border-radius:14px;background:var(--piano);border:1px solid var(--linea);color:var(--tenue);font-size:12px;font-weight:700}
+.stru svg{width:21px;height:21px}
+.stru[aria-pressed="true"]{background:var(--lavanda-fondo);border-color:var(--lavanda);color:var(--lavanda)}
+.stru.menta{background:var(--menta);color:var(--su-menta);border-color:transparent;font-size:15px;font-weight:800}
+.tastierino{display:grid;gap:6px;max-width:520px;width:100%;margin:0 auto}
+.tasto{min-height:46px;border-radius:12px;background:var(--piano-2);border:1px solid var(--linea);font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
+.tasto.finito{opacity:.3}
+.contatore{display:flex;align-items:center;justify-content:center;gap:8px;min-height:22px;color:var(--tenue);font-size:13.5px;font-weight:700}
+.contatore b{color:var(--testo);font-size:15px}
+
+/* Tavola */
+.tav{position:relative;display:grid;touch-action:none;-webkit-user-select:none;user-select:none}
+.c{position:relative;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.c svg{width:62%;height:62%}
+/* segni (corone, stelle) */
+.tav.segni{border-radius:6px;overflow:hidden;box-shadow:0 0 0 3px #070816}
+.tav.segni .c{border-style:solid;border-color:#070816}
+.tav.segni .x{color:rgba(10,12,30,.62);font-weight:800}
+.tav.segni .pezzo{color:#0B0D22;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.tav.segni .pezzo svg{width:70%;height:70%}
+.tav.segni .c.errore .pezzo{color:#B3122A}
+.tav.segni .c.errore{box-shadow:inset 0 0 0 3px var(--corallo)}
+/* binario */
+.tav.binario{gap:3px}
+.tav.binario .c{border-radius:6px;background:var(--piano-2)}
+.tav.binario .c.dato{background:var(--piano-3)}
+.tav.binario .c .uno,.tav.binario .c .zero{width:72%;height:72%}
+.tav.binario .c .zero{border-radius:50%;background:var(--menta)}
+.tav.binario .c .uno{border-radius:5px;background:var(--lavanda)}
+.tav.binario .c.dato .zero,.tav.binario .c.dato .uno{box-shadow:inset 0 0 0 3px rgba(5,8,25,.35)}
+.tav.binario .c.dato::after{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(5,8,25,.6)}
+.tav.binario .c.errore{box-shadow:0 0 0 2px var(--corallo)}
+/* cifre */
+.tav.cifre .c{background:var(--piano);border-style:solid;border-color:rgba(200,205,255,.13);color:var(--menta-2);font-weight:700}
+.tav.cifre .c.dato{color:var(--testo);font-weight:800}
+.tav.cifre .c.vicino{background:#191D45}
+.tav.cifre .c.uguale{background:#252A60}
+.tav.cifre .c.sel{background:var(--lavanda-fondo);box-shadow:inset 0 0 0 2px var(--lavanda)}
+.tav.cifre .c.errore{color:var(--corallo)}
+.tav.cifre .c.dato.errore{color:#FF9C9C}
+.note{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);color:var(--lavanda);font-weight:700;line-height:1}
+.note span{display:flex;align-items:center;justify-content:center}
+.bordo{display:flex;align-items:center;justify-content:center;color:var(--tenue);font-weight:800}
+.bordo.sbagliato{color:var(--corallo)}
+.bordo.fatto{color:var(--spento)}
+.segno-fu{display:flex;align-items:center;justify-content:center;color:var(--ambra);font-weight:800;line-height:1}
+.segno-fu.sbagliato{color:var(--corallo)}
+/* campo */
+.tav.campo{gap:2px}
+.tav.campo .c{border-radius:4px;font-weight:800}
+.tav.campo .c.cop{background:linear-gradient(160deg,#343A7A,#272C63);box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.tav.campo .c.ap{background:#12152F}
+.tav.campo .c.mina{background:var(--corallo-fondo);color:var(--corallo)}
+.tav.campo .c.boom{background:var(--corallo);color:#2A0508}
+.tav.campo .c.bandiera{color:var(--ambra)}
+.tav.campo .c.errore{box-shadow:inset 0 0 0 2px var(--corallo)}
+.n1{color:#9FB3FF}.n2{color:var(--menta)}.n3{color:var(--ambra)}.n4{color:#FF8FB8}.n5{color:var(--corallo)}.n6{color:#7FE0E8}.n7{color:#E8E8E8}.n8{color:#9AA0B8}
+/* nonogramma */
+.tav.nono .c{background:var(--piano);border-style:solid;border-color:rgba(200,205,255,.12)}
+.tav.nono .c.pieno{background:var(--lavanda)}
+.tav.nono.finito .c.pieno{background:var(--menta)}
+.tav.nono .c .x{color:var(--spento);font-weight:800}
+.indizi{display:flex;color:var(--tenue);font-weight:800;font-variant-numeric:tabular-nums}
+.indizi.r{justify-content:flex-end;align-items:center;gap:.42em;padding-right:6px}
+.indizi.k{flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:4px;line-height:1.12}
+.indizi.fatto{color:var(--spento);opacity:.55}
+.indizi.sbagliato{color:var(--corallo)}
+/* sinceri e bugiardi */
+.isola{max-width:520px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:9px;padding-bottom:6px}
+.persona{display:grid;grid-template-columns:42px 1fr;gap:4px 12px;align-items:start;padding:12px 12px 11px;border-radius:16px;background:var(--piano);border:1px solid var(--linea)}
+.faccia{grid-row:span 2;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:19px;background:var(--piano-3);color:var(--testo)}
+.persona.s1 .faccia{background:var(--menta);color:var(--su-menta)}
+.persona.s2 .faccia{background:var(--corallo);color:#2A0508}
+.persona .chi{font-weight:800;font-size:15px}
+.persona .detto{font-size:15.5px;line-height:1.4;color:#D9DCFF}
+.scelta{grid-column:2;display:flex;gap:6px;margin-top:6px}
+.scelta button{flex:1;min-height:38px;border-radius:10px;background:var(--piano-2);border:1px solid var(--linea);font-weight:800;font-size:13.5px;color:var(--tenue)}
+.scelta button[aria-pressed="true"].si{background:var(--menta-fondo);border-color:var(--menta);color:var(--menta-2)}
+.scelta button:disabled{opacity:.4}
+.scelta button[aria-pressed="true"]:disabled{opacity:1}
+.scelta button[aria-pressed="true"].no{background:var(--corallo-fondo);border-color:var(--corallo);color:#FF9C9C}
+
+/* ---------- Esito ---------- */
+.esito{padding:20px 18px 18px;border-radius:22px;background:var(--piano);border:1px solid var(--linea-2);text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.esito .k{font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue)}
+.esito .parola{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--menta)}
+.esito.male .parola{color:var(--corallo)}
+.esito .grande{font-family:var(--display);font-weight:800;font-size:clamp(54px,18vw,76px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.esito .dett{color:var(--tenue);font-size:14px}
+.esito .dett b{color:var(--testo)}
+.pannello{padding:14px 14px 12px;border-radius:18px;background:var(--piano);border:1px solid var(--linea);display:flex;flex-direction:column;gap:9px}
+.pannello h2{margin:0;font-family:var(--display);font-weight:800;font-size:18px}
+.pannello p{margin:0;color:var(--tenue);font-size:14px}
+.chiavi{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.chiavi li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:9px 11px;border-radius:12px;background:var(--fondo)}
+.chiavi .q{grid-row:span 2;align-self:center;min-width:34px;text-align:center;font-weight:800;color:var(--ambra);font-variant-numeric:tabular-nums}
+.chiavi .n{font-weight:800;font-size:14.5px}
+.chiavi .d{color:var(--tenue);font-size:13px;line-height:1.4}
+.passi{margin:0;padding:0 0 0 22px;display:flex;flex-direction:column;gap:6px;color:#D9DCFF;font-size:14.5px;line-height:1.45}
+.passi li::marker{color:var(--ambra);font-weight:800}
+.mini{display:flex;justify-content:center;padding:4px 0}
+
+/* ---------- Calendario ---------- */
+.mesebar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mesebar h2{margin:0;font-family:var(--display);font-weight:800;font-size:22px;text-transform:capitalize}
+.freccia{width:42px;height:42px;border-radius:12px;background:var(--piano);border:1px solid var(--linea);display:grid;place-items:center;color:var(--tenue)}
+.freccia svg{width:20px;height:20px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .gs{text-align:center;color:var(--spento);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding-bottom:2px}
+.giorno{aspect-ratio:1/1.12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:12px;background:var(--piano);border:1px solid var(--linea);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.giorno.fuori{background:transparent;border-color:transparent;color:var(--spento);opacity:.4}
+.giorno.oggi{border-color:var(--menta)}
+.giorno svg{width:15px;height:15px;color:var(--tenue)}
+.legenda{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;color:var(--tenue);font-size:12.5px}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+
+/* ---------- I miei tempi ---------- */
+.numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.numeri div{padding:12px 6px;border-radius:14px;background:var(--piano);border:1px solid var(--linea);text-align:center}
+.numeri b{display:block;font-family:var(--display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.numeri span{color:var(--tenue);font-size:12px;font-weight:700}
+.tabella{width:100%;border-collapse:collapse;font-size:14px}
+.tabella th{color:var(--spento);font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:4px 4px 6px}
+.tabella td{padding:8px 4px;border-top:1px solid var(--linea);font-variant-numeric:tabular-nums}
+.tabella td.dx,.tabella th.dx{text-align:right}
+.elenco{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.elenco li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;align-items:center;padding:10px 2px;border-top:1px solid var(--linea)}
+.elenco li:first-child{border-top:0}
+.elenco .n{font-weight:800;color:var(--tenue);font-variant-numeric:tabular-nums;min-width:44px}
+.elenco .g{font-weight:700;font-size:14.5px}
+.elenco .s{grid-column:2;color:var(--spento);font-size:12.5px}
+.elenco .t{grid-row:span 2;grid-column:3;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.elenco .t.ok{color:var(--menta)}
+.elenco .t.ko{color:var(--corallo)}
+.vuoto-msg{color:var(--tenue);text-align:center;padding:16px 8px}
+
+/* Finestre e avvisi */
+.velo{position:fixed;inset:0;z-index:20;background:rgba(3,4,14,.78);display:flex;align-items:flex-end;justify-content:center;padding:0 8px calc(8px + env(safe-area-inset-bottom))}
+.velo .box{width:100%;max-width:536px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 14px;border-radius:20px;background:var(--piano);border:1px solid var(--linea-2);display:flex;flex-direction:column;gap:12px}
+.velo h2{margin:0;font-family:var(--display);font-weight:800;font-size:22px}
+.velo .kick{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
+.regole{margin:0;padding:0 0 0 20px;display:flex;flex-direction:column;gap:7px;color:#D9DCFF;font-size:15px;line-height:1.5}
+.regole b{color:var(--testo)}
+.piccolo{color:var(--tenue);font-size:13.5px;line-height:1.5;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;pointer-events:none;max-width:92vw;padding:11px 16px;border-radius:13px;background:var(--ambra);color:#231703;font-weight:800;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.festa{animation:festa .5s cubic-bezier(.2,.8,.3,1)}
+@keyframes festa{0%{transform:scale(.96);opacity:.4}60%{transform:scale(1.02);opacity:1}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.festa{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= Oggi ================= -->
+<section class="schermo" id="sOggi">
+  <header class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <div class="marchio">MENTAL</div>
+    <div class="icone">
+      <button class="ico" id="oCal" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+      <button class="ico" id="oTempi" aria-label="I miei tempi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 9.5v4l2.5 2M9.5 3h5"/></svg></button>
+    </div>
+  </header>
+  <div class="scorri"><div class="colonna">
+    <div class="testata"><div class="num" id="oNum"></div><div class="data" id="oData"></div></div>
+    <div id="oCorpo"></div>
+    <div class="conto" id="oConto"></div>
+    <div class="settimana" id="oSett"></div>
+    <div class="serie" id="oSerie"></div>
+    <button class="linkbtn" id="oCome" style="align-self:center">Come funziona</button>
+  </div></div>
+</section>
+
+<!-- ================= Gioco ================= -->
+<section class="schermo" id="sGioco" hidden>
+  <header class="top gtop">
+    <button class="back" id="gEsci">‹ MENTAL</button>
+    <div class="gcentro"><div class="t1" id="gT1"></div><div class="orologio" id="gTempo">0:00</div></div>
+    <button class="linkbtn" id="gRegole">Regole</button>
+  </header>
+  <div class="gsotto" id="gSotto"></div>
+  <div class="area" id="gArea"><div class="tav" id="tav"></div></div>
+  <div class="strumenti" id="gStru"></div>
+</section>
+
+<!-- ================= Esito ================= -->
+<section class="schermo" id="sEsito" hidden>
+  <header class="top"><button class="back" id="eEsci">‹ MENTAL</button><div class="marchio">MENTAL</div><div style="width:64px"></div></header>
+  <div class="scorri"><div class="colonna" id="eCorpo"></div></div>
+</section>
+
+<!-- ================= Calendario ================= -->
+<section class="schermo" id="sCal" hidden>
+  <header class="top"><button class="back" id="cEsci">‹ MENTAL</button><div class="marchio pagina">Calendario</div><div style="width:64px"></div></header>
+  <div class="scorri"><div class="colonna" id="cCorpo"></div></div>
+</section>
+
+<!-- ================= I miei tempi ================= -->
+<section class="schermo" id="sTempi" hidden>
+  <header class="top"><button class="back" id="tEsci">‹ MENTAL</button><div class="marchio pagina">I miei tempi</div><div style="width:64px"></div></header>
+  <div class="scorri"><div class="colonna" id="tCorpo"></div></div>
+</section>
+
+<div class="velo" id="velo" hidden><div class="box" id="veloBox"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="comune.js"></script>
+<script src="motori/corone.js"></script>
+<script src="motori/stelle.js"></script>
+<script src="motori/binario.js"></script>
+<script src="motori/sudoku.js"></script>
+<script src="motori/campo.js"></script>
+<script src="motori/grattacieli.js"></script>
+<script src="motori/futoshiki.js"></script>
+<script src="motori/nonogramma.js"></script>
+<script src="motori/cavalieri.js"></script>
+<script src="sfide/indice.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   MENTAL — la pagina
+   Una sfida al giorno (giorno di Roma), già preparata e controllata in sfide/AAAA-MM.js.
+   Niente server e niente classifica: il primo tentativo di ogni giorno è «il tuo tempo» e resta
+   sul telefono (gds-mental-storico, che non si cancella mai); le tavole a metà stanno in
+   gds-mental-partite (si cancellano dopo 7 giorni senza aprire MENTAL, come gli altri giochi).
+
+   Indirizzi (#):  (vuoto) oggi · #gioca=AAAA-MM-GG · #prova=AAAA-MM-GG (allenamento, non conta)
+                   #esito=AAAA-MM-GG · #calendario=AAAA-MM · #tempi
+   Storico: { v: 1, giorni: { data: { n, gioco, livello, esito, inizio, fine, ms, pen, giornata, consegne, boom } } }
+     esito: 'corso' | 'risolta' | 'persa' (mina) | 'arresa'; ms = fine − inizio + pen;
+     giornata: finita lo stesso giorno della sfida (ora di Roma).
+   ===================================================================== */
+const M = self.MENTAL, $ = id => document.getElementById(id);
+const K_STO = 'gds-mental-storico', K_PAR = 'gds-mental-partite';
+const SITO = 'https://corrsimone1-maker.github.io/giochidisimo/giochi/mental/';
+const LIV = { impegnativa: { nome: 'Impegnativa', pip: 1 }, esperta: { nome: 'Esperta', pip: 2 }, estrema: { nome: 'Estrema', pip: 3 } };
+const ESITI = { risolta: 'Risolta', persa: 'Persa', arresa: 'Non risolta', corso: 'In corso' };
+const PENALITA = 60000;                                   // consegna sbagliata a Sinceri e bugiardi
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tre = n => '#' + String(n).padStart(3, '0');
+function leggi(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function scrivi(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+let STO = leggi(K_STO, null);
+if (!STO || typeof STO !== 'object' || !STO.giorni || typeof STO.giorni !== 'object') STO = { v: 1, giorni: {} };
+let PAR = leggi(K_PAR, null);
+if (!PAR || typeof PAR !== 'object' || Array.isArray(PAR)) PAR = {};
+const salvaSto = () => { if (!scrivi(K_STO, STO)) toast('Attenzione: il telefono non riesce a salvare.'); };
+const salvaPar = () => { scrivi(K_PAR, PAR); };
+
+let OGGI = M.giornoRoma();
+const INDICE = self.MENTAL_INDICE || { mesi: [] };
+/* Pulizia delle tavole a metà: via gli allenamenti di più di due settimane fa e le tavole di sfide
+   già chiuse (il tempo ufficiale sta nello storico) */
+(function () {
+  let cambiato = false;
+  for (const k of Object.keys(PAR)) {
+    const d = k.slice(0, 10), prova = k.endsWith('|prova'), r = STO.giorni[d];
+    if ((prova && d < M.piuGiorni(OGGI, -14)) || (!prova && (!r || r.esito !== 'corso'))) { delete PAR[k]; cambiato = true; }
+  }
+  if (cambiato) salvaPar();
+})();
+
+/* ---------------- Icone (disegni nostri) ---------------- */
+const ICO = {
+  corone: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.5l4.2 3.6L12 4.5l4.8 7.6L21 8.5 19.2 18H4.8z"/><rect x="4.8" y="19" width="14.4" height="2" rx="1"/></svg>',
+  stelle: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.75 5.95 6.5.75-4.8 4.45 1.3 6.45L12 17.2l-5.75 3.2 1.3-6.45-4.8-4.45 6.5-.75z"/></svg>',
+  binario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="7.5" cy="12" r="4.5"/><rect x="13" y="7.5" width="8.5" height="9" rx="2" fill="currentColor"/></svg>',
+  sudoku: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke-width="1.3"/></svg>',
+  campo: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="5.6" r="3"/><circle cx="12" cy="18.4" r="3"/><circle cx="5.6" cy="12" r="3"/><circle cx="18.4" cy="12" r="3"/></svg>',
+  grattacieli: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="11" width="5" height="10" rx="1"/><rect x="9.5" y="4" width="5" height="17" rx="1"/><rect x="16" y="8" width="5" height="13" rx="1"/></svg>',
+  futoshiki: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l-6 6 6 6M14 6l6 6-6 6" opacity=".45"/><path d="M10 6l-6 6 6 6"/></svg>',
+  nonogramma: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="4" width="4.5" height="4.5" rx="1" opacity=".35"/><rect x="15.5" y="4" width="4.5" height="4.5" rx="1"/><rect x="4" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="15.5" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="4" y="15.5" width="4.5" height="4.5" rx="1" opacity=".35"/><rect x="9.75" y="15.5" width="4.5" height="4.5" rx="1"/><rect x="15.5" y="15.5" width="4.5" height="4.5" rx="1" opacity=".35"/></svg>',
+  cavalieri: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5.5h11a2 2 0 012 2V13a2 2 0 01-2 2H9l-4 3.5V15H4a2 2 0 01-2-2V7.5a2 2 0 012-2z"/><path d="M19.5 9H21a1.5 1.5 0 011.5 1.5v5A1.5 1.5 0 0121 17h-.5v2.5L17.5 17H13" opacity=".5"/></svg>',
+  annulla: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9.5a5 5 0 010 10H12"/></svg>',
+  matita: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M15.5 4.5l4 4L9 19l-5 1 1-5z"/><path d="M13.5 6.5l4 4"/></svg>',
+  gomma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8.5 19.5L3.8 14.8a1.8 1.8 0 010-2.6l8.4-8.4a1.8 1.8 0 012.6 0l5.4 5.4a1.8 1.8 0 010 2.6l-8.2 7.7z"/><path d="M8 9.5l6.5 6.5M8.5 19.5H20"/></svg>',
+  bandiera: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h2v18H6z"/><path d="M8 3.5l11 4.5-11 4.5z"/></svg>',
+  mina: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" stroke="currentColor" stroke-width="2"/></svg>',
+  piede: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>',
+  croce: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  quadro: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2.5"/></svg>',
+  sx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  dx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  condividi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8"/><path d="M5 12.5V19a1.5 1.5 0 001.5 1.5h11A1.5 1.5 0 0019 19v-6.5"/></svg>'
+};
+const nomeGioco = g => (M.motori[g] ? M.motori[g].nome : g);
+const pip = l => `<span class="pip">${[1, 2, 3].map(k => `<i class="${k <= (LIV[l] ? LIV[l].pip : 0) ? 'on' : ''}"></i>`).join('')}</span>`;
+const livTesto = l => (LIV[l] ? LIV[l].nome : l);
+
+/* ---------------- Caricamento dei mesi ---------------- */
+const promesse = {};
+function caricaMese(m) {
+  if (!INDICE.mesi || !INDICE.mesi.includes(m)) return Promise.resolve(false);
+  if (M.mesiCaricati && M.mesiCaricati[m]) return Promise.resolve(true);
+  if (promesse[m]) return promesse[m];
+  return (promesse[m] = new Promise(ok => {
+    const s = document.createElement('script');
+    s.src = 'sfide/' + m + '.js';
+    s.onload = () => ok(true);
+    s.onerror = () => { delete promesse[m]; s.remove(); ok(false); };
+    document.head.appendChild(s);
+  }));
+}
+const mesePrima = m => M.meseDi(M.piuGiorni(m + '-01', -1));
+function caricaIntorno(data) { const m = M.meseDi(data); return Promise.all([caricaMese(m), caricaMese(mesePrima(m))]); }
+
+/* ---------------- Schermate e indirizzi ---------------- */
+const SCHERMI = ['sOggi', 'sGioco', 'sEsito', 'sCal', 'sTempi'];
+let corrente = 'sOggi';
+function mostra(id) {
+  SCHERMI.forEach(s => { $(s).hidden = s !== id; });
+  chiudiVelo();
+  if (corrente !== id) $('toast').hidden = true;
+  if (corrente !== id && window.gdsAppare) gdsAppare($(id));
+  corrente = id;
+}
+function vai(h) { if (location.hash === h || (h === '' && location.hash === '')) instrada(); else location.hash = h; }
+function indietro() { vai(''); }
+let G = null;                                             // la partita aperta
+async function instrada() {
+  OGGI = M.giornoRoma();
+  const h = decodeURIComponent(location.hash.slice(1)), i = h.indexOf('='), k = i < 0 ? h : h.slice(0, i), v = i < 0 ? '' : h.slice(i + 1);
+  if (k !== 'gioca' && k !== 'prova') G = null;
+  if (k === 'gioca' || k === 'prova') return apriGioco(v, k === 'prova');
+  if (k === 'esito') return apriEsito(v);
+  if (k === 'calendario') return apriCalendario(v);
+  if (k === 'tempi') return apriTempi();
+  return apriOggi();
+}
+window.addEventListener('hashchange', instrada);
+
+/* ---------------- Avvisi, finestre, tieni premuto ---------------- */
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
+function tieniPremuto(el, fatto, ms = 800) {
+  let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('going'); };
+  el.style.setProperty('--ms', ms + 'ms');
+  el.addEventListener('pointerdown', e => { if (el.disabled) return; e.preventDefault(); stop(); el._tenuto = false; void el.offsetWidth; el.classList.add('going'); t = setTimeout(() => { stop(); el._tenuto = true; fatto(); }, ms); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fatto(); } });
+  el.addEventListener('click', e => { if (e.detail === 0 || el._tenuto) return; toast('Tieni premuto finché la barra si riempie'); });
+}
+function finestra(html, bottoni) {
+  const box = $('veloBox'); box.innerHTML = html;
+  if (bottoni && bottoni.length) {
+    const riga = document.createElement('div'); riga.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+    for (const b of bottoni) {
+      const el = document.createElement('button'); el.className = 'btn' + (b.cls ? ' ' + b.cls : '');
+      if (b.hold) { el.classList.add('hold'); el.innerHTML = `<i class="fill"></i><span>${b.t}</span>`; tieniPremuto(el, () => { chiudiVelo(); b.f(); }, b.hold); }
+      else { el.innerHTML = b.t; el.onclick = () => { chiudiVelo(); if (b.f) b.f(); }; }
+      riga.appendChild(el);
+    }
+    box.appendChild(riga);
+  }
+  $('velo').hidden = false;
+}
+function chiudiVelo() { $('velo').hidden = true; }
+$('velo').addEventListener('click', e => { if (e.target === $('velo')) chiudiVelo(); });
+
+/* ---------------- Storico: serie e conteggi ---------------- */
+const rec = d => STO.giorni[d] || null;
+function statoGiorno(d) {
+  const r = rec(d);
+  if (!r) return 'vuoto';
+  if (r.esito === 'risolta') return r.giornata ? 'risolta' : 'archivio';
+  return r.esito;
+}
+function serie() {
+  const buono = d => { const r = rec(d); return r && r.esito === 'risolta' && r.giornata; };
+  let attuale = 0, d = buono(OGGI) ? OGGI : M.piuGiorni(OGGI, -1);
+  while (d >= M.LANCIO && buono(d)) { attuale++; d = M.piuGiorni(d, -1); }
+  let record = 0, corsa = 0, prec = null;
+  for (const x of Object.keys(STO.giorni).sort()) {
+    if (!buono(x)) { corsa = 0; prec = x; continue; }
+    corsa = prec && M.differenza(prec, x) === 1 && buono(prec) ? corsa + 1 : 1;
+    record = Math.max(record, corsa); prec = x;
+  }
+  const risolte = Object.values(STO.giorni).filter(r => r.esito === 'risolta').length;
+  return { attuale, record: Math.max(record, attuale), risolte };
+}
+const tempoDi = r => (r.esito === 'corso' ? Date.now() - r.inizio + (r.pen || 0) : r.ms);
+
+/* =====================================================================
+   OGGI
+   ===================================================================== */
+let contoT = null;
+async function apriOggi() {
+  mostra('sOggi');
+  await caricaIntorno(OGGI);
+  disegnaOggi();
+}
+function disegnaOggi() {
+  const s = M.dati[OGGI];
+  $('oNum').textContent = OGGI >= M.LANCIO ? tre(M.numero(OGGI)) : '';
+  $('oData').textContent = M.dataLunga(OGGI);
+  let h = '';
+  if (OGGI < M.LANCIO) {
+    h = `<div class="attesa-sfida"><h2>MENTAL parte il ${M.dataLunga(M.LANCIO)}</h2><p class="piccolo">Se non ti torna, controlla la data del telefono.</p></div>`;
+  } else if (!s && INDICE.ultimo && OGGI <= INDICE.ultimo) {
+    h = `<div class="attesa-sfida"><h2>Serve la connessione</h2><p class="piccolo">La sfida di oggi c’è, ma il telefono non è riuscito a scaricarla. Riprova quando sei online.</p></div>`;
+  } else if (!s) {
+    h = `<div class="attesa-sfida"><h2>La sfida di oggi non è ancora pronta</h2><p class="piccolo">Le sfide si preparano in anticipo e si controllano una per una: quando c’è, arriva da sola. Intanto c’è il calendario.</p></div>`;
+  } else {
+    const r = rec(OGGI), E = M.motori[s.gioco];
+    let stato = '', cta = 'Inizia la sfida';
+    if (r && r.esito === 'corso') { stato = `In corso · <b id="oCorre">${M.tempo(tempoDi(r))}</b>`; cta = 'Riprendi'; }
+    else if (r && r.esito === 'risolta') { stato = `<span class="ok">Risolta</span> in <b>${M.tempo(r.ms)}</b>${r.giornata ? '' : ' · dopo mezzanotte'}`; cta = 'Risultato'; }
+    else if (r) { stato = `<span class="ko">${ESITI[r.esito]}</span> · <b>${M.tempo(r.ms)}</b>`; cta = 'Risultato'; }
+    h = `<article class="eroe">
+      <div class="riga1"><span class="cat">${ICO[s.gioco] || ''}${esc(E.nome)}</span><span class="liv">${livTesto(s.livello)} ${pip(s.livello)}</span></div>
+      <h1>${esc(s.titolo)}</h1>
+      <p class="breve">${esc(E.breve)}</p>
+      ${stato ? `<div class="stato">${stato}</div>` : ''}
+      <button class="btn" id="oCta">${cta}</button>
+      ${!r ? '<p class="nota">Il tempo parte quando inizi e non si ferma, nemmeno se chiudi l’app.</p>' : ''}
+    </article>`;
+  }
+  $('oCorpo').innerHTML = h;
+  if ($('oCta')) $('oCta').onclick = () => { const r = rec(OGGI); if (!r) inizia(OGGI); else if (r.esito === 'corso') vai('#gioca=' + OGGI); else vai('#esito=' + OGGI); };
+  // ultimi sette giorni
+  const G7 = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+  let w = '';
+  for (let k = 6; k >= 0; k--) {
+    const d = M.piuGiorni(OGGI, -k);
+    if (d < M.LANCIO) { w += '<div></div>'; continue; }
+    w += `<button class="giornino${d === OGGI ? ' oggi' : ''}" data-d="${d}"><span>${G7[M.giornoSettimana(d)]}</span><span class="g">${+d.slice(8)}</span><i class="segno ${statoGiorno(d)}"></i></button>`;
+  }
+  $('oSett').innerHTML = w;
+  $('oSett').querySelectorAll('[data-d]').forEach(b => { b.onclick = () => dettaglioGiorno(b.dataset.d); });
+  const sr = serie();
+  $('oSerie').innerHTML = sr.risolte ? `<span>Serie <b>${sr.attuale}</b></span><span>Record <b>${sr.record}</b></span><span>Risolte <b>${sr.risolte}</b></span>` : '';
+  aggiornaConto();
+}
+function aggiornaConto() {
+  const ora = Date.now(), mezz = M.prossimaMezzanotte(ora);
+  const x = Math.max(0, Math.ceil((mezz - ora) / 1000)), due = v => String(v).padStart(2, '0');
+  $('oConto').innerHTML = `Prossima sfida tra <b>${due(Math.floor(x / 3600))}:${due(Math.floor(x / 60) % 60)}:${due(x % 60)}</b>`;
+  const r = rec(OGGI); if (r && r.esito === 'corso' && $('oCorre')) $('oCorre').textContent = M.tempo(tempoDi(r));
+}
+function inizia(data) {
+  const s = M.dati[data]; if (!s) return;
+  if (!rec(data)) { STO.giorni[data] = { n: s.n, gioco: s.gioco, livello: s.livello, esito: 'corso', inizio: Date.now(), pen: 0 }; salvaSto(); }
+  vai('#gioca=' + data);
+}
+$('oCal').onclick = () => vai('#calendario');
+$('oTempi').onclick = () => vai('#tempi');
+$('oCome').onclick = () => finestra(`<div class="kick">MENTAL</div><h2>Come funziona</h2><ol class="regole">
+  <li>Ogni giorno c’è <b>una sfida nuova, uguale per tutti</b>: cambia a mezzanotte, ora italiana.</li>
+  <li>Nove giochi di logica a rotazione e tre livelli: in settimana impegnativa o esperta, il sabato esperta, la domenica <b>estrema</b>.</li>
+  <li>Ogni sfida ha <b>una sola soluzione</b> e si risolve ragionando: prima di pubblicarla un programma la risolve con le stesse mosse di ragionamento che puoi fare tu, senza mai tirare a indovinare.</li>
+  <li>Il tempo parte con «Inizia» e <b>non si ferma</b>, nemmeno se chiudi l’app. Conta il primo tentativo; dopo puoi rigiocarla per allenamento.</li>
+  <li>I giorni passati si recuperano dal <b>calendario</b>: valgono come «recuperata».</li>
+  <li>Niente classifica: i tuoi tempi restano su questo telefono, in <b>I miei tempi</b>. Per confrontarti con gli altri usa «Condividi» a fine sfida o «Copia l’elenco».</li>
+</ol><p class="piccolo">La data è quella dell’orologio del telefono.</p>`, [{ t: 'Chiudi', cls: 'sec' }]);
+
+/* =====================================================================
+   GIOCO
+   ===================================================================== */
+async function apriGioco(data, prova) {
+  if (!M.dataValida(data) || data > OGGI || data < M.LANCIO) return vai('');
+  await caricaMese(M.meseDi(data));
+  const s = M.dati[data]; if (!s) return vai('');
+  const r = rec(data);
+  if (!r) return vai(data === OGGI ? '' : '#calendario=' + M.meseDi(data));
+  if (!prova && r.esito !== 'corso') return vai('#esito=' + data);
+  if (prova && r.esito === 'corso') return vai('#gioca=' + data);           // prima si finisce il tentativo vero
+  const E = M.motori[s.gioco], chiave = prova ? data + '|prova' : data;
+  let P = PAR[chiave];
+  if (!P || !P.st || (prova && P.finito != null)) {
+    P = PAR[chiave] = { st: E.nuovoStato(s.p), storia: [], inizio: prova ? Date.now() : r.inizio, pen: 0 };
+    salvaPar();
+  }
+  G = { data, prova, s, E, P, r: prova ? null : r, chiave, sel: -1, modo: '', aux: preparaAux(s), avvisato: false };
+  mostra('sGioco');
+  $('gT1').textContent = `${tre(s.n)} · ${E.nome}`;
+  $('gTempo').classList.toggle('prova', prova);
+  $('gSotto').innerHTML = `${prova ? '<span class="etichetta">Allenamento</span>' : ''}<span>${esc(s.titolo)}</span><span>·</span><span>${livTesto(s.livello)}</span>`;
+  disegnaStrumenti();
+  disegnaGioco();
+  aggiornaTempo();
+}
+/* dati di servizio per tipo (mine e numeri del campo, soluzione per le consegne) */
+function preparaAux(s) {
+  const E = M.motori[s.gioco], a = {};
+  if (s.gioco === 'campo') { a.mine = new Set(E.decodifica(s.p)); a.num = E.numeri(s.p.w, s.p.h, [...a.mine]); }
+  return a;
+}
+function soluzione(s) { const E = M.motori[s.gioco]; E.conta(s.p, 2); return E.conta.ultima; }
+function tempoPartita() { return G.prova ? Date.now() - G.P.inizio + (G.P.pen || 0) : Date.now() - G.r.inizio + (G.r.pen || 0); }
+function aggiornaTempo() { if (G && corrente === 'sGioco') $('gTempo').textContent = M.tempo(G.P.finito != null ? G.P.finito : tempoPartita()); }
+
+/* Una mossa: si salva lo stato di prima per «Annulla» */
+function mossa(cambia, opz = {}) {
+  if (!G || fermo()) return;
+  const prima = JSON.stringify(G.P.st);
+  cambia(G.P.st);
+  if (JSON.stringify(G.P.st) === prima) return;
+  if (opz.irreversibile) G.P.storia = [];
+  else { G.P.storia.push(prima); if (G.P.storia.length > 300) G.P.storia.shift(); }
+  salvaPar();
+  disegnaGioco();
+  controllaFine();
+}
+const fermo = () => G.P.finito != null || (G.s.gioco === 'campo' && G.P.st.boom != null);
+function annulla() {
+  if (!G || fermo()) return;
+  const x = G.P.storia.pop();
+  if (!x) { toast(G.s.gioco === 'campo' ? 'Le caselle scoperte restano scoperte' : 'Niente da annullare'); return; }
+  G.P.st = JSON.parse(x); salvaPar(); disegnaGioco();
+}
+function controllaFine() {
+  const { E, s, P } = G;
+  if (s.gioco === 'campo' && P.st.boom != null) return fine('persa');
+  if (E.tipo === 'testo') return;
+  if (E.completo(s.p, P.st)) fine('risolta');
+}
+function fine(esito) {
+  const t = Date.now();
+  if (G.prova) {
+    G.P.finito = t - G.P.inizio + (G.P.pen || 0); G.P.esito = esito; salvaPar();
+    disegnaGioco(); disegnaStrumenti(); aggiornaTempo();
+    const d = G.data;
+    const testo = esito === 'risolta' ? `Risolta in <b>${M.tempo(G.P.finito)}</b>.` : esito === 'persa' ? 'Una mina.' : 'Ecco la soluzione.';
+    setTimeout(() => finestra(`<div class="kick">Allenamento · non conta</div><h2>${esito === 'risolta' ? 'Fatto!' : 'Peccato'}</h2><p class="piccolo">${testo} Il tuo tempo ufficiale non cambia.</p>`,
+      [{ t: 'Di nuovo', f: () => { delete PAR[d + '|prova']; salvaPar(); vai('#prova=' + d); } }, { t: 'Torna a MENTAL', cls: 'sec', f: indietro }]), esito === 'risolta' ? 450 : 900);
+    return;
+  }
+  const r = G.r;
+  r.esito = esito; r.fine = t; r.ms = t - r.inizio + (r.pen || 0); r.giornata = M.giornoRoma(t) === G.data;
+  if (esito === 'persa') r.boom = G.P.st.boom;
+  salvaSto();
+  delete PAR[G.chiave]; salvaPar();
+  const d = G.data;
+  G.P.finito = r.ms;
+  disegnaGioco(); aggiornaTempo();
+  setTimeout(() => { if (G && G.data === d && corrente === 'sGioco') vai('#esito=' + d); }, esito === 'risolta' ? 700 : 1300);
+}
+function arrenditi() {
+  if (!G || fermo()) return;
+  if (G.prova) { G.P.st = G.E.statoRisolto(G.s.p, soluzione(G.s)); return fine('arresa'); }
+  fine('arresa');
+}
+function ricomincia() {
+  if (!G || fermo()) return;
+  G.P.st = G.E.nuovoStato(G.s.p); G.P.storia = []; salvaPar(); disegnaGioco();
+}
+
+/* ---------------- Barra degli strumenti ---------------- */
+function disegnaStrumenti() {
+  const { E, s } = G, box = $('gStru');
+  const bAnnulla = `<button class="stru" id="sAnn">${ICO.annulla}Annulla</button>`;
+  let h = '';
+  if (E.tipo === 'cifre') {
+    const n = E.cifre(s.p);
+    h += `<div class="tastierino" style="grid-template-columns:repeat(${n},1fr)">${Array.from({ length: n }, (_, k) => `<button class="tasto" data-k="${k + 1}">${k + 1}</button>`).join('')}</div>`;
+    h += `<div class="barra">${bAnnulla}<button class="stru" id="sNote" aria-pressed="${G.modo === 'note'}">${ICO.matita}Note</button><button class="stru" id="sGomma">${ICO.gomma}Cancella</button></div>`;
+  } else if (E.tipo === 'campo') {
+    h += `<div class="contatore" id="sMine"></div>`;
+    h += `<div class="barra">${bAnnulla}<button class="stru" id="sBand" aria-pressed="${G.modo === 'bandiera'}">${ICO.bandiera}Bandiera</button></div>`;
+  } else if (E.tipo === 'nonogramma') {
+    h += `<div class="barra">${bAnnulla}<button class="stru" id="sCroce" aria-pressed="${G.modo === 'croce'}">${ICO.croce}Croce</button></div>`;
+  } else if (E.tipo === 'testo') {
+    h += `<div class="contatore" id="sPen"></div><div class="barra"><button class="stru menta" id="sConsegna">Consegna</button></div>`;
+  } else {
+    h += `<div class="barra">${bAnnulla}</div>`;
+  }
+  box.innerHTML = h;
+  if ($('sAnn')) $('sAnn').onclick = annulla;
+  if ($('sNote')) $('sNote').onclick = () => { G.modo = G.modo === 'note' ? '' : 'note'; $('sNote').setAttribute('aria-pressed', G.modo === 'note'); };
+  if ($('sGomma')) $('sGomma').onclick = () => cifra(0);
+  box.querySelectorAll('.tasto').forEach(b => { b.onclick = () => cifra(+b.dataset.k); });
+  if ($('sBand')) $('sBand').onclick = () => { G.modo = G.modo === 'bandiera' ? '' : 'bandiera'; $('sBand').setAttribute('aria-pressed', G.modo === 'bandiera'); };
+  if ($('sCroce')) $('sCroce').onclick = () => { G.modo = G.modo === 'croce' ? '' : 'croce'; $('sCroce').setAttribute('aria-pressed', G.modo === 'croce'); };
+  if ($('sConsegna')) $('sConsegna').onclick = consegna;
+  const finita = G.P.finito != null;
+  box.querySelectorAll('button').forEach(b => { b.disabled = finita; });
+}
+
+/* ---------------- Disegno della tavola ---------------- */
+function misura() {
+  const a = $('gArea');
+  return { W: a.clientWidth - 16, H: a.clientHeight - 12 };
+}
+function disegnaGioco() {
+  if (!G) return;
+  const { E } = G, tav = $('tav');
+  tav.onpointerdown = tav.onpointermove = tav.onpointerup = tav.onpointercancel = null;
+  $('gArea').classList.toggle('lista', E.tipo === 'testo');
+  tav.className = 'tav';
+  tav.removeAttribute('style');
+  const fn = { segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto }[E.tipo];
+  fn(tav, G.s, G.P.st, { interattivo: G.P.finito == null, ...misura() });
+  if (E.tipo === 'campo' && $('sMine')) {
+    const band = G.P.st.s.filter(x => x === 2).length;
+    $('sMine').innerHTML = `${ICO.mina.replace('<svg', '<svg style="width:17px;height:17px;color:var(--corallo)"')} Mine <b>${G.aux.mine.size - band}</b>`;
+  }
+  if (E.tipo === 'testo' && $('sPen')) {
+    const c = G.prova ? (G.P.consegne || 0) : (G.r.consegne || 0);
+    $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b> · +${c} min` : 'Ogni consegna sbagliata aggiunge un minuto';
+    $('sConsegna').disabled = G.P.finito != null || !G.E.completo(G.s.p, G.P.st);
+  }
+  if (E.tipo === 'cifre') {
+    // cifre già messe tutte: tasto spento
+    const n = E.cifre(G.s.p), conta = Array(n + 1).fill(0); G.P.st.v.forEach(x => { if (x) conta[x]++; });
+    $('gStru').querySelectorAll('.tasto').forEach(b => b.classList.toggle('finito', conta[+b.dataset.k] >= n));
+  }
+}
+const lato = (W, H, colonne, righe, max = 64) => Math.max(14, Math.floor(Math.min(W / colonne, H / righe, max)));
+
+/* Colori delle regioni: tinte lontane tra loro; il confine è anche una linea spessa, così non serve
+   distinguere i colori */
+const REGIONI = ['#E58A84', '#E6B25E', '#D8D46E', '#93CF72', '#55C4A2', '#5DB9DE', '#7B95E8', '#A584E3', '#D888CC', '#B9967A', '#98A4B8', '#CFC7EE'];
+
+function tavSegni(tav, s, st, o) {
+  const n = s.p.n, reg = s.p.reg, c = lato(o.W, o.H, n, n, 58), E = M.motori[s.gioco];
+  const errori = new Set(E.conflitti(s.p, st));
+  tav.classList.add('segni');
+  tav.style.gridTemplateColumns = `repeat(${n},${c}px)`;
+  let h = '';
+  for (let i = 0; i < n * n; i++) {
+    const r = Math.floor(i / n), k = i % n;
+    const st_ = r === 0 || reg[i - n] !== reg[i], sl = k === 0 || reg[i - 1] !== reg[i];
+    const bordi = `border-width:${st_ ? 3 : 1}px 0 0 ${sl ? 3 : 1}px;border-top-color:${st_ ? '#070816' : 'rgba(7,8,22,.28)'};border-left-color:${sl ? '#070816' : 'rgba(7,8,22,.28)'}`;
+    const v = st.c[i];
+    const dentro = v === 2 ? `<span class="pezzo">${ICO[s.gioco === 'stelle' ? 'stelle' : 'corone']}</span>` : v === 1 ? `<span class="x" style="font-size:${Math.round(c * .42)}px">×</span>` : '';
+    h += `<div class="c${errori.has(i) ? ' errore' : ''}" data-i="${i}" style="width:${c}px;height:${c}px;background:${REGIONI[reg[i] % REGIONI.length]};${bordi}">${dentro}</div>`;
+  }
+  tav.innerHTML = h;
+  if (o.interattivo) gestoSegni(tav);
+}
+function tavBinario(tav, s, st, o) {
+  const n = s.p.n, c = lato(o.W, o.H, n, n, 52) - 3, E = M.motori.binario;
+  const errori = new Set(E.conflitti(s.p, st));
+  tav.classList.add('binario');
+  tav.style.gridTemplateColumns = `repeat(${n},${c}px)`;
+  let h = '';
+  for (let i = 0; i < n * n; i++) {
+    const v = st.c[i], dato = s.p.g[i] >= 0;
+    h += `<div class="c${dato ? ' dato' : ''}${errori.has(i) ? ' errore' : ''}" data-i="${i}" style="width:${c}px;height:${c}px">${v === 0 ? '<i class="zero"></i>' : v === 1 ? '<i class="uno"></i>' : ''}</div>`;
+  }
+  tav.innerHTML = h;
+  if (o.interattivo) tav.onpointerdown = e => {
+    const i = cellaDa(e); if (i < 0 || s.p.g[i] >= 0) return;
+    e.preventDefault();
+    mossa(st2 => { st2.c[i] = st2.c[i] === -1 ? 0 : st2.c[i] === 0 ? 1 : -1; });
+  };
+}
+function tavCifre(tav, s, st, o) {
+  const E = M.motori[s.gioco], id = s.gioco;
+  const n = E.cifre(s.p), dati = id === 'sudoku' ? s.p.g : (s.p.dati || []);
+  const errori = new Set(E.conflitti(s.p, st));
+  const sel = G && tav === $('tav') ? G.sel : -1, vsel = sel >= 0 ? st.v[sel] : 0;
+  tav.classList.add('cifre');
+  const fu = id === 'futoshiki', gr = id === 'grattacieli';
+  // misure: grattacieli ha una fila di numeri intorno, futoshiki uno spazio tra le caselle per i segni
+  let c;
+  if (gr) c = Math.max(14, Math.floor(Math.min((o.W - 3 * (n + 1)) / (n + 1.6), (o.H - 3 * (n + 1)) / (n + 1.6), 56)));
+  else if (fu) c = Math.max(14, Math.floor(Math.min(o.W / (n + (n - 1) * .42), o.H / (n + (n - 1) * .42), 58)));
+  else c = lato(o.W, o.H, n, n, 46);
+  const gap = fu ? Math.round(c * .42) : 0, bordo = gr ? Math.round(c * .8) : 0;
+  const notaFont = Math.max(8, Math.round(c * .24)), font = Math.round(c * .52);
+  const cellaHTML = i => {
+    const r = Math.floor(i / n), k = i % n, v = st.v[i], dato = !!dati[i];
+    let cl = 'c';
+    if (dato) cl += ' dato';
+    if (errori.has(i)) cl += ' errore';
+    if (i === sel) cl += ' sel';
+    else if (sel >= 0 && vsel && v === vsel) cl += ' uguale';
+    else if (sel >= 0 && (Math.floor(sel / n) === r || sel % n === k || (id === 'sudoku' && Math.floor(Math.floor(sel / n) / 3) === Math.floor(r / 3) && Math.floor((sel % n) / 3) === Math.floor(k / 3)))) cl += ' vicino';
+    let bw = '1px';
+    if (id === 'sudoku') bw = `${r % 3 === 0 ? 2.5 : .5}px ${k === 8 ? 2.5 : .5}px ${r === 8 ? 2.5 : .5}px ${k % 3 === 0 ? 2.5 : .5}px`;
+    let dentro = '';
+    if (v) dentro = String(v);
+    else if (st.note[i]) {
+      const ns = []; for (let d = 1; d <= n; d++) ns.push(st.note[i] & (1 << (d - 1)) ? `<span>${d}</span>` : '<span></span>');
+      dentro = `<div class="note" style="font-size:${notaFont}px">${ns.join('')}</div>`;
+    }
+    const raggio = fu ? 'border-radius:8px;' : '';
+    return `<div class="${cl}" data-i="${i}" style="width:${c}px;height:${c}px;font-size:${font}px;border-width:${bw};${raggio}">${dentro}</div>`;
+  };
+  if (id === 'sudoku') {
+    tav.style.gridTemplateColumns = `repeat(9,${c}px)`;
+    tav.style.boxShadow = '0 0 0 2px rgba(200,205,255,.35)';
+    let h = ''; for (let i = 0; i < 81; i++) h += cellaHTML(i);
+    tav.innerHTML = h;
+    // linee spesse e chiare tra i riquadri, sottili dentro
+    const col = forte => (forte ? 'rgba(200,205,255,.38)' : 'rgba(200,205,255,.1)');
+    tav.querySelectorAll('.c').forEach(el => {
+      const i = +el.dataset.i, r = Math.floor(i / 9), k = i % 9;
+      el.style.borderTopColor = col(r % 3 === 0); el.style.borderLeftColor = col(k % 3 === 0);
+      el.style.borderBottomColor = col(r === 8); el.style.borderRightColor = col(k === 8);
+    });
+  } else if (gr) {
+    const sbagliati = new Set(E.indiziSbagliati(s.p, st));
+    tav.style.gridTemplateColumns = `${bordo}px repeat(${n},${c}px) ${bordo}px`;
+    tav.style.gridTemplateRows = `${bordo}px repeat(${n},${c}px) ${bordo}px`;
+    tav.style.gap = '3px';
+    const indizio = (l, k) => { const x = s.p[l][k]; return `<div class="bordo${sbagliati.has(l + k) ? ' sbagliato' : ''}" style="font-size:${Math.round(c * .44)}px">${x || ''}</div>`; };
+    let h = '<div></div>';
+    for (let k = 0; k < n; k++) h += indizio('su', k);
+    h += '<div></div>';
+    for (let r = 0; r < n; r++) {
+      h += indizio('sx', r);
+      for (let k = 0; k < n; k++) h += cellaHTML(r * n + k);
+      h += indizio('dx', r);
+    }
+    h += '<div></div>';
+    for (let k = 0; k < n; k++) h += indizio('giu', k);
+    h += '<div></div>';
+    tav.innerHTML = h;
+    tav.querySelectorAll('.c').forEach(el => { el.style.borderRadius = '8px'; el.style.borderColor = 'rgba(200,205,255,.14)'; });
+  } else if (fu) {
+    const sbagliati = new Set(E.segniSbagliati(s.p, st));
+    const tracce = Array.from({ length: 2 * n - 1 }, (_, k) => (k % 2 ? gap : c) + 'px').join(' ');
+    tav.style.gridTemplateColumns = tracce; tav.style.gridTemplateRows = tracce;
+    const segno = new Map();
+    s.p.dis.forEach(([a, b], k) => {
+      const ra = Math.floor(a / n), ka = a % n, rb = Math.floor(b / n), kb = b % n;
+      const key = ra === rb ? `o${ra},${Math.min(ka, kb)}` : `v${Math.min(ra, rb)},${ka}`;
+      let ch;
+      if (ra === rb) ch = ka < kb ? '<' : '>';       // a < b: se a è a sinistra «<», se è a destra «>»
+      else ch = ra < rb ? '∧' : '∨';                 // a sopra e più piccola: «∧»
+      segno.set(key, { ch, k });
+    });
+    let h = '';
+    for (let R = 0; R < 2 * n - 1; R++) for (let K = 0; K < 2 * n - 1; K++) {
+      const r = R >> 1, k = K >> 1;
+      if (R % 2 === 0 && K % 2 === 0) h += cellaHTML(r * n + k);
+      else if (R % 2 === 0) { const x = segno.get(`o${r},${k}`); h += `<div class="segno-fu${x && sbagliati.has(x.k) ? ' sbagliato' : ''}" style="font-size:${Math.round(c * .42)}px">${x ? x.ch : ''}</div>`; }
+      else if (K % 2 === 0) { const x = segno.get(`v${r},${k}`); h += `<div class="segno-fu${x && sbagliati.has(x.k) ? ' sbagliato' : ''}" style="font-size:${Math.round(c * .4)}px">${x ? x.ch : ''}</div>`; }
+      else h += '<div></div>';
+    }
+    tav.innerHTML = h;
+    tav.querySelectorAll('.c').forEach(el => { el.style.borderColor = 'rgba(200,205,255,.14)'; });
+  }
+  if (o.interattivo) tav.onpointerdown = e => {
+    const i = cellaDa(e); if (i < 0) return;
+    e.preventDefault();
+    G.sel = i; disegnaGioco();
+  };
+}
+function cifra(d) {
+  if (!G || fermo() || G.E.tipo !== 'cifre') return;
+  const i = G.sel, s = G.s, n = G.E.cifre(s.p), dati = s.gioco === 'sudoku' ? s.p.g : (s.p.dati || []);
+  if (i < 0) { toast('Prima tocca una casella'); return; }
+  if (dati[i]) return;
+  mossa(st => {
+    if (d === 0) { st.v[i] = 0; st.note[i] = 0; return; }
+    if (G.modo === 'note') { if (!st.v[i]) st.note[i] ^= 1 << (d - 1); return; }
+    st.v[i] = st.v[i] === d ? 0 : d;
+    if (st.v[i]) {
+      // via la stessa nota dalle caselle della stessa riga, colonna (e riquadro)
+      const r = Math.floor(i / n), k = i % n;
+      for (let j = 0; j < n * n; j++) {
+        const rj = Math.floor(j / n), kj = j % n;
+        const stessa = rj === r || kj === k || (s.gioco === 'sudoku' && Math.floor(rj / 3) === Math.floor(r / 3) && Math.floor(kj / 3) === Math.floor(k / 3));
+        if (stessa) st.note[j] &= ~(1 << (d - 1));
+      }
+    }
+  });
+}
+function tavCampo(tav, s, st, o) {
+  const { w, h } = s.p, a = G && G.s === s ? G.aux : preparaAux(s), c = lato(o.W, o.H, w, h, 48) - 2;
+  const errori = new Set(M.motori.campo.conflitti(s.p, st));
+  const chiuso = st.boom != null || (G && G.s === s && G.P.finito != null) || !o.interattivo;
+  tav.classList.add('campo');
+  tav.style.gridTemplateColumns = `repeat(${w},${c}px)`;
+  let html = '';
+  const f = Math.round(c * .56);
+  for (let i = 0; i < w * h; i++) {
+    const v = st.s[i];
+    let cl = 'c', dentro = '';
+    if (v === 1) { cl += ' ap'; const x = a.num[i]; if (x > 0) { cl += ' n' + x; dentro = x; } }
+    else if (st.boom === i) { cl += ' boom'; dentro = ICO.mina; }
+    else if (chiuso && a.mine.has(i) && v !== 2) { cl += ' mina'; dentro = ICO.mina; }
+    else if (v === 2) { cl += ' cop bandiera'; dentro = ICO.bandiera; if (chiuso && !a.mine.has(i)) cl += ' errore'; }
+    else cl += ' cop';
+    if (errori.has(i)) cl += ' errore';
+    html += `<div class="${cl}" data-i="${i}" style="width:${c}px;height:${c}px;font-size:${f}px">${dentro}</div>`;
+  }
+  tav.innerHTML = html;
+  if (o.interattivo && st.boom == null) gestoCampo(tav);
+}
+function tavNono(tav, s, st, o) {
+  const { w, h, righe, colonne } = s.p, E = M.motori.nonogramma;
+  const maxR = Math.max(1, ...righe.map(b => b.length)), maxK = Math.max(1, ...colonne.map(b => b.length));
+  // lato della casella: il più grande con cui numeri e griglia ci stanno
+  let c = 40, fontI, wR, hK;
+  for (;;) {
+    fontI = Math.max(10, Math.round(c * .5)); wR = Math.ceil(maxR * fontI * 1.05 + 10); hK = Math.ceil(maxK * fontI * 1.14 + 8);
+    if (c <= 14 || (wR + w * c <= o.W && hK + h * c <= o.H)) break;
+    c--;
+  }
+  const fatte = new Set(E.fileFatte(s.p, st)), finito = E.completo(s.p, st);
+  tav.classList.add('nono'); if (finito) tav.classList.add('finito');
+  tav.style.gridTemplateColumns = `${wR}px repeat(${w},${c}px)`;
+  tav.style.gridTemplateRows = `${hK}px repeat(${h},${c}px)`;
+  let html = '<div></div>';
+  for (let k = 0; k < w; k++) html += `<div class="indizi k${fatte.has('c' + k) ? ' fatto' : ''}" style="font-size:${fontI}px">${(colonne[k].length ? colonne[k] : [0]).map(x => `<span>${x}</span>`).join('')}</div>`;
+  for (let r = 0; r < h; r++) {
+    html += `<div class="indizi r${fatte.has('r' + r) ? ' fatto' : ''}" style="font-size:${fontI}px">${(righe[r].length ? righe[r] : [0]).map(x => `<span>${x}</span>`).join('')}</div>`;
+    for (let k = 0; k < w; k++) {
+      const i = r * w + k, v = st.c[i];
+      const bw = `${r % 5 === 0 ? 2 : .5}px ${k === w - 1 ? 2 : .5}px ${r === h - 1 ? 2 : .5}px ${k % 5 === 0 ? 2 : .5}px`;
+      html += `<div class="c${v === 1 ? ' pieno' : ''}" data-i="${i}" style="width:${c}px;height:${c}px;border-width:${bw};border-color:rgba(200,205,255,${'.12'})">${v === 2 && !finito ? `<span class="x" style="font-size:${Math.round(c * .5)}px">×</span>` : ''}</div>`;
+    }
+  }
+  tav.innerHTML = html;
+  // linee ogni 5 caselle più evidenti
+  tav.querySelectorAll('.c').forEach(el => {
+    const i = +el.dataset.i, r = Math.floor(i / w), k = i % w;
+    if (r % 5 === 0) el.style.borderTopColor = 'rgba(200,205,255,.34)';
+    if (k % 5 === 0) el.style.borderLeftColor = 'rgba(200,205,255,.34)';
+    if (k === w - 1) el.style.borderRightColor = 'rgba(200,205,255,.34)';
+    if (r === h - 1) el.style.borderBottomColor = 'rgba(200,205,255,.34)';
+  });
+  if (o.interattivo) gestoNono(tav);
+}
+function tavTesto(tav, s, st, o) {
+  const E = M.motori.cavalieri, p = s.p;
+  tav.className = 'isola';
+  let h = '';
+  p.gente.forEach((x, i) => {
+    const v = st.c[i];
+    h += `<div class="persona s${v}"><div class="faccia">${esc(x.nome[0])}</div><div class="chi">${esc(x.nome)}</div>
+      <div class="detto">«${esc(E.testo(p, i))}»</div>
+      <div class="scelta"><button class="si" data-i="${i}" data-v="1" aria-pressed="${v === 1}">${x.f ? 'Sincera' : 'Sincero'}</button><button class="no" data-i="${i}" data-v="2" aria-pressed="${v === 2}">${x.f ? 'Bugiarda' : 'Bugiardo'}</button></div></div>`;
+  });
+  tav.innerHTML = h;
+  tav.querySelectorAll('.scelta button').forEach(b => {
+    b.disabled = !o.interattivo;
+    b.onclick = () => { const i = +b.dataset.i, v = +b.dataset.v; mossa(st2 => { st2.c[i] = st2.c[i] === v ? 0 : v; }); };
+  });
+}
+function consegna() {
+  if (!G || fermo() || G.E.tipo !== 'testo') return;
+  const sol = soluzione(G.s);
+  if (!G.E.completo(G.s.p, G.P.st)) { toast('Decidi per tutti, poi consegna'); return; }
+  if (G.E.sbagliati(G.s.p, G.P.st, sol) === 0) return fine('risolta');
+  if (G.prova) { G.P.pen = (G.P.pen || 0) + PENALITA; G.P.consegne = (G.P.consegne || 0) + 1; salvaPar(); }
+  else { G.r.pen = (G.r.pen || 0) + PENALITA; G.r.consegne = (G.r.consegne || 0) + 1; salvaSto(); }
+  disegnaGioco(); aggiornaTempo();
+  toast('Qualcosa non torna: +1 minuto');
+}
+
+/* ---------------- Gesti ---------------- */
+function cellaDa(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const c = el && el.closest ? el.closest('[data-i]') : null;
+  return c && $('tav').contains(c) ? +c.dataset.i : -1;
+}
+/* Corone e stelle: un tocco gira vuota → croce → pezzo; trascinando si mettono croci sulle vuote */
+function gestoSegni(tav) {
+  let start = -1, trascina = false, toccate = null;
+  tav.onpointerdown = e => {
+    const i = cellaDa(e); if (i < 0) return;
+    e.preventDefault(); try { tav.setPointerCapture(e.pointerId); } catch (x) { /* */ }
+    start = i; trascina = false; toccate = new Set([i]);
+  };
+  tav.onpointermove = e => {
+    if (start < 0) return;
+    const i = cellaDa(e); if (i < 0 || toccate.has(i)) return;
+    if (!trascina) { trascina = true; }
+    toccate.add(i);
+    disegnaAnteprima(toccate);
+  };
+  const fineGesto = () => {
+    if (start < 0) return;
+    const i0 = start; start = -1;
+    if (!trascina) { mossa(st => { st.c[i0] = (st.c[i0] + 1) % 3; }); return; }
+    const insieme = toccate; toccate = null;
+    mossa(st => { insieme.forEach(i => { if (st.c[i] === 0) st.c[i] = 1; }); });
+  };
+  tav.onpointerup = fineGesto;
+  tav.onpointercancel = () => { start = -1; disegnaGioco(); };
+  function disegnaAnteprima(ins) {
+    ins.forEach(i => { const el = tav.querySelector(`[data-i="${i}"]`); if (el && G.P.st.c[i] === 0 && !el.firstChild) el.innerHTML = `<span class="x" style="font-size:${Math.round(el.offsetWidth * .42)}px">×</span>`; });
+  }
+}
+/* Prato fiorito: tocco scopre (o mette/toglie la bandiera col tasto acceso), tenendo premuto
+   bandiera; un numero con tutte le sue bandiere scopre le caselle intorno */
+function gestoCampo(tav) {
+  let t = null, fatto = false, i0 = -1;
+  const { w, h } = G.s.p, E = M.motori.campo;
+  const bandiera = i => mossa(st => { if (st.s[i] === 0) st.s[i] = 2; else if (st.s[i] === 2) st.s[i] = 0; });
+  tav.oncontextmenu = e => e.preventDefault();
+  tav.onpointerdown = e => {
+    const i = cellaDa(e); if (i < 0) return;
+    e.preventDefault(); i0 = i; fatto = false;
+    clearTimeout(t);
+    t = setTimeout(() => { fatto = true; if (G.P.st.s[i] !== 1) { bandiera(i); if (navigator.vibrate) navigator.vibrate(12); } }, 380);
+  };
+  tav.onpointermove = e => { if (i0 >= 0 && cellaDa(e) !== i0) { clearTimeout(t); i0 = -1; } };
+  tav.onpointercancel = () => { clearTimeout(t); i0 = -1; };
+  tav.onpointerup = () => {
+    clearTimeout(t);
+    if (i0 < 0 || fatto) { i0 = -1; return; }
+    const i = i0; i0 = -1;
+    const st = G.P.st;
+    if (st.s[i] === 1) {
+      // accordo: se intorno ci sono tante bandiere quante mine dice il numero, si scopre il resto
+      const vic = E.vicini(w, h, i), band = vic.filter(j => st.s[j] === 2).length;
+      if (G.aux.num[i] > 0 && band === G.aux.num[i] && vic.some(j => st.s[j] === 0)) mossa(st2 => { vic.forEach(j => scopri(st2, j)); }, { irreversibile: true });
+      return;
+    }
+    if (G.modo === 'bandiera') { bandiera(i); return; }
+    if (st.s[i] === 2) return;
+    mossa(st2 => scopri(st2, i), { irreversibile: true });
+  };
+}
+function scopri(st, i) {
+  if (st.s[i] !== 0 || st.boom != null) return;
+  const { w, h } = G.s.p, E = M.motori.campo;
+  if (G.aux.mine.has(i)) { st.boom = i; return; }
+  const coda = [i];
+  while (coda.length) {
+    const x = coda.pop();
+    if (st.s[x] !== 0) continue;
+    st.s[x] = 1;
+    if (G.aux.num[x] === 0) for (const j of E.vicini(w, h, x)) if (st.s[j] === 0) coda.push(j);
+  }
+}
+/* Nonogramma: tocco annerisce (o mette la croce col tasto acceso); trascinando lungo una riga o
+   colonna si fa lo stesso su tutte le caselle attraversate */
+function gestoNono(tav) {
+  let start = -1, asse = null, obiettivo = 0, prima = 0, toccate = null;
+  const w = G.s.p.w;
+  tav.onpointerdown = e => {
+    const i = cellaDa(e); if (i < 0) return;
+    e.preventDefault(); try { tav.setPointerCapture(e.pointerId); } catch (x) { /* */ }
+    const v = G.P.st.c[i], segno = G.modo === 'croce' ? 2 : 1;
+    start = i; asse = null; prima = v; obiettivo = v === segno ? 0 : segno; toccate = [i];
+    anteprima();
+  };
+  tav.onpointermove = e => {
+    if (start < 0) return;
+    const i = cellaDa(e); if (i < 0) return;
+    const r0 = Math.floor(start / w), k0 = start % w, r = Math.floor(i / w), k = i % w;
+    if (!asse) { if (r !== r0) asse = 'v'; else if (k !== k0) asse = 'o'; else return; }
+    const celle = [];
+    if (asse === 'o') { const a = Math.min(k0, k), b = Math.max(k0, k); for (let x = a; x <= b; x++) celle.push(r0 * w + x); }
+    else { const a = Math.min(r0, r), b = Math.max(r0, r); for (let y = a; y <= b; y++) celle.push(y * w + k0); }
+    toccate = celle; anteprima();
+  };
+  const applica = (st, i) => {
+    if (obiettivo === 0) { if (st.c[i] === prima) st.c[i] = 0; }
+    else if (st.c[i] === 0 || i === start) st.c[i] = obiettivo;
+  };
+  function anteprima() {
+    const finto = { c: G.P.st.c.slice() };
+    toccate.forEach(i => applica(finto, i));
+    tav.querySelectorAll('.c').forEach(el => {
+      const i = +el.dataset.i, v = finto.c[i];
+      el.classList.toggle('pieno', v === 1);
+      el.innerHTML = v === 2 ? `<span class="x" style="font-size:${Math.round(el.offsetWidth * .5)}px">×</span>` : '';
+    });
+  }
+  tav.onpointerup = () => {
+    if (start < 0) return;
+    const celle = toccate; start = -1;
+    mossa(st => { celle.forEach(i => applica(st, i)); });
+    disegnaGioco();
+  };
+  tav.onpointercancel = () => { start = -1; disegnaGioco(); };
+}
+
+/* Tastiera (computer): cifre, frecce, cancella, z per annullare */
+document.addEventListener('keydown', e => {
+  if (!G || corrente !== 'sGioco' || !$('velo').hidden) return;
+  if ((e.key === 'z' && (e.ctrlKey || e.metaKey)) || e.key === 'u') { e.preventDefault(); annulla(); return; }
+  if (G.E.tipo !== 'cifre') return;
+  const n = G.E.cifre(G.s.p);
+  if (/^[1-9]$/.test(e.key) && +e.key <= n) { cifra(+e.key); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { cifra(0); return; }
+  if (e.key === 'n') { G.modo = G.modo === 'note' ? '' : 'note'; disegnaStrumenti(); return; }
+  const d = { ArrowUp: -n, ArrowDown: n, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+  if (d) { e.preventDefault(); const i = G.sel < 0 ? 0 : G.sel + d; if (i >= 0 && i < n * n) { G.sel = i; disegnaGioco(); } }
+});
+
+/* Regole e uscita */
+function regoleHTML(s) {
+  const E = M.motori[s.gioco];
+  return `<div class="kick">${esc(E.nome)} · ${livTesto(s.livello)}</div><h2>Regole</h2>
+    <ol class="regole">${E.regole.map(x => `<li>${x}</li>`).join('')}</ol>
+    <p class="piccolo">Ogni sfida ha <b>una sola soluzione</b>, che si trova ragionando: non serve mai tirare a indovinare. Il tempo parte quando inizi e non si ferma; conta il primo tentativo, poi puoi rigiocarla per allenamento.</p>`;
+}
+$('gRegole').onclick = () => {
+  if (!G) return;
+  const finita = fermo();
+  finestra(regoleHTML(G.s), finita ? [{ t: 'Chiudi', cls: 'sec' }] : [
+    { t: 'Chiudi', cls: 'sec' },
+    { t: 'Tieni premuto: ricomincia da capo', cls: 'sec piccolo', hold: 900, f: ricomincia },
+    { t: G.prova ? 'Tieni premuto: mostra la soluzione' : 'Tieni premuto: mi arrendo', cls: 'sec piccolo', hold: 1200, f: arrenditi }
+  ]);
+};
+$('gEsci').onclick = indietro;
+window.addEventListener('resize', () => { if (corrente === 'sGioco') disegnaGioco(); });
+
+/* =====================================================================
+   ESITO
+   ===================================================================== */
+function testoCondividi(d) {
+  const s = M.dati[d], r = rec(d);
+  const righe = [`MENTAL ${tre(s.n)} · ${nomeGioco(s.gioco)}`, `${livTesto(s.livello)} ${'◆'.repeat(LIV[s.livello].pip)}${'◇'.repeat(3 - LIV[s.livello].pip)}`];
+  if (r.esito === 'risolta') righe.push(`✅ Risolta in ${M.tempo(r.ms)}${r.giornata ? '' : ' (non il giorno stesso)'}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a' : 'e'} sbagliat${r.consegne === 1 ? 'a' : 'e'}` : ''}`);
+  else if (r.esito === 'persa') righe.push(`💥 Una mina dopo ${M.tempo(r.ms)}`);
+  else righe.push(`🏳️ Non risolta (${M.tempo(r.ms)})`);
+  righe.push(SITO);
+  return righe.join('\n');
+}
+async function condividi(testo) {
+  try { if (navigator.share) { await navigator.share({ text: testo }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(testo); toast('Copiato: incollalo dove vuoi'); }
+  catch (e) { finestra(`<h2>Copia il testo</h2><pre style="white-space:pre-wrap;user-select:text;-webkit-user-select:text;margin:0;font:inherit;color:var(--testo)">${esc(testo)}</pre>`, [{ t: 'Chiudi', cls: 'sec' }]); }
+}
+async function apriEsito(d) {
+  if (!M.dataValida(d)) return vai('');
+  await caricaMese(M.meseDi(d));
+  const s = M.dati[d], r = rec(d);
+  if (!s || !r) return vai('');
+  if (r.esito === 'corso') return vai('#gioca=' + d);
+  mostra('sEsito');
+  const E = M.motori[s.gioco], male = r.esito !== 'risolta';
+  let h = `<div class="esito festa${male ? ' male' : ''}">
+    <div class="k">${tre(s.n)} · ${esc(E.nome)} · ${livTesto(s.livello)}</div>
+    <div class="parola">${r.esito === 'persa' ? 'Una mina' : ESITI[r.esito]}</div>
+    <div class="grande">${M.tempo(r.ms)}</div>
+    <div class="dett">${esc(s.titolo)} · ${M.dataLunga(d)}<br>${r.esito === 'risolta' ? (r.giornata ? 'Il giorno stesso' : (d === M.giornoRoma(r.inizio) ? 'Finita dopo mezzanotte' : 'Recuperata dal calendario')) : ''}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a sbagliata' : 'e sbagliate'} (+${r.consegne} min)` : ''}</div>
+  </div>
+  <div class="riga-btn"><button class="btn" id="eCond">${ICO.condividi}Condividi</button></div>`;
+  // la soluzione
+  h += `<section class="pannello"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2><div class="mini"><div class="tav" id="eTav"></div></div></section>`;
+  // le chiavi
+  const tec = Object.entries(s.tecniche || {}).filter(([t]) => E.TECNICHE[t]).sort((a, b) => E.TECNICHE[b[0]].peso - E.TECNICHE[a[0]].peso);
+  if (tec.length) h += `<section class="pannello"><h2>Le chiavi di questa sfida</h2><p>Le mosse di ragionamento che servivano, dalla più difficile.</p><ul class="chiavi">${tec.map(([t, q]) => `<li><span class="q">×${q}</span><span class="n">${esc(E.TECNICHE[t].nome)}</span><span class="d">${esc(E.TECNICHE[t].descr)}</span></li>`).join('')}</ul></section>`;
+  if (s.gioco === 'cavalieri') h += `<section class="pannello"><h2>Come si ragiona</h2><ol class="passi">${passiCavalieri(s).map(x => `<li>${x}</li>`).join('')}</ol></section>`;
+  h += `<div class="riga-btn"><button class="btn sec" id="eProva">Rigioca per allenamento</button></div>
+    <div class="riga-btn"><button class="btn sec piccolo" id="eCal">Calendario</button><button class="btn sec piccolo" id="eTempi">I miei tempi</button></div>`;
+  $('eCorpo').innerHTML = h;
+  const sol = soluzione(s);
+  let st;
+  if (s.gioco === 'campo') { st = E.statoRisolto(s.p, sol); if (r.esito === 'persa' && r.boom != null) st.boom = r.boom; }
+  else st = E.statoRisolto(s.p, sol);
+  if (E.tipo === 'segni') st.c = st.c.map(v => (v === 2 ? 2 : 0));          // nella soluzione bastano i pezzi
+  const box = $('eTav'), lar = Math.min(window.innerWidth - 64, 420);
+  ({ segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto })[E.tipo](box, s, st, { interattivo: false, W: lar, H: lar * 1.25 });
+  if (E.tipo === 'nonogramma') box.classList.add('finito');
+  $('eCond').onclick = () => condividi(testoCondividi(d));
+  $('eProva').onclick = () => vai('#prova=' + d);
+  $('eCal').onclick = () => vai('#calendario=' + M.meseDi(d));
+  $('eTempi').onclick = () => vai('#tempi');
+}
+$('eEsci').onclick = indietro;
+function passiCavalieri(s) {
+  const E = M.motori.cavalieri, p = s.p, ris = E.risolvi(p), g = p.gente;
+  const tipo = (x, v) => (v ? (g[x].f ? 'sincera' : 'sincero') : (g[x].f ? 'bugiarda' : 'bugiardo'));
+  return ris.passi.map(x => {
+    const n = g[x.chi].nome;
+    if (x.t === 'deduzione') {
+      const v = ris.sol[x.chi];
+      return x.frase === x.chi ? `<b>${esc(n)}</b> è ${tipo(x.chi, v)}: la sua frase, con quello che già si sa, lo dice da sola.`
+        : `Dalla frase di <b>${esc(g[x.frase].nome)}</b>: <b>${esc(n)}</b> è ${tipo(x.chi, v)}.`;
+    }
+    if (x.t === 'ipotesi') return `Se <b>${esc(n)}</b> fosse ${tipo(x.chi, x.prova)}, seguendo le frasi si arriverebbe a una contraddizione: quindi è ${tipo(x.chi, 1 - x.prova)}.`;
+    return `Se <b>${esc(n)}</b> fosse ${tipo(x.chi, x.prova)}, comunque si continui si arriva a una contraddizione (serve un secondo «se» dentro il primo): quindi è ${tipo(x.chi, 1 - x.prova)}.`;
+  });
+}
+
+/* =====================================================================
+   CALENDARIO
+   ===================================================================== */
+async function apriCalendario(m) {
+  const primo = M.meseDi(M.LANCIO), ultimo = M.meseDi(OGGI < M.LANCIO ? M.LANCIO : OGGI);
+  if (!/^\d{4}-\d{2}$/.test(m || '')) m = ultimo;
+  if (m < primo) m = primo; if (m > ultimo) m = ultimo;
+  mostra('sCal');
+  await caricaMese(m);
+  const [a, mm] = m.split('-').map(Number), nomeMese = M.MESI[mm - 1] + ' ' + a;
+  const g1 = m + '-01', off = (M.giornoSettimana(g1) + 6) % 7, giorni = new Date(Date.UTC(a, mm, 0)).getUTCDate();
+  let h = `<div class="mesebar"><button class="freccia" id="cPrima" ${m <= primo ? 'disabled' : ''} aria-label="Mese prima">${ICO.sx}</button><h2>${nomeMese}</h2><button class="freccia" id="cDopo" ${m >= ultimo ? 'disabled' : ''} aria-label="Mese dopo">${ICO.dx}</button></div>`;
+  h += '<div class="cal">' + ['L', 'M', 'M', 'G', 'V', 'S', 'D'].map(x => `<div class="gs">${x}</div>`).join('');
+  for (let k = 0; k < off; k++) h += '<div></div>';
+  for (let g = 1; g <= giorni; g++) {
+    const d = `${m}-${String(g).padStart(2, '0')}`, s = M.dati[d];
+    if (d < M.LANCIO || d > OGGI || !s) { h += `<div class="giorno fuori">${g}</div>`; continue; }
+    h += `<button class="giorno${d === OGGI ? ' oggi' : ''}" data-d="${d}">${g}<i class="segno ${statoGiorno(d)}"></i></button>`;
+  }
+  h += '</div>';
+  h += `<div class="legenda"><span><i class="segno risolta"></i>Risolta il giorno stesso</span><span><i class="segno archivio"></i>Risolta dopo</span><span><i class="segno corso"></i>In corso</span><span><i class="segno persa"></i>Persa o non risolta</span></div>`;
+  const sr = serie();
+  h += `<div class="numeri"><div><b>${sr.risolte}</b><span>risolte</span></div><div><b>${sr.attuale}</b><span>serie attuale</span></div><div><b>${sr.record}</b><span>serie record</span></div></div>`;
+  h += `<p class="piccolo" style="text-align:center">La serie conta i giorni di fila con la sfida risolta il giorno stesso.</p>`;
+  $('cCorpo').innerHTML = h;
+  $('cPrima').onclick = () => vai('#calendario=' + mesePrima(m));
+  $('cDopo').onclick = () => vai('#calendario=' + M.meseDi(M.piuGiorni(m + '-28', 7)));
+  $('cCorpo').querySelectorAll('[data-d]').forEach(b => { b.onclick = () => dettaglioGiorno(b.dataset.d); });
+}
+$('cEsci').onclick = indietro;
+async function dettaglioGiorno(d) {
+  await caricaMese(M.meseDi(d));
+  const s = M.dati[d]; if (!s) return;
+  const r = rec(d), E = M.motori[s.gioco];
+  let stato = 'Non ancora giocata.', bott = [];
+  if (!r) { stato = d === OGGI ? 'Non ancora giocata.' : 'Non giocata: puoi recuperarla adesso, il tempo si salva come «recuperata».'; bott = [{ t: 'Inizia', f: () => inizia(d) }]; }
+  else if (r.esito === 'corso') { stato = `In corso da <b>${M.tempo(tempoDi(r))}</b>.`; bott = [{ t: 'Riprendi', f: () => vai('#gioca=' + d) }]; }
+  else { stato = `${ESITI[r.esito]}${r.esito === 'persa' ? ' (una mina)' : ''} · <b>${M.tempo(r.ms)}</b>${r.esito === 'risolta' && !r.giornata ? ' · non il giorno stesso' : ''}.`; bott = [{ t: 'Risultato', f: () => vai('#esito=' + d) }, { t: 'Rigioca per allenamento', cls: 'sec', f: () => vai('#prova=' + d) }]; }
+  bott.push({ t: 'Chiudi', cls: 'sec' });
+  finestra(`<div class="kick">${tre(s.n)} · ${M.dataLunga(d)}</div><h2>${esc(s.titolo)}</h2>
+    <div class="cat">${ICO[s.gioco] || ''}${esc(E.nome)}</div><div class="liv">${livTesto(s.livello)} ${pip(s.livello)}</div>
+    <p class="piccolo">${stato}</p>`, bott);
+}
+
+/* =====================================================================
+   I MIEI TEMPI
+   ===================================================================== */
+function apriTempi() {
+  mostra('sTempi');
+  const voci = Object.entries(STO.giorni).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  const sr = serie();
+  let h = `<div class="numeri"><div><b>${sr.risolte}</b><span>risolte</span></div><div><b>${sr.attuale}</b><span>serie attuale</span></div><div><b>${sr.record}</b><span>serie record</span></div></div>`;
+  if (!voci.length) { $('tCorpo').innerHTML = h + '<p class="vuoto-msg">Qui finiscono i tuoi tempi, sfida per sfida. Restano su questo telefono: per confrontarti con gli altri usa «Copia l’elenco» o «Condividi» a fine sfida.</p>'; return; }
+  // per gioco: risolte, miglior tempo e tempo tipico (mediana) delle risolte
+  const per = {};
+  for (const [, r] of voci) { const x = per[r.gioco] || (per[r.gioco] = { g: 0, t: [] }); x.g++; if (r.esito === 'risolta') x.t.push(r.ms); }
+  const mediana = a => { const b = a.slice().sort((x, y) => x - y), k = b.length >> 1; return b.length % 2 ? b[k] : (b[k - 1] + b[k]) / 2; };
+  h += `<section class="pannello"><h2>Per gioco</h2><table class="tabella"><tr><th>Gioco</th><th class="dx">Risolte</th><th class="dx">Migliore</th><th class="dx">Tipico</th></tr>${Object.entries(per).sort((a, b) => b[1].g - a[1].g).map(([g, x]) => `<tr><td>${esc(nomeGioco(g))}</td><td class="dx">${x.t.length}/${x.g}</td><td class="dx">${x.t.length ? M.tempo(Math.min(...x.t)) : '—'}</td><td class="dx">${x.t.length ? M.tempo(mediana(x.t)) : '—'}</td></tr>`).join('')}</table>
+    <p>«Tipico» è la mediana dei tuoi tempi. I tempi di giochi diversi non si confrontano tra loro.</p></section>`;
+  h += `<section class="pannello"><h2>Sfida per sfida</h2><ul class="elenco">${voci.map(([d, r]) => {
+    const ok = r.esito === 'risolta';
+    const quando = r.esito === 'corso' ? 'in corso' : ok ? (r.giornata ? 'il giorno stesso' : 'recuperata') : (r.esito === 'persa' ? 'una mina' : 'non risolta');
+    return `<li data-d="${d}"><span class="n">${tre(r.n)}</span><span class="g">${esc(nomeGioco(r.gioco))}</span><span class="t ${ok ? 'ok' : r.esito === 'corso' ? '' : 'ko'}">${r.esito === 'corso' ? '…' : M.tempo(r.ms)}</span><span class="s">${M.dataCorta(d)} · ${livTesto(r.livello)} · ${quando}</span></li>`;
+  }).join('')}</ul></section>`;
+  h += `<button class="btn sec" id="tCopia">${ICO.condividi}Copia l’elenco</button><p class="piccolo" style="text-align:center">I tempi restano su questo telefono e non si cancellano con «Pulisci tutto».</p>`;
+  $('tCorpo').innerHTML = h;
+  $('tCorpo').querySelectorAll('[data-d]').forEach(li => { li.onclick = () => dettaglioGiorno(li.dataset.d); });
+  $('tCopia').onclick = () => {
+    const righe = ['MENTAL · i miei tempi'];
+    for (const [d, r] of voci.slice().reverse()) {
+      if (r.esito === 'corso') continue;
+      righe.push(`${tre(r.n)} ${M.dataCorta(d)} · ${nomeGioco(r.gioco)} · ${livTesto(r.livello)} · ${r.esito === 'risolta' ? M.tempo(r.ms) + (r.giornata ? '' : ' (recuperata)') : ESITI[r.esito].toLowerCase()}`);
+    }
+    condividi(righe.join('\n'));
+  };
+}
+$('tEsci').onclick = indietro;
+
+/* ---------------- Orologio ---------------- */
+setInterval(() => {
+  if (corrente === 'sGioco') {
+    aggiornaTempo();
+    // mezzanotte a partita aperta: si continua, ma non vale più come «il giorno stesso»
+    if (G && !G.prova && !G.avvisato && G.P.finito == null && M.giornoRoma() > G.data && M.giornoRoma(G.r.inizio) === G.data) {
+      G.avvisato = true;
+      toast('È mezzanotte: puoi finirla, ma non conta più come «il giorno stesso»');
+    }
+  }
+  else if (corrente === 'sOggi') {
+    if (M.giornoRoma() !== OGGI) { OGGI = M.giornoRoma(); apriOggi(); return; }
+    aggiornaConto();
+  }
+}, 250);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && corrente === 'sOggi' && M.giornoRoma() !== OGGI) { OGGI = M.giornoRoma(); apriOggi(); } });
+
+instrada();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

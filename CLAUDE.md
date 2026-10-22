@@ -36,12 +36,13 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
+| `giochi/mental/sfide/` e `strumenti/mental.js` | **Sfide di MENTAL**, un file per mese, e lo strumento che ne prepara di nuove (vedi la sezione MENTAL). |
 | `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide a tre livelli sospesi, dado, stelle). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
 
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
-- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, ALIBI);
+- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, MENTAL, ALIBI);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
@@ -124,7 +125,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
      Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`,
-     ALIBI giallo evidenziatore `#F2D21B`);
+     ALIBI giallo evidenziatore `#F2D21B`, MENTAL verde menta `#3DDCA0`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -165,6 +166,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-societa` (`cfg`), `gds-societa-partita` (partita: società, decreti, eventi, schede segrete comprese, e `ui`), `gds-societa-storico` (riassunti, per bilanciare);
   - `gds-alibi` (modo, livello, luogo, telefoni), `gds-alibi-partita` (`par` e `caso` intero, telefoni, `io`, consegna, accusa, taccuino `tac`), `gds-alibi-storico` (casi chiusi: risolto o no, durata);
   - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
+  - `gds-mental-partite` (tavole a metà di MENTAL, per data, e allenamenti `data|prova`), `gds-mental-storico` (il tempo ufficiale e l'esito di ogni giorno giocato: è «I miei tempi»);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
@@ -185,7 +187,7 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
   - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`,
-    `gds-codenames-storico`, `gds-societa-storico`, `gds-alibi-storico`);
+    `gds-codenames-storico`, `gds-societa-storico`, `gds-alibi-storico`, `gds-mental-storico`);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -335,6 +337,63 @@ Display (titoli in corsivo), Courier Prime (fascicoli e verbali) e Figtree solo 
   bugie a caso del colpevole, 3.000 casi con tutte le garanzie e la spiegazione controllata frase per frase; circa 3 minuti); nel browser
   `prove/alibi.pagina.test.js` (serve `python3 -m http.server 8765`; nomi con accenti, apostrofi, `+` e `#` nel link, avviso di versione).
 - Il regolamento sta in `htmlRegole()`: se cambi una regola o un livello, aggiornalo lì.
+
+### MENTAL → `giochi/mental/`
+
+La sfida del giorno, da un progetto scritto con un'altra IA («MENTAL», report di Simo) adattato: **niente server e
+niente classifica** (scelta di Simo: gli basta salvarsi tempi e giorni completati e confrontarsi a mano). Ogni giorno
+(giorno di Roma, cambio a mezzanotte italiana anche con l'ora legale) c'è **una sola sfida, uguale per tutti**, già
+preparata e controllata; la #1 è il 22 ottobre 2026 (`LANCIO`). Tema «notte d'inchiostro»: indaco `#0D0F22` (piani
+`#15183A`/`#1C2048`), menta `#3DDCA0` per azioni e sfide risolte, lavanda `#B2A7FF` per note e selezioni, ambra `#F2B84B`
+per il tempo, corallo `#FF6B6B` solo per errori e mine; font Bricolage Grotesque e Figtree.
+- **File:**
+  - `comune.js` (`self.MENTAL`): date di Roma (`giornoRoma`, `prossimaMezzanotte`, `numero`), `prng` riproducibile,
+    livelli, **palinsesto** (`giocoDelGiorno`, `livelloDelGiorno`), titoli (`TITOLI`, 15 per gioco), `quadratoLatino`.
+  - `motori/<gioco>.js`: un motore per gioco, senza pagina, stessa interfaccia: `id`, `nome`, `tipo` (come si disegna:
+    `segni`, `binario`, `cifre`, `campo`, `nonogramma`, `testo`), `TECNICHE` (con `peso`), `MISURE`, `breve`, `regole`,
+    `nuovoStato`, `conflitti`, `completo`, `statoRisolto`, `conta(p, cap)` (ricerca **completa**, con `conta.ultima`),
+    `risolvi(p)` (risolutore «umano»: solo tecniche dichiarate, mai tentativi; `{ risolto, sol, passi, conteggio }`),
+    `livello(p, ris)`, `genera(r, livello, tentativi, seme)`, `valida(p)`.
+    Giochi: `corone` (Queens), `stelle` (Star Battle a due stelle), `binario` (Takuzu), `sudoku`, `campo` (prato fiorito
+    senza fortuna: le mine sono scritte mescolate col seme, solo per non leggerle per sbaglio), `grattacieli`,
+    `futoshiki`, `nonogramma`, `cavalieri` (nella pagina «Sinceri e bugiardi»: si consegna, ogni consegna sbagliata +1 minuto).
+  - `sfide/AAAA-MM.js` (`MENTAL.mese('AAAA-MM', [sfide])`) e `sfide/indice.js` (`self.MENTAL_INDICE`: mesi, primo, ultimo).
+    Una sfida: `{ data, n, gioco, livello, titolo, tecniche, p }`. **Non si modificano a mano.**
+  - `index.html`: oggi (con conto alla rovescia), partita, esito (tempo, condividi senza spoiler, soluzione, «le chiavi»
+    cioè le tecniche che servivano, passi del ragionamento per Sinceri e bugiardi), calendario, «I miei tempi».
+    Indirizzi: `#gioca=AAAA-MM-GG`, `#prova=…` (allenamento), `#esito=…`, `#calendario=AAAA-MM`, `#tempi`.
+- **Regole della pagina:** il tempo parte con «Inizia» e **non si ferma** (orologio vero: `inizio` nello storico);
+  conta il **primo tentativo** di ogni giorno, poi si rigioca per allenamento senza cambiare il tempo; un giorno passato
+  si recupera dal calendario e vale come «recuperata» (`giornata: false`); finita dopo mezzanotte vale come «dopo
+  mezzanotte». Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel calendario; un giorno
+  senza sfida pronta mostra un avviso, mai una sfida inventata. La serie conta i giorni di fila risolti il giorno stesso.
+- **Palinsesto** (in `comune.js`, le prove lo ricontrollano): mai lo stesso gioco due giorni di fila e, se si può, non
+  prima di 8 giorni; mai tre giochi di cifre (sudoku, grattacieli, futoshiki) di fila; un `cavalieri` a settimana in un
+  giorno a rotazione; sabato esperta, domenica estrema, in settimana ogni gioco alterna impegnativa ed esperta; il primo
+  giorno Corone.
+- **Sfide nuove** → `strumenti/mental.js`:
+  ```
+  node strumenti/mental.js --scorta 60     # sfide fino a oggi + 60 giorni (se ci sono già, non fa niente)
+  node strumenti/mental.js --controlla     # ricontrolla da zero tutte le sfide pubblicate
+  ```
+  Aggiunge solo giorni **dopo l'ultimo** (una sfida pubblicata non cambia mai, qualcuno potrebbe averla iniziata),
+  con un seme fatto dalla data (chiunque lo lanci ottiene le stesse sfide), e scrive solo se ogni sfida passa i controlli:
+  dati validi, soluzione unica (ricerca completa), risolta dal risolutore umano con la stessa soluzione, livello giusto.
+  Simo ha in mente un'**azione programmata** che lo lancia ogni settimana; il testo da darle è:
+  > Lavora sulla repo corrsimone1-maker/giochidisimo seguendo CLAUDE.md. Lancia `node strumenti/mental.js --scorta 60`.
+  > Se dice «Niente da fare», fermati senza commit. Altrimenti lancia `node prove/mental.test.js`: se passa, fai commit
+  > («MENTAL: sfide fino al <ultimo giorno>») e push su main e aspetta che la pubblicazione finisca. Non modificare le
+  > sfide già pubblicate, i motori o la pagina. Se qualcosa fallisce non fare push e scrivi cosa è successo.
+- **Gioco nuovo:** motore in `motori/` con la stessa interfaccia, titoli in `TITOLI`, nome nell'elenco `GIOCHI` di
+  `strumenti/mental.js`, script in `index.html` e in `extra` di `giochi.js`, un disegno per il suo `tipo` (o uno nuovo in
+  `disegnaGioco`), un caso con forza bruta in `prove/mental.test.js`. Il palinsesto lo prende da solo dal giorno dopo
+  l'ultimo pubblicato. Le stime alla Fermi del progetto originale non ci sono: servono dati veri con fonti e un
+  controllo che non si può automatizzare con la stessa sicurezza.
+- **Prove:** `node prove/mental.test.js` (date e ora legale, ogni motore contro una forza bruta, il prato fiorito
+  controllato passo per passo su tutti i campi compatibili, palinsesto su due anni, tutte le sfide pubblicate, lo
+  strumento in una cartella temporanea; circa 40 s); nel browser `prove/mental.pagina.test.js` (serve
+  `python3 -m http.server 8765`; orologio del browser spostato: lancio, ricaricamento, tutti i giochi finiti
+  dall'interfaccia, mina, resa, consegna sbagliata, calendario, mezzanotte a partita aperta).
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

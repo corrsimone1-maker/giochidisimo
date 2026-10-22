@@ -16,6 +16,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Giochi | Hex ad Aste (Hex in cui ogni pedina si conquista con un’asta di carte vere: l’app gestisce solo la scacchiera; si sceglie a mano chi ha vinto l’asta, Pareggio e gettone di priorità, annulla tenendo premuto, 5×5–11×11, mazzo francese o italiano, regolamento con schemi) | `giochi/hex/` |
 | Giochi | Claude Machine (deduzione alla Turing Machine: un codice segreto di tre cifre e 4–6 verificatori che controllano in segreto una regola ciascuno; livelli Medio, Difficile e Insano con carte «malate» e carte doppie; collaborativa o versus, con un telefono che gira o ognuno col suo in una stanza che si chiude e si cancella) | `giochi/machine/` (logica in `motore.js`, prove in `prove/machine.test.js` e `prove/machine.stanze.test.js`) |
 | Giochi | ALIBI (gioco investigativo: ogni caso è simulato e verificato rifacendo il ragionamento dei giocatori — pianta con porte, mosse di tutti un quarto d’ora alla volta, un solo colpevole con una ragione semplice per ogni innocente, niente scorciatoie; «uno di noi» con il colpevole al tavolo che può mentire come vuole, oppure cooperativo con sospettati che non mentono ma si rifiutano di rispondere, anche da soli; un telefono che gira o ognuno col suo con un link che ricostruisce lo stesso caso; quattro luoghi, tre livelli, taccuino, soluzione ragionata) | `giochi/alibi/` (logica in `motore.js`, prove in `prove/alibi.test.js` e `prove/alibi.pagina.test.js`) |
+| Giochi | MENTAL (la sfida del giorno: un rompicapo di logica al giorno, uguale per tutti, che cambia a mezzanotte italiana; nove giochi a rotazione — Corone, Stelle, Binario, Sudoku, Prato fiorito senza fortuna, Grattacieli, Futoshiki, Nonogramma, Sinceri e bugiardi — su tre livelli; ogni sfida preparata in anticipo e controllata: soluzione unica e risolvibile solo ragionando; tempo che parte con «Inizia» e non si ferma, calendario per recuperare i giorni passati, allenamento, «I miei tempi» da copiare o condividere, niente classifica) | `giochi/mental/` (sfide in `sfide/AAAA-MM.js`, motori in `motori/`, nuove sfide con `node strumenti/mental.js --scorta 60`, prove in `prove/mental.test.js` e `prove/mental.pagina.test.js`) |
 | Altro | Poker (fiches sul telefono, multigiocatore) | `giochi/poker/` |
 | Altro | 7 Wonders (punti finali di tutti, scienza con jolly, storico) | `giochi/7wonders/` |
 | Altro | Chi inizia (un dito a testa: chi inizia, squadre, ordine di gioco) | `giochi/chiinizia/` |
@@ -57,7 +58,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 
 ## Dove stanno i dati
 
-- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies, Claude Machine, ALIBI:** le partite e le impostazioni stanno sul
+- **Segnapunti, 7 Wonders, Contapunti, Impostore, Lupus, Chi inizia, Dossier, Hex ad Aste, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies, Claude Machine, ALIBI, MENTAL:** le partite e le impostazioni stanno sul
   telefono che li usa (localStorage). I nomi dei giocatori sono in comune tra Impostore e Lupus.
 - **Poker:**
   - ogni tavolo sta su tre server MQTT pubblici e gratuiti (un messaggio per tavolo, sovrascritto a ogni mossa) e in
@@ -70,7 +71,8 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
 - **Pulizia:**
   - un gioco non aperto da più di 7 giorni torna come nuovo: via nomi, squadre, impostazioni e partita;
   - il tasto «Pulisci tutto» in fondo alla home (da tenere premuto) lo fa subito per tutti i giochi;
-  - gli storici di 7 Wonders, Dossier, Camel Up: Economics e Nome in Codice: Double Agents restano;
+  - gli storici di 7 Wonders, Dossier, Camel Up: Economics, Nome in Codice: Double Agents, Secret Societies, ALIBI e
+    MENTAL (i tuoi tempi) restano;
   - le chiavi di ogni gioco sono nel campo `dati` di `giochi.js` (vedi `comune/pulizia.js`).
 - **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue
@@ -78,6 +80,8 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
   - `giochi/lupus/ruoli.js`: ogni ruolo ha squadra, descrizione, se e quando si sveglia di notte, ordine di chiamata
     e cosa fa il narratore. In cima al file c'è la spiegazione di ogni campo. Le partite in corso
   di Dichiarare, Pegno e Tresette sono le stesse della vecchia app `segnapunti`, perché il sito è lo stesso.
+- **MENTAL:** le sfide sono file della repo (`giochi/mental/sfide/`), uguali per tutti; i tempi e i giorni completati
+  restano sul telefono (`gds-mental-storico`). Non c'è un server: la data viene dall'orologio del telefono.
 - **Poker:** il tavolo passa da broker MQTT pubblici (EMQX, HiveMQ, Mosquitto) e ogni telefono ne tiene una copia.
   Chi conosce il codice del tavolo può vedere nomi e fiches.
 
