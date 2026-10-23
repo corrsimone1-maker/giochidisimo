@@ -30,9 +30,10 @@ const CARTELLA = path.join(RADICE, 'giochi', 'mental');
 const SFIDE = path.join(CARTELLA, 'sfide');
 global.self = global;
 const M = require(path.join(CARTELLA, 'comune.js'));
-/* Giochi generati: i primi nove sono quelli del lancio, poi i nuovi */
+/* Giochi generati: i primi nove sono quelli del lancio, poi quelli aggiunti dopo */
 const GIOCHI = ['corone', 'stelle', 'binario', 'sudoku', 'campo', 'grattacieli', 'futoshiki', 'nonogramma', 'cavalieri',
-  'codice', 'linea', 'bilancia', 'calcolatrice', 'travasi'];
+  'codice', 'linea', 'bilancia', 'calcolatrice', 'travasi',
+  'gabbie', 'kakuro', 'flotta', 'tende', 'luci', 'ponti', 'logigramma', 'criptaritmo'];
 for (const g of GIOCHI.concat(['enigma'])) require(path.join(CARTELLA, 'motori', g + '.js'));
 const CATALOGO = require(path.join(__dirname, 'mental-enigmi.js'));
 /* Riserva: sfide già generate e controllate che non sono in calendario (per esempio quelle dei primi
@@ -89,7 +90,7 @@ function controlla(s) {
   if (!ris.risolto) return 'il risolutore umano non arriva in fondo';
   if (unica != null && ris.sol != null && J(ris.sol) !== J(unica)) return 'il risolutore umano trova una soluzione diversa da quella unica';
   const liv = E.livello(s.p, ris); if (liv !== s.livello) return `livello ${liv} invece di ${s.livello}`;
-  if (E.giusta) { if (!E.giusta(s.p, ris.sol)) return 'la soluzione non viene accettata dalla pagina'; }
+  if (E.giusta) { if (!E.giusta(s.p, E.statoRisolto(s.p, ris.sol).v)) return 'la soluzione non viene accettata dalla pagina'; }
   else if (!E.completo(s.p, E.statoRisolto(s.p, ris.sol))) return 'la soluzione non risulta completa nella pagina';
   return null;
 }

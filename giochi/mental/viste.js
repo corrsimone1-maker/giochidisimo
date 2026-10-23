@@ -27,6 +27,7 @@ function mostraValore(E, p, v) {
   if (f === 'ordine') return v.map(i => (E.opzioniDi ? E.opzioniDi(p) : p.opzioni)[i]).join(' → ');
   if (f === 'scelta') return p.opzioni[v];
   if (f === 'moneta') return `moneta ${v.k + 1}, pesa di ${v.h > 0 ? 'più' : 'meno'}`;
+  if (f === 'tabella') return 'una tabella';
   return String(v) + (p.unita ? ' ' + p.unita : '');
 }
 VISTE.risposta = {
@@ -47,11 +48,16 @@ VISTE.risposta = {
       h += `<div class="ordine-da">${op.map((x, i) => `<button class="chip" data-i="${i}" ${messi.has(i) || !attivo ? 'disabled' : ''}>${esc(x)}</button>`).join('')}</div>`;
     } else if (f === 'scelta') {
       h += `<div class="scelte">${p.opzioni.map((x, i) => `<button class="scelta-btn${st.v === i ? ' on' : ''}" data-i="${i}" ${attivo ? '' : 'disabled'}>${esc(x)}</button>`).join('')}</div>`;
+    } else if (f === 'tabella') {
+      // chi è chi: una riga per persona, una colonna per categoria; si tocca la casella e poi il valore
+      const cats = E.intestazioni(p), sel = G && G.s === s && attivo ? G.sel : -1;
+      h += `<div class="tabella-wrap"><table class="tabella"><thead><tr><th></th>${cats.map(x => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${p.nomi.map((nm, i) => `<tr><th>${esc(nm)}</th>${cats.map((_, c) => { const v = st.v[c][i]; return `<td><button class="cella-t${sel === c * 100 + i ? ' sel' : ''}${v >= 0 ? ' piena' : ''}" data-ci="${c}" data-ri="${i}" ${attivo ? '' : 'disabled'}>${v >= 0 ? esc(E.opzioniDi(p, c)[v]) : '·'}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+      if (sel >= 0) { const c = Math.floor(sel / 100); h += `<div class="scelte-t">${E.opzioniDi(p, c).map((x, v) => `<button class="chip" data-v="${v}">${esc(x)}</button>`).join('')}<button class="chip" data-v="-1">·</button></div>`; }
     } else if (f === 'moneta') {
       h += `<div class="monete">${Array.from({ length: p.n }, (_, k) => `<button class="moneta${st.v.k === k ? ' on' : ''}" data-k="${k}" ${attivo ? '' : 'disabled'}>${k + 1}</button>`).join('')}</div>
         <div class="interr peso"><button data-h="1" aria-pressed="${st.v.h === 1}" ${attivo ? '' : 'disabled'}>Pesa di più</button><button data-h="-1" aria-pressed="${st.v.h === -1}" ${attivo ? '' : 'disabled'}>Pesa di meno</button></div>`;
     }
-    if (st.prove && st.prove.length && f !== 'parole') h += `<div class="gia">Già consegnate, sbagliate: ${st.prove.map(x => `<b>${esc(x)}</b>`).join(' · ')}</div>`;
+    if (st.prove && st.prove.length && f !== 'parole' && f !== 'tabella') h += `<div class="gia">Già consegnate, sbagliate: ${st.prove.map(x => `<b>${esc(x)}</b>`).join(' · ')}</div>`;
     tav.innerHTML = h;
     if (!attivo) return;
     // eventi
@@ -66,6 +72,20 @@ VISTE.risposta = {
       tav.querySelectorAll('.ordine-messo .messo').forEach(b => { b.onclick = () => mossa(st2 => { st2.v.splice(+b.dataset.k, 1); }); });
     }
     if (f === 'scelta') tav.querySelectorAll('.scelta-btn').forEach(b => { b.onclick = () => mossa(st2 => { st2.v = +b.dataset.i; }); });
+    if (f === 'tabella') {
+      // un secondo tocco sulla casella scelta la lascia; ma se ci si è arrivati da soli (dopo aver messo un valore) la tiene
+      tav.querySelectorAll('.cella-t').forEach(b => { b.onclick = () => { const k = +b.dataset.ci * 100 + +b.dataset.ri; G.sel = G.sel === k && !G.selAuto ? -1 : k; G.selAuto = false; disegnaGioco(); }; });
+      tav.querySelectorAll('.scelte-t .chip').forEach(b => {
+        b.onclick = () => {
+          const c = Math.floor(G.sel / 100), i = G.sel % 100, v = +b.dataset.v;
+          mossa(st2 => { if (v >= 0) st2.v[c] = st2.v[c].map(x => (x === v ? -1 : x)); st2.v[c][i] = v; });
+          // si passa alla prossima casella vuota della stessa colonna
+          const prossima = G.P.st.v[c].findIndex(x => x < 0);
+          G.sel = v >= 0 && prossima >= 0 ? c * 100 + prossima : -1; G.selAuto = G.sel >= 0;
+          disegnaGioco();
+        };
+      });
+    }
     if (f === 'moneta') {
       tav.querySelectorAll('.moneta').forEach(b => { b.onclick = () => mossa(st2 => { st2.v = Object.assign({}, st2.v, { k: +b.dataset.k }); }); });
       tav.querySelectorAll('.peso button').forEach(b => { b.onclick = () => mossa(st2 => { st2.v = Object.assign({}, st2.v, { h: +b.dataset.h }); }); });
@@ -86,8 +106,12 @@ VISTE.risposta = {
   },
   esito(s) {
     const E = M.motori[s.gioco], sol = E.soluzione(s.p), fig = figuraRisposta(E, s.p);
-    return `<div class="enigma-testo">${testoRisposta(E, s.p)}</div>${fig ? `<div class="enigma-figura">${fig}</div>` : ''}
-      <div class="risposta-giusta"><span>La risposta</span><b>${esc(sol.risposta)}</b></div>${sol.spiegazione ? `<div class="spiegazione">${sol.spiegazione}</div>` : ''}`;
+    let risposta = `<div class="risposta-giusta"><span>La risposta</span><b>${esc(sol.risposta)}</b></div>`;
+    if (sol.tabella) {
+      const p = s.p, cats = E.intestazioni(p);
+      risposta = `<div class="risposta-giusta"><span>Chi ha cosa</span><div class="tabella-wrap"><table class="tabella"><thead><tr><th></th>${cats.map(x => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${p.nomi.map((nm, i) => `<tr><th>${esc(nm)}</th>${cats.map((_, c) => `<td><span class="cella-t piena">${esc(E.opzioniDi(p, c)[sol.tabella[c + 1][i]])}</span></td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+    }
+    return `<div class="enigma-testo">${testoRisposta(E, s.p)}</div>${fig ? `<div class="enigma-figura">${fig}</div>` : ''}${risposta}${sol.spiegazione ? `<div class="spiegazione">${sol.spiegazione}</div>` : ''}`;
   }
 };
 function tastoNumero(t) {

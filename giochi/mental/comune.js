@@ -166,6 +166,14 @@ const TITOLI = {
   bilancia: ['La moneta falsa', 'Il falsario', 'Pesi e contrappesi', 'Due piatti', 'La zecca', 'L’intruso', 'Equilibri', 'Il tesoretto', 'Monete sospette', 'La bilancia', 'Il conio', 'Il sacchetto'],
   calcolatrice: ['La calcolatrice rotta', 'Tasti strani', 'Il display', 'Mosse contate', 'Cifre al contrario', 'Quattro tasti', 'Il numero giusto', 'Scorciatoie', 'La tastiera matta', 'Calcoli storti', 'Solo questi tasti', 'Pochi tasti'],
   travasi: ['Travasi', 'La brocca giusta', 'Mezzo pieno', 'Senza tacche', 'L’oste', 'Alla fontana', 'Le botti', 'Misure', 'Litri contati', 'La cantina', 'Il pozzo', 'Acqua e pazienza'],
+  gabbie: ['Gabbie', 'Conti chiusi', 'Il recinto', 'Somme e prodotti', 'La voliera', 'Recinti', 'Il conto torna', 'Operazioni', 'Il serraglio', 'Steccati', 'Divisioni', 'Tra le sbarre'],
+  kakuro: ['Somme incrociate', 'Le colonne', 'Il cruciverba dei numeri', 'Totali', 'Incroci', 'La somma giusta', 'Righe e colonne', 'Addizioni', 'Il reticolo', 'Senza ripetere', 'Il totale', 'Croci e somme'],
+  flotta: ['La flotta', 'Battaglia navale', 'Acque calme', 'Il porto', 'Sottomarini', 'Navi in vista', 'Mare aperto', 'L’ammiraglia', 'Il convoglio', 'Fondali', 'Rotte', 'La regata'],
+  tende: ['Il campeggio', 'Sotto gli alberi', 'Picchetti', 'Il bosco', 'Accampati', 'All’ombra', 'La radura', 'Il pineto', 'Bivacco', 'Sacchi a pelo', 'Il frutteto', 'Notte in tenda'],
+  luci: ['Luci accese', 'Il blackout', 'Lampadine', 'Illuminazione', 'In piena luce', 'Il corridoio', 'Interruttori', 'Senza ombre', 'La galleria buia', 'Fari', 'Accendi tutto', 'Lanterne'],
+  ponti: ['Ponti', 'L’arcipelago', 'Isole', 'Passerelle', 'Collegamenti', 'Il traghetto', 'Gli isolotti', 'Moli', 'Da riva a riva', 'La laguna', 'Ponti doppi', 'Le Cicladi'],
+  logigramma: ['Chi è chi', 'La tabella', 'Tra amici', 'Indizi incrociati', 'Il condominio', 'Chi ha cosa', 'Ognuno il suo', 'Il quartiere', 'Coinquilini', 'Vicini di casa', 'La festa', 'Il gruppo'],
+  criptaritmo: ['Lettere e cifre', 'La somma segreta', 'Il criptaritmo', 'Parole in cifre', 'Conti in lettere', 'Alfabeto numerico', 'Il riporto', 'Somma di parole', 'Cifre travestite', 'Il cifrario dei numeri', 'Colonne di lettere', 'Addizione cifrata'],
   cavalieri: ['Se mento, dico il vero', 'L’isola dei bugiardi', 'Parola d’onore', 'Mezze verità', 'Il villaggio', 'Chi mente?', 'Giuramenti', 'Testimoni', 'La riunione', 'Fiducia', 'Al tramonto', 'Voci di piazza', 'Il patto', 'Accuse', 'Sulla spiaggia']
 };
 function titoloDelGiorno(tipo, s, usati) {

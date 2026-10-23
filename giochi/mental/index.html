@@ -160,6 +160,68 @@ button:disabled{cursor:default;opacity:.45}
 .tav.cifre .c.sel{background:var(--lavanda-fondo);box-shadow:inset 0 0 0 2px var(--lavanda)}
 .tav.cifre .c.errore{color:var(--corallo)}
 .tav.cifre .c.dato.errore{color:#FF9C9C}
+/* griglie con i numeri delle file (flotta, tende) */
+.tav.conti-griglia{gap:2px;align-items:center;justify-items:center}
+.tav.conti-griglia .sopra{display:flex;justify-content:center;width:100%;padding-bottom:6px}
+.tav.conti-griglia .conto{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;color:var(--tenue);font-variant-numeric:tabular-nums}
+.tav.conti-griglia .conto.fatto{color:var(--menta)}
+.tav.conti-griglia .conto.sbagliato{color:var(--corallo)}
+.tav.conti-griglia .c{border-radius:5px;background:var(--piano-2);overflow:hidden}
+.tav.conti-griglia .c.ant{background:#25306A}
+.tav.conti-griglia .c.errore{box-shadow:inset 0 0 0 2px var(--corallo)}
+.tav.conti-griglia .c .pezzo{position:absolute;inset:0;background:#AFC0FF}
+.tav.conti-griglia .c.dato .pezzo{background:#E2E7FF;box-shadow:inset 0 0 0 2px rgba(10,12,30,.35)}
+.tav.conti-griglia .c.acqua{background:#14234F}
+.tav.conti-griglia .c .segno-acqua{display:flex;width:56%;height:56%;color:#5DB9DE;opacity:.85}
+.tav.conti-griglia .c.dato.acqua{background:#1B3474}
+.tav.conti-griglia .c.dato.acqua .segno-acqua{opacity:1;color:#8FD6F2}
+.flotta-legenda{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px}
+.navetta{display:inline-flex;gap:2px}
+.navetta i{width:12px;height:12px;border-radius:3px;background:#AFC0FF}
+.navetta i:first-child{border-radius:6px 3px 3px 6px}.navetta i:last-child{border-radius:3px 6px 6px 3px}.navetta i:only-child{border-radius:50%}
+.navetta.presa i{background:var(--menta);opacity:.4}
+.tav.conti-griglia .c.albero{background:#183A2A}
+.tav.conti-griglia .c.albero svg,.tav.conti-griglia .c svg{width:78%;height:78%}
+.tav.conti-griglia .c.prato{background:#17342A}
+.tav.conti-griglia .c .filo{width:22%;height:22%;border-radius:50%;background:#6BC285}
+/* luci */
+.tav.luci{gap:2px}
+.tav.luci .c{border-radius:5px;background:var(--piano-2)}
+.tav.luci .c.luce{background:#4A3E1C}
+.tav.luci .c svg{width:76%;height:76%}
+.tav.luci .c .punto{width:18%;height:18%;border-radius:50%;background:var(--tenue)}
+.tav.luci .c.errore{box-shadow:inset 0 0 0 2px var(--corallo)}
+.tav.luci .c.errore svg circle:first-child{fill:var(--corallo)}
+.tav.luci .nera{display:flex;align-items:center;justify-content:center;border-radius:5px;background:#05060F;color:var(--testo);font-weight:800}
+.tav.luci .nera.ok{color:var(--menta)}
+.tav.luci .nera.sbagliato{color:var(--corallo)}
+/* ponti */
+.tav.ponti{display:block}
+.tav.ponti svg{display:block;touch-action:none}
+.tav.ponti .isola{cursor:pointer}
+/* criptaritmo e tabella dei logigrammi */
+.criptaritmo{display:inline-flex;flex-direction:column;gap:4px;margin:4px auto 12px;padding:12px 16px;border-radius:14px;background:var(--piano);border:1px solid var(--linea);font-family:var(--display);font-weight:800;font-size:clamp(20px,7vw,30px);color:var(--testo)}
+.enigma-testo .criptaritmo{display:flex;width:fit-content}
+.cr-riga{display:grid;grid-template-columns:repeat(var(--col),1.05em);justify-items:center;position:relative}
+.cr-segno{position:absolute;left:0;color:var(--ambra)}
+.cr-linea{height:3px;border-radius:2px;background:var(--tenue)}
+.enigma-testo ol.elenco-indizi{margin:6px 0 10px;padding-left:22px}
+.enigma-testo ol.elenco-indizi li{margin:5px 0}
+.tabella-wrap{overflow-x:auto}
+table.tabella{border-collapse:separate;border-spacing:4px;margin:0 auto}
+table.tabella th{font-size:13px;color:var(--tenue);font-weight:800;padding:2px 4px;text-align:left}
+table.tabella thead th{text-align:center}
+.cella-t{min-width:72px;padding:9px 8px;border-radius:10px;background:var(--piano-2);border:1px solid var(--linea);color:var(--tenue);font-weight:700;font-size:14px}
+.cella-t.piena{color:var(--testo);background:var(--piano-3)}
+.cella-t.sel{border-color:var(--lavanda);box-shadow:0 0 0 2px var(--lavanda-fondo)}
+.scelte-t{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:10px}
+.tav.cifre .c .etg{position:absolute;top:3px;left:4px;font-weight:800;line-height:1;color:var(--ambra);letter-spacing:.01em;pointer-events:none}
+.tav.cifre .c.con-etg .note{top:30%}
+.tav.cifre .nera{position:relative;border-radius:6px;background:#070816;color:var(--tenue);font-weight:800;line-height:1}
+.tav.cifre .nera.somma{background:linear-gradient(to top right,#0B0D24 calc(50% - .8px),rgba(200,205,255,.35) calc(50% - .8px),rgba(200,205,255,.35) calc(50% + .8px),#0B0D24 calc(50% + .8px))}
+.tav.cifre .nera .dx{position:absolute;top:12%;right:12%}
+.tav.cifre .nera .giu{position:absolute;bottom:12%;left:12%}
+.tav.cifre .nera .sbagliato{color:var(--corallo)}
 .note{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);color:var(--lavanda);font-weight:700;line-height:1}
 .note span{display:flex;align-items:center;justify-content:center}
 .bordo{display:flex;align-items:center;justify-content:center;color:var(--tenue);font-weight:800}
@@ -434,7 +496,16 @@ button:disabled{cursor:default;opacity:.45}
 <script src="motori/bilancia.js"></script>
 <script src="motori/calcolatrice.js"></script>
 <script src="motori/travasi.js"></script>
+<script src="motori/gabbie.js"></script>
+<script src="motori/kakuro.js"></script>
+<script src="motori/flotta.js"></script>
+<script src="motori/tende.js"></script>
+<script src="motori/luci.js"></script>
+<script src="motori/ponti.js"></script>
+<script src="motori/logigramma.js"></script>
+<script src="motori/criptaritmo.js"></script>
 <script src="viste.js"></script>
+<script src="viste-griglie.js"></script>
 <script src="sfide/indice.js"></script>
 <script>
 'use strict';
@@ -510,6 +581,14 @@ const ICO = {
   logica: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>',
   strategia: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 21h11v-2.5H7zM8 17.5h9c0-3-1.5-4.5-1.5-7.5 0-3-2-6-6-6.5L8 5l1.5 1.5L7 9.5l1.5 1.5 2.5-1c0 3-3 4-3 7.5z"/></svg>',
   enigma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8.5 9a3.5 3.5 0 117 0c0 2.5-3.5 3-3.5 5.5"/><path d="M12 19h.01" stroke-width="3"/></svg>',
+  gabbie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 12h9V3M12 12v9" stroke-width="2.6"/><path d="M5.5 7.5h3M7 6v3" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  kakuro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 3l9 9M12 3v18M3 12h18" stroke-width="1.6"/><rect x="12.8" y="12.8" width="7.4" height="7.4" rx="1" fill="currentColor" opacity=".35" stroke="none"/></svg>',
+  flotta: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="11" height="4.5" rx="2.25"/><rect x="16" y="5" width="5" height="4.5" rx="2.25"/><rect x="3" y="14.5" width="5" height="4.5" rx="2.25"/><rect x="10" y="14.5" width="11" height="4.5" rx="2.25" opacity=".45"/></svg>',
+  tende: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 20h20z"/><path d="M12 11l-2.6 9h5.2z" fill="#0D0F22"/></svg>',
+  luci: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 17h6M10 20.5h4M12 2.8a6.2 6.2 0 00-3.6 11.3c.6.5 1 1.1 1 1.9h5.2c0-.8.4-1.4 1-1.9A6.2 6.2 0 0012 2.8z"/></svg>',
+  ponti: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="6" r="3"/><circle cx="18.5" cy="6" r="3"/><circle cx="5.5" cy="18" r="3"/><path d="M8.5 5h7M8.5 7h7M5.5 9v6"/></svg>',
+  logigramma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M9 3v18M15 3v18M3 15h18" stroke-width="1.2"/><path d="M10.5 11.5l1.3 1.3 2.4-2.6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  criptaritmo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 18l3-11 3 11M6 14h4M14 7v11M19 9.5v6M16 12.5h6"/></svg>',
   annulla: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9.5a5 5 0 010 10H12"/></svg>',
   matita: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M15.5 4.5l4 4L9 19l-5 1 1-5z"/><path d="M13.5 6.5l4 4"/></svg>',
   gomma: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8.5 19.5L3.8 14.8a1.8 1.8 0 010-2.6l8.4-8.4a1.8 1.8 0 012.6 0l5.4 5.4a1.8 1.8 0 010 2.6l-8.2 7.7z"/><path d="M8 9.5l6.5 6.5M8.5 19.5H20"/></svg>',
@@ -857,7 +936,7 @@ function disegnaGioco() {
     $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b> · +${c} min` : 'Ogni consegna sbagliata aggiunge un minuto';
     $('sConsegna').disabled = G.P.finito != null || !G.E.completo(G.s.p, G.P.st);
   }
-  if (E.tipo === 'cifre') {
+  if (E.tipo === 'cifre' && !E.gruppiDi) {
     // cifre già messe tutte: tasto spento
     const n = E.cifre(G.s.p), conta = Array(n + 1).fill(0); G.P.st.v.forEach(x => { if (x) conta[x]++; });
     $('gStru').querySelectorAll('.tasto').forEach(b => b.classList.toggle('finito', conta[+b.dataset.k] >= n));
@@ -909,22 +988,26 @@ function tavCifre(tav, s, st, o) {
   const errori = new Set(E.conflitti(s.p, st));
   const sel = G && tav === $('tav') ? G.sel : -1, vsel = sel >= 0 ? st.v[sel] : 0;
   tav.classList.add('cifre');
-  const fu = id === 'futoshiki', gr = id === 'grattacieli';
+  const fu = id === 'futoshiki', gr = id === 'grattacieli', ga = id === 'gabbie', kk = id === 'kakuro';
+  const larg = kk ? s.p.w : n;                       // caselle per riga (il kakuro non è n×n)
+  const vicini = sel >= 0 && E.gruppiDi ? new Set(E.gruppiDi(s.p, sel)) : null;
   // misure: grattacieli ha una fila di numeri intorno, futoshiki uno spazio tra le caselle per i segni
   let c;
   if (gr) c = Math.max(14, Math.floor(Math.min((o.W - 3 * (n + 1)) / (n + 1.6), (o.H - 3 * (n + 1)) / (n + 1.6), 56)));
   else if (fu) c = Math.max(14, Math.floor(Math.min(o.W / (n + (n - 1) * .42), o.H / (n + (n - 1) * .42), 58)));
+  else if (ga) c = lato(o.W, o.H, n, n, 58);
+  else if (kk) c = lato(o.W, o.H, s.p.w, s.p.h, 52);
   else c = lato(o.W, o.H, n, n, 46);
   const gap = fu ? Math.round(c * .42) : 0, bordo = gr ? Math.round(c * .8) : 0;
   const notaFont = Math.max(8, Math.round(c * .24)), font = Math.round(c * .52);
   const cellaHTML = i => {
-    const r = Math.floor(i / n), k = i % n, v = st.v[i], dato = !!dati[i];
+    const r = Math.floor(i / larg), k = i % larg, v = st.v[i], dato = !!dati[i];
     let cl = 'c';
     if (dato) cl += ' dato';
     if (errori.has(i)) cl += ' errore';
     if (i === sel) cl += ' sel';
     else if (sel >= 0 && vsel && v === vsel) cl += ' uguale';
-    else if (sel >= 0 && (Math.floor(sel / n) === r || sel % n === k || (id === 'sudoku' && Math.floor(Math.floor(sel / n) / 3) === Math.floor(r / 3) && Math.floor((sel % n) / 3) === Math.floor(k / 3)))) cl += ' vicino';
+    else if (sel >= 0 && (vicini ? vicini.has(i) : (Math.floor(sel / n) === r || sel % n === k || (id === 'sudoku' && Math.floor(Math.floor(sel / n) / 3) === Math.floor(r / 3) && Math.floor((sel % n) / 3) === Math.floor(k / 3))))) cl += ' vicino';
     let bw = '1px';
     if (id === 'sudoku') bw = `${r % 3 === 0 ? 2.5 : .5}px ${k === 8 ? 2.5 : .5}px ${r === 8 ? 2.5 : .5}px ${k % 3 === 0 ? 2.5 : .5}px`;
     let dentro = '';
@@ -990,6 +1073,38 @@ function tavCifre(tav, s, st, o) {
     }
     tav.innerHTML = h;
     tav.querySelectorAll('.c').forEach(el => { el.style.borderColor = 'rgba(200,205,255,.14)'; });
+  } else if (ga) {
+    // gabbie: linee spesse e chiare tra gabbie diverse, il conto nell'angolo della prima casella
+    const gab = E.gabbiaDi(s.p), conti = new Map(s.p.gabbie.map(g => [Math.min(...g.c), E.etichetta(g)]));
+    tav.style.gridTemplateColumns = `repeat(${n},${c}px)`;
+    tav.style.boxShadow = '0 0 0 2px rgba(200,205,255,.5)';
+    let h = ''; for (let i = 0; i < n * n; i++) h += cellaHTML(i);
+    tav.innerHTML = h;
+    const etf = Math.max(9, Math.round(c * .22));
+    tav.querySelectorAll('.c').forEach(el => {
+      const i = +el.dataset.i, r = Math.floor(i / n), k = i % n;
+      const su = r === 0 || gab[i - n] !== gab[i], sx = k === 0 || gab[i - 1] !== gab[i];
+      el.style.borderWidth = `${su ? 2.5 : .5}px ${k === n - 1 ? 2.5 : 0}px ${r === n - 1 ? 2.5 : 0}px ${sx ? 2.5 : .5}px`;
+      el.style.borderTopColor = su ? 'rgba(200,205,255,.55)' : 'rgba(200,205,255,.1)';
+      el.style.borderLeftColor = sx ? 'rgba(200,205,255,.55)' : 'rgba(200,205,255,.1)';
+      el.style.borderRightColor = el.style.borderBottomColor = 'rgba(200,205,255,.55)';
+      if (conti.has(i)) { el.insertAdjacentHTML('afterbegin', `<span class="etg" style="font-size:${etf}px">${conti.get(i)}</span>`); el.classList.add('con-etg'); }
+    });
+  } else if (kk) {
+    // somme: caselle nere con le due somme ai lati della diagonale
+    const nere = new Map(s.p.nere.map(x => [x[0], x])), sbagliate = new Set(E.sommeSbagliate(s.p, st));
+    tav.style.gridTemplateColumns = `repeat(${s.p.w},${c}px)`;
+    tav.style.gap = '2px';
+    const sf = Math.max(9, Math.round(c * .3));
+    let h = '';
+    for (let i = 0; i < s.p.w * s.p.h; i++) {
+      const x = nere.get(i);
+      if (!x) { h += cellaHTML(i); continue; }
+      const [, giu, dx] = x;
+      h += `<div class="nera${giu || dx ? ' somma' : ''}" style="width:${c}px;height:${c}px;font-size:${sf}px">${dx ? `<span class="dx${sbagliate.has(i + 'd') ? ' sbagliato' : ''}">${dx}</span>` : ''}${giu ? `<span class="giu${sbagliate.has(i + 'g') ? ' sbagliato' : ''}">${giu}</span>` : ''}</div>`;
+    }
+    tav.innerHTML = h;
+    tav.querySelectorAll('.c').forEach(el => { el.style.borderRadius = '6px'; el.style.borderColor = 'rgba(200,205,255,.14)'; });
   }
   if (o.interattivo) tav.onpointerdown = e => {
     const i = cellaDa(e); if (i < 0) return;
@@ -1006,7 +1121,8 @@ function cifra(d) {
     if (d === 0) { st.v[i] = 0; st.note[i] = 0; return; }
     if (G.modo === 'note') { if (!st.v[i]) st.note[i] ^= 1 << (d - 1); return; }
     st.v[i] = st.v[i] === d ? 0 : d;
-    if (st.v[i]) {
+    if (st.v[i] && G.E.gruppiDi) { for (const j of G.E.gruppiDi(s.p, i)) st.note[j] &= ~(1 << (d - 1)); }
+    else if (st.v[i]) {
       // via la stessa nota dalle caselle della stessa riga, colonna (e riquadro)
       const r = Math.floor(i / n), k = i % n;
       for (let j = 0; j < n * n; j++) {
@@ -1244,8 +1360,9 @@ document.addEventListener('keydown', e => {
   if (/^[1-9]$/.test(e.key) && +e.key <= n) { cifra(+e.key); return; }
   if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { cifra(0); return; }
   if (e.key === 'n') { G.modo = G.modo === 'note' ? '' : 'note'; disegnaStrumenti(); return; }
-  const d = { ArrowUp: -n, ArrowDown: n, ArrowLeft: -1, ArrowRight: 1 }[e.key];
-  if (d) { e.preventDefault(); const i = G.sel < 0 ? 0 : G.sel + d; if (i >= 0 && i < n * n) { G.sel = i; disegnaGioco(); } }
+  const L = G.s.p.w || n, tot = G.s.p.h ? L * G.s.p.h : n * n;
+  const d = { ArrowUp: -L, ArrowDown: L, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+  if (d) { e.preventDefault(); const i = G.sel < 0 ? 0 : G.sel + d; if (i >= 0 && i < tot) { G.sel = i; disegnaGioco(); } }
 });
 
 /* Regole e uscita */
@@ -1300,7 +1417,8 @@ async function apriEsito(d) {
   </div>
   <div class="riga-btn"><button class="btn" id="eCond">${ICO.condividi}Condividi</button></div>`;
   // la soluzione
-  if (VISTE[E.tipo]) h += `<section class="pannello sol-testo"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2>${VISTE[E.tipo].esito(s)}</section>`;
+  const testuale = VISTE[E.tipo] && !VISTE[E.tipo].griglia;
+  if (testuale) h += `<section class="pannello sol-testo"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2>${VISTE[E.tipo].esito(s)}</section>`;
   else h += `<section class="pannello"><h2>${r.esito === 'risolta' ? 'La soluzione' : 'Com’era'}</h2><div class="mini"><div class="tav" id="eTav"></div></div></section>`;
   // le chiavi
   const tec = Object.entries(s.tecniche || {}).filter(([t]) => E.TECNICHE[t]).sort((a, b) => E.TECNICHE[b[0]].peso - E.TECNICHE[a[0]].peso);
@@ -1313,14 +1431,15 @@ async function apriEsito(d) {
   $('eProva').onclick = () => vai('#prova=' + d);
   $('eCal').onclick = () => vai('#calendario=' + M.meseDi(d));
   $('eTempi').onclick = () => vai('#tempi');
-  if (VISTE[E.tipo]) return;
+  if (testuale) return;
   const sol = soluzione(s);
   let st;
   if (s.gioco === 'campo') { st = E.statoRisolto(s.p, sol); if (r.esito === 'persa' && r.boom != null) st.boom = r.boom; }
   else st = E.statoRisolto(s.p, sol);
-  if (E.tipo === 'segni') st.c = st.c.map(v => (v === 2 ? 2 : 0));          // nella soluzione bastano i pezzi
+  if (['segni', 'flotta', 'tende', 'luci'].includes(E.tipo)) st.c = st.c.map(v => (v === 2 ? 2 : 0));   // nella soluzione bastano i pezzi
   const box = $('eTav'), lar = Math.min(window.innerWidth - 64, 420);
-  ({ segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto })[E.tipo](box, s, st, { interattivo: false, W: lar, H: lar * 1.25 });
+  const disegna = VISTE[E.tipo] ? VISTE[E.tipo].disegna : ({ segni: tavSegni, binario: tavBinario, cifre: tavCifre, campo: tavCampo, nonogramma: tavNono, testo: tavTesto })[E.tipo];
+  disegna(box, s, st, { interattivo: false, W: lar, H: lar * 1.25 });
   if (E.tipo === 'nonogramma') box.classList.add('finito');
 }
 $('eEsci').onclick = indietro;

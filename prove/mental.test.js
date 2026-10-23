@@ -410,6 +410,227 @@ prova('enigmi: ogni voce del catalogo verificata; risposte lette all’italiana;
   assert.equal(N.normParola('L’àncora'), 'ancora'); assert.equal(N.normParola('gli Uffizi'), 'uffizi');
 });
 
+/* ---------------- Seconda ondata contro forze brute ---------------- */
+function quadratiLatini(n) {
+  const out = [], v = Array(n * n).fill(0);
+  const g = i => { if (i === n * n) { out.push(v.slice()); return; } const r = Math.floor(i / n), c = i % n; for (let d = 1; d <= n; d++) { let ok = true; for (let k = 0; k < c && ok; k++) if (v[r * n + k] === d) ok = false; for (let k = 0; k < r && ok; k++) if (v[k * n + c] === d) ok = false; if (ok) { v[i] = d; g(i + 1); } } v[i] = 0; };
+  g(0); return out;
+}
+prova('gabbie: conteggio contro tutti i quadrati latini 4×4', () => {
+  const tutti = quadratiLatini(4), G_ = E.gabbie;
+  const conti = (o, xs) => (o === '' ? xs[0] : o === '+' ? xs.reduce((a, b) => a + b, 0) : o === '×' ? xs.reduce((a, b) => a * b, 1) : o === '-' ? Math.abs(xs[0] - xs[1]) : Math.max(...xs) / Math.min(...xs));
+  for (let k = 0; k < 120; k++) {
+    const sol = R.scegli(tutti), gab = [], usate = new Set();
+    for (let i = 0; i < 16; i++) {
+      if (usate.has(i)) continue;
+      const c = [i]; usate.add(i);
+      const j = R.scegli([i + 1, i + 4].filter(x => x < 16 && !usate.has(x) && (x === i + 4 || x % 4 !== 0)));
+      if (j != null && R.f() < 0.8) { c.push(j); usate.add(j); }
+      const xs = c.map(x => sol[x]);
+      let o = c.length === 1 ? '' : R.scegli(['+', '×', '-', '÷']);
+      if (o === '÷' && Math.max(...xs) % Math.min(...xs)) o = '-';
+      gab.push({ c, o, t: conti(o, xs) });
+    }
+    const p = { n: 4, gabbie: gab };
+    assert.equal(G_.valida(p), null);
+    const veri = tutti.filter(q => gab.every(g => g.t === conti(g.o, g.c.map(x => q[x]))));
+    assert.equal(G_.conta(p, 99), veri.length, J(p));
+    const ris = G_.risolvi(p);
+    if (ris.risolto) { assert.equal(veri.length, 1); assert.deepEqual(ris.sol, veri[0]); }
+  }
+});
+prova('somme (kakuro): conteggio contro una ricerca ingenua su griglie piccole', () => {
+  const K_ = E.kakuro;
+  for (let k = 0; k < 25; k++) {
+    const x = K_.genera(M.prng('prova-kakuro|' + k), 'impegnativa'); assert.ok(x);
+    const p = x.p, F = K_.fileDi(p), B = K_.bianche(p), v = Array(p.w * p.h).fill(0);
+    let tot = 0;
+    const giro = q => {
+      if (tot > 1) return;
+      if (q === B.length) { if (F.every(f => f.celle.reduce((a, i) => a + v[i], 0) === f.somma)) tot++; return; }
+      const i = B[q];
+      for (let d = 1; d <= 9; d++) {
+        v[i] = d;
+        // nessuna cifra ripetuta e nessuna somma superata nelle file della casella
+        const ok = F.every(f => !f.celle.includes(i) || (new Set(f.celle.filter(j => v[j]).map(j => v[j])).size === f.celle.filter(j => v[j]).length && f.celle.reduce((a, j) => a + v[j], 0) <= f.somma && (f.celle.some(j => !v[j]) || f.celle.reduce((a, j) => a + v[j], 0) === f.somma)));
+        if (ok) giro(q + 1);
+      }
+      v[i] = 0;
+    };
+    giro(0);
+    assert.equal(tot, 1, 'kakuro ' + k);
+    assert.equal(K_.conta(p, 2), 1);
+    assert.deepEqual(x.ris.sol.filter((_, i) => B.includes(i)), K_.conta.ultima.filter((_, i) => B.includes(i)));
+  }
+});
+prova('flotta: conteggio contro tutte le disposizioni della flotta (6×6)', () => {
+  const F_ = E.flotta;
+  // tutte le disposizioni di una flotta su n×n, nave per nave, senza toccarsi
+  const disposizioni = (n, flotta) => {
+    const out = [], sol = Array(n * n).fill(0);
+    const giro = (k, minimo) => {
+      if (k === flotta.length) { out.push(sol.slice()); return; }
+      const L = flotta[k], stessa = k > 0 && flotta[k - 1] === L;
+      for (let pos = stessa ? minimo : 0; pos < 2 * n * n; pos++) {
+        const dir = pos % 2, i0 = pos >> 1, r0 = Math.floor(i0 / n), k0 = i0 % n;
+        if (L === 1 && dir === 1) continue;
+        const celle = []; for (let q = 0; q < L; q++) celle.push(dir ? [r0 + q, k0] : [r0, k0 + q]);
+        if (celle.some(([r, c]) => r >= n || c >= n)) continue;
+        if (celle.some(([r, c]) => { for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const rr = r + a, cc = c + b; if (rr >= 0 && cc >= 0 && rr < n && cc < n && sol[rr * n + cc]) return true; } return false; })) continue;
+        celle.forEach(([r, c]) => { sol[r * n + c] = 1; });
+        giro(k + 1, pos + 1);
+        celle.forEach(([r, c]) => { sol[r * n + c] = 0; });
+      }
+    };
+    giro(0, 0);
+    return out;
+  };
+  const tutte = disposizioni(6, [3, 2, 2, 1, 1, 1]);
+  assert.ok(tutte.length > 1000);
+  for (let k = 0; k < 40; k++) {
+    const sol = R.scegli(tutte), n = 6;
+    const p = { n, flotta: [3, 2, 2, 1, 1, 1], righe: [], colonne: [], dati: [] };
+    for (let x = 0; x < n; x++) { p.righe.push(sol.slice(x * n, x * n + n).reduce((a, b) => a + b, 0)); let c = 0; for (let y = 0; y < n; y++) c += sol[y * n + x]; p.colonne.push(c); }
+    for (let q = 0; q < R(3); q++) { const i = R(n * n); if (!p.dati.some(d => d[0] === i)) p.dati.push([i, sol[i] ? F_.formaDi(n, sol, i) : 'a']); }
+    const veri = tutte.filter(q => p.righe.every((v, r) => q.slice(r * n, r * n + n).reduce((a, b) => a + b, 0) === v) && p.colonne.every((v, c) => { let t = 0; for (let y = 0; y < n; y++) t += q[y * n + c]; return t === v; }) && p.dati.every(([i, t]) => (t === 'a' ? !q[i] : q[i] && F_.formaDi(n, q, i) === t)));
+    assert.equal(F_.conta(p, 999), veri.length, J(p));
+    const ris = F_.risolvi(p);
+    if (ris.risolto) { assert.equal(veri.length, 1); assert.deepEqual(ris.sol, veri[0]); }
+  }
+});
+prova('tende: conteggio contro tutti gli insiemi di tende possibili (6×6)', () => {
+  const T_ = E.tende;
+  for (let k = 0; k < 30; k++) {
+    const x = T_.genera(M.prng('prova-tende|' + k), 'impegnativa'); assert.ok(x);
+    const p = x.p, n = p.n, alberi = new Set(p.alberi);
+    const vic = i => { const r = Math.floor(i / n), c = i % n, o = []; if (r > 0) o.push(i - n); if (r < n - 1) o.push(i + n); if (c > 0) o.push(i - 1); if (c < n - 1) o.push(i + 1); return o; };
+    const cand = []; for (let i = 0; i < n * n; i++) if (!alberi.has(i) && vic(i).some(j => alberi.has(j))) cand.push(i);
+    let tot = 0; const scelte = [];
+    const abbina = () => { // alberi → tende diverse, accanto (ricerca completa)
+      const usate = new Set();
+      const g = t => { if (t === p.alberi.length) return true; for (const j of vic(p.alberi[t])) if (scelte.includes(j) && !usate.has(j)) { usate.add(j); if (g(t + 1)) return true; usate.delete(j); } return false; };
+      return g(0);
+    };
+    const giro = q => {
+      if (scelte.length === p.alberi.length) {
+        const ok = p.righe.every((v, r) => scelte.filter(i => Math.floor(i / n) === r).length === v) && p.colonne.every((v, c) => scelte.filter(i => i % n === c).length === v) && abbina();
+        if (ok) tot++; return;
+      }
+      if (q === cand.length) return;
+      const i = cand[q];
+      const tocca = scelte.some(j => Math.abs(Math.floor(j / n) - Math.floor(i / n)) <= 1 && Math.abs(j % n - i % n) <= 1);
+      if (!tocca && scelte.filter(j => Math.floor(j / n) === Math.floor(i / n)).length < p.righe[Math.floor(i / n)] && scelte.filter(j => j % n === i % n).length < p.colonne[i % n]) { scelte.push(i); giro(q + 1); scelte.pop(); }
+      giro(q + 1);
+    };
+    giro(0);
+    assert.equal(tot, 1, 'tende ' + k);
+    assert.equal(T_.conta(p, 2), 1);
+  }
+});
+prova('luci: conteggio contro una ricerca ingenua (griglie 6×6)', () => {
+  const L_ = E.luci;
+  for (let k = 0; k < 40; k++) {
+    const n = 6, nere = [];
+    for (let i = 0; i < n * n; i++) if (R.f() < 0.22) nere.push([i, -1]);
+    const nero = new Set(nere.map(x => x[0])), bianche = [...Array(n * n).keys()].filter(i => !nero.has(i));
+    const vede = (a, b) => { const ra = Math.floor(a / n), ca = a % n, rb = Math.floor(b / n), cb = b % n; if (ra !== rb && ca !== cb) return false; if (ra === rb) { for (let c = Math.min(ca, cb) + 1; c < Math.max(ca, cb); c++) if (nero.has(ra * n + c)) return false; return true; } for (let r = Math.min(ra, rb) + 1; r < Math.max(ra, rb); r++) if (nero.has(r * n + ca)) return false; return true; };
+    // una soluzione a caso, poi tutti i numeri
+    const lamp = [];
+    for (const i of R.mescola(bianche.slice())) if (!lamp.some(j => vede(i, j)) && !lamp.includes(i)) { const buio = !lamp.some(j => j === i || vede(i, j)); if (buio) lamp.push(i); }
+    const acc = i => [i - n, i + n, i % n ? i - 1 : -1, (i + 1) % n ? i + 1 : -1].filter(j => j >= 0 && j < n * n);
+    const p = { w: n, h: n, nere: nere.map(([i]) => [i, R.f() < 0.6 ? acc(i).filter(j => lamp.includes(j)).length : -1]) };
+    let tot = 0; const su = [];
+    const giro = q => {
+      if (tot > 5) return;
+      if (q === bianche.length) {
+        if (bianche.every(i => su.includes(i) || su.some(j => vede(i, j))) && p.nere.every(([i, x]) => x < 0 || acc(i).filter(j => su.includes(j)).length === x)) tot++;
+        return;
+      }
+      const i = bianche[q];
+      if (!su.some(j => vede(i, j))) { su.push(i); giro(q + 1); su.pop(); }
+      giro(q + 1);
+    };
+    giro(0);
+    assert.equal(L_.conta(p, 6), tot, J(p));
+  }
+});
+prova('ponti: conteggio contro tutte le assegnazioni dei ponti (fino a 12 collegamenti)', () => {
+  const P_ = E.ponti;
+  let provate = 0;
+  for (let k = 0; provate < 40 && k < 400; k++) {
+    const n = 5, isole = [];
+    for (let i = 0; i < n * n; i++) if (R.f() < 0.3) isole.push([i, 1]);
+    if (isole.length < 3) continue;
+    const p0 = { w: n, h: n, isole }, A = P_.archi(p0);
+    if (A.E.length > 12 || !A.E.length) continue;
+    // numeri da un'assegnazione a caso
+    const x = A.E.map(() => R(3));
+    A.E.forEach((e, q) => { if (x[q] && e.incrocia.some(z => x[z])) x[q] = 0; });
+    const p = { w: n, h: n, isole: isole.map(([i], kk) => [i, A.perIsola[kk].reduce((s, q) => s + x[q], 0)]) };
+    if (p.isole.some(([, v]) => v === 0)) continue;
+    provate++;
+    let tot = 0;
+    const y = A.E.map(() => 0);
+    const giro = q => {
+      if (q === A.E.length) {
+        if (!p.isole.every(([, v], kk) => A.perIsola[kk].reduce((s, z) => s + y[z], 0) === v)) return;
+        if (A.E.some((e, z) => y[z] && e.incrocia.some(w => y[w]))) return;
+        const vis = new Set([0]), coda = [0];
+        while (coda.length) { const a = coda.pop(); A.E.forEach((e, z) => { if (!y[z]) return; const b = e.a === a ? e.b : e.b === a ? e.a : -1; if (b >= 0 && !vis.has(b)) { vis.add(b); coda.push(b); } }); }
+        if (vis.size === p.isole.length) tot++;
+        return;
+      }
+      for (let v = 0; v <= 2; v++) { y[q] = v; giro(q + 1); }
+      y[q] = 0;
+    };
+    giro(0);
+    assert.equal(P_.conta(p, 999), tot, J(p));
+  }
+  assert.ok(provate >= 20);
+});
+prova('chi è chi: indizi riletti su tutte le tabelle possibili; testi giusti', () => {
+  const L_ = E.logigramma;
+  for (const liv of ['impegnativa', 'esperta', 'estrema']) for (let q = 0; q < 3; q++) {
+    const x = L_.genera(M.prng(`prova-logi|${liv}|${q}`), liv), p = x.p;
+    // ricerca ingenua: tutte le combinazioni di permutazioni, indizi riletti a parte
+    const perm = permutazioni(p.n), k = p.cat.length, kc = p.cat.indexOf('casa') + 1;
+    const chi = (sol, [c, v]) => (c === 0 ? v : sol[c - 1].indexOf(v));
+    const ok = (sol, d) => {
+      const a = chi(sol, d.x), b = chi(sol, d.y), casa = i => sol[kc - 1][i];
+      return d.t === 'si' ? a === b : d.t === 'no' ? a !== b : d.t === 'accanto' ? Math.abs(casa(a) - casa(b)) === 1 : d.t === 'sinistra' ? casa(a) < casa(b) : casa(a) + 1 === casa(b);
+    };
+    let tot = 0, trovata = null;
+    const giro = (sol) => { if (sol.length === k) { if (p.ind.every(d => ok(sol, d))) { tot++; trovata = sol.map(s_ => s_.slice()); } return; } for (const pp of perm) giro(sol.concat([pp])); };
+    giro([]);
+    assert.equal(tot, 1, liv);
+    assert.deepEqual(x.ris.sol.slice(1), trovata);
+    for (const d of p.ind) assert.match(L_.testoIndizio(p, d), /^[A-Z][^.]+\.$/);
+    assert.ok(L_.giusta(p, trovata) && !L_.giusta(p, trovata.map((r, c) => (c ? r : r.slice().reverse()))));
+  }
+});
+prova('criptaritmo: soluzioni contro tutte le assegnazioni di cifre', () => {
+  const C_ = E.criptaritmo;
+  const prove = [{ addendi: ['SEND', 'MORE'], somma: 'MONEY' }];
+  for (let k = 0; prove.length < 25 && k < 2000; k++) {
+    const a = R.scegli(C_.PAROLE), b = R.scegli(C_.PAROLE), s = R.scegli(C_.PAROLE);
+    const p = { addendi: [a, b], somma: s };
+    if (C_.lettere(p).length <= 7 && s.length >= Math.max(a.length, b.length)) prove.push(p);
+  }
+  for (const p of prove) {
+    const L = C_.lettere(p), prime = new Set(p.addendi.concat([p.somma]).map(w => w[0]));
+    let tot = 0;
+    const d = {}, usate = new Set();
+    const val = w => [...w].reduce((x, c) => x * 10 + d[c], 0);
+    const giro = q => {
+      if (q === L.length) { if (p.addendi.reduce((x, w) => x + val(w), 0) === val(p.somma)) tot++; return; }
+      for (let v = 0; v <= 9; v++) { if (usate.has(v) || (v === 0 && prime.has(L[q]))) continue; d[L[q]] = v; usate.add(v); giro(q + 1); usate.delete(v); }
+    };
+    if (L.length <= 8) { giro(0); assert.equal(C_.tutte(p, 999).length, tot, J(p)); }
+  }
+  assert.equal(C_.tutte(prove[0], 9).length, 1);
+  assert.equal(C_.soluzione(prove[0]).risposta, '10652');
+});
+
 /* ---------------- Ogni motore: generati e ricontrollati ---------------- */
 prova('ogni motore e ogni livello: generato, soluzione unica, risolto dal risolutore umano, livello giusto', () => {
   for (const g of S.GIOCHI) for (const liv of ['impegnativa', 'esperta', 'estrema']) {

@@ -353,7 +353,8 @@ mine; font Bricolage Grotesque e Figtree.
     livelli, **palinsesto** (`scegliDelGiorno`, `tipoSfida`, `famigliaSfida`, `MINIMO`), titoli (`TITOLI`, per tipo),
     `quadratoLatino`.
   - `motori/<gioco>.js`: un motore per gioco, senza pagina, stessa interfaccia: `id`, `nome`, `tipo` (come si disegna:
-    `segni`, `binario`, `cifre`, `campo`, `nonogramma`, `testo`, `risposta`, `codice`, `calcolatrice`, `travasi`),
+    `segni`, `binario`, `cifre`, `campo`, `nonogramma`, `testo`, `risposta`, `codice`, `calcolatrice`, `travasi`,
+    `flotta`, `tende`, `luci`, `ponti`),
     `famiglia`, `TECNICHE` (con `peso`), `MISURE`, `breve`, `regole`, `nuovoStato`, `conflitti`, `completo`,
     `statoRisolto`, `conta(p, cap)` (ricerca **completa**, con `conta.ultima`), `risolvi(p)` (risolutore «umano»: solo
     tecniche dichiarate, mai tentativi; `{ risolto, sol, passi, conteggio }`), `livello(p, ris)`,
@@ -365,9 +366,19 @@ mine; font Bricolage Grotesque e Figtree.
     diverse e risposte a parole, e `codice:colori`, alla Mastermind; ogni tentativo serve), `linea` («In fila»: ordinare
     da indizi; ogni indizio serve), `bilancia` («La moneta falsa» da pesate già fatte; ogni pesata serve),
     `calcolatrice` («La calcolatrice rotta»: minimo di mosse, al massimo 2–3 strade minime), `travasi` (brocche senza
-    tacche: minimo di mosse), `enigma` (gli enigmi del catalogo, tipi `enigma:<categoria>`).
-  - `viste.js`: i tipi che non sono griglie (`VISTE.risposta`, `codice`, `calcolatrice`, `travasi`: `disegna`,
-    `strumenti`, `esito`). Le griglie le disegna `disegnaGioco` in `index.html`.
+    tacche: minimo di mosse), `enigma` (gli enigmi del catalogo, tipi `enigma:<categoria>`), `gabbie` (alla KenKen:
+    quadrato latino con le gabbie e i loro conti), `kakuro` («Somme»; nero `nere: [[i, giù, destra]]`), `flotta`
+    (battaglia navale in solitario, con caselle già scoperte e la loro forma), `tende` (il campeggio: una tenda per
+    albero), `luci` (alla Akari), `ponti` (alla Hashiwokakero), `logigramma` («Chi è chi»: tabella persone × categorie,
+    indizi sì/no e, con le case in fila, accanto/più a sinistra/subito a sinistra), `criptaritmo` (somma di parole
+    italiane in lettere; si risponde col valore della parola del risultato). Nei criptaritmi i casi da provare fanno
+    parte del gioco: il livello conta le ipotesi del risolutore, con un tetto di 25.
+  - `viste.js`: i tipi che non sono griglie (`VISTE.risposta`, con le forme `numero`, `frazione`, `parola`, `parole`,
+    `ordine`, `moneta`, `tabella`; `codice`, `calcolatrice`, `travasi`: `disegna`, `strumenti`, `esito`).
+    `viste-griglie.js`: `VISTE.flotta`, `tende`, `luci`, `ponti` (con `griglia: true`: nell'esito la soluzione si disegna
+    con `disegna`). Tocco: vuota → pezzo → segno → vuota; trascinando si mette il segno. Nei ponti si tocca un'isola e poi
+    l'altra (o direttamente il ponte): 1, 2, nessuno. Le altre griglie le disegna `disegnaGioco` in `index.html`
+    (`gabbie` e `kakuro` dentro `tavCifre`, che per il kakuro usa `E.gruppiDi` per note ed evidenziazioni).
   - `strumenti/mental-enigmi.js`: il **catalogo degli enigmi scritti a mano** (regole in cima al file). Campi: `id`
     (unico, non si cambia), `cat` (vedi `CATEGORIE` in `motori/enigma.js`: indovinello, sciarada, anagramma, cifrario,
     problema, probabilita, contare, geometria, logica, strategia), `livello`, `titolo`, `forma` (`numero`, `frazione`,
@@ -384,7 +395,7 @@ mine; font Bricolage Grotesque e Figtree.
 - **Regole della pagina:** il tempo parte con «Inizia» e **non si ferma** (orologio vero: `inizio` nello storico);
   conta il **primo tentativo** di ogni giorno, poi si rigioca per allenamento senza cambiare il tempo; un giorno passato
   si recupera dal calendario e vale come «recuperata» (`giornata: false`); finita dopo mezzanotte vale come «dopo
-  mezzanotte». Nelle sfide che si consegnano (enigmi, codici, in fila, moneta falsa, Sinceri e bugiardi) ogni consegna
+  mezzanotte». Nelle sfide che si consegnano (enigmi, codici, in fila, moneta falsa, chi è chi, criptaritmi, Sinceri e bugiardi) ogni consegna
   sbagliata aggiunge un minuto. Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel
   calendario; un giorno senza sfida pronta mostra un avviso, mai una sfida inventata. La serie conta i giorni di fila
   risolti il giorno stesso. Lo storico salva anche `nome` e `firma` (impronta della sfida): una partita a metà di una
@@ -426,7 +437,7 @@ mine; font Bricolage Grotesque e Figtree.
 - **Prove:** `node prove/mental.test.js` (date e ora legale, ogni motore contro una forza bruta o una ricerca
   indipendente, il prato fiorito passo per passo, il catalogo con le sue verifiche e le risposte lette all'italiana,
   palinsesto su due anni, tutte le sfide pubblicate e la riserva, lo strumento in una cartella temporanea anche col
-  rimescolamento; circa 45 s); nel browser `prove/mental.pagina.test.js` (serve `python3 -m http.server 8765`; orologio
+  rimescolamento; circa 2 minuti); nel browser `prove/mental.pagina.test.js` (serve `python3 -m http.server 8765`; orologio
   del browser spostato: lancio, ricaricamento, ogni tipo di sfida finito dall'interfaccia, consegne sbagliate, mina,
   resa, calendario, mezzanotte a partita aperta).
 

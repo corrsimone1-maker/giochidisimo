@@ -112,7 +112,8 @@ const bene = m => console.log('ok  ', m);
     return { ultimo: o, tutti, forme, tipi: [...new Set(Object.values(MENTAL.dati).map(s => MENTAL.tipoSfida(s.gioco, s.p)))] };
   });
   assert.ok(giorni.tipi.length >= 20, 'tipi di sfida nel calendario: ' + giorni.tipi.length);
-  for (const g of ['corone', 'stelle', 'binario', 'sudoku', 'campo', 'grattacieli', 'futoshiki', 'nonogramma', 'cavalieri', 'codice:lucchetto', 'codice:colori', 'linea', 'bilancia', 'calcolatrice', 'travasi']) assert.ok(giorni.ultimo[g], g + ' nel calendario');
+  for (const g of ['corone', 'stelle', 'binario', 'sudoku', 'campo', 'grattacieli', 'futoshiki', 'nonogramma', 'cavalieri', 'codice:lucchetto', 'codice:colori', 'linea', 'bilancia', 'calcolatrice', 'travasi',
+    'gabbie', 'kakuro', 'flotta', 'tende', 'luci', 'ponti', 'logigramma', 'criptaritmo']) assert.ok(giorni.ultimo[g], g + ' nel calendario');
   for (const f of ['numero', 'frazione', 'parola', 'parole']) assert.ok(giorni.forme[f], 'enigma con risposta ' + f);
   const apri = async d => { await b.evaluate(d => { location.hash = ''; }, d); await b.waitForTimeout(150); await b.evaluate(d => inizia(d), d); await b.waitForSelector('#sGioco:not([hidden])'); await b.waitForTimeout(200); };
   const quasi = (fn) => b.evaluate(fn);
@@ -270,6 +271,60 @@ const bene = m => console.log('ok  ', m);
   await shot(b, 'travasi-esito');
   bene('lucchetto, codice a colori, in fila, moneta falsa, calcolatrice rotta e travasi si finiscono dall’interfaccia');
 
+  // gabbie e somme: casella e tastierino; nelle somme le note si tolgono dalle caselle della stessa fila
+  for (const g of ['gabbie', 'kakuro']) {
+    await apri(giorni.ultimo[g]);
+    ult = await quasi(() => { const sol = soluzione(G.s), st = G.E.statoRisolto(G.s.p, sol); const k = sol.findIndex(x => x > 0); st.v[k] = 0; G.P.st = st; disegnaGioco(); return [k, sol[k]]; });
+    await tocca(b, ult[0]);
+    await b.tap('#sNote'); await b.tap(`.tasto[data-k="${ult[1] === 1 ? 2 : 1}"]`); await b.tap('#sNote');
+    await shot(b, g);
+    await b.tap(`.tasto[data-k="${ult[1]}"]`);
+    await esito(g);
+  }
+  // flotta, tende, luci: l'ultimo pezzo con un tocco; prima un tocco in più per vedere il giro dei segni
+  for (const g of ['flotta', 'tende', 'luci']) {
+    await apri(giorni.ultimo[g]);
+    const [ultima, altra] = await quasi(() => {
+      const sol = soluzione(G.s), st = G.E.statoRisolto(G.s.p, sol), fisse = new Set((G.s.p.dati || []).map(d => d[0]).concat(G.s.p.alberi || [], (G.s.p.nere || []).map(x => x[0])));
+      const k = st.c.findIndex((x, i) => x === 2 && !fisse.has(i)), w = st.c.findIndex((x, i) => x === 1 && !fisse.has(i));
+      st.c[k] = 0; st.c[w] = 0; G.P.st = st; disegnaGioco(); return [k, w];
+    });
+    // il giro dei segni su una casella che resta vuota: pezzo, segno, vuota
+    await tocca(b, altra); assert.equal(await b.evaluate(i => G.P.st.c[i], altra), 2, g + ': primo tocco = pezzo');
+    await tocca(b, altra); assert.equal(await b.evaluate(i => G.P.st.c[i], altra), 1, g + ': secondo tocco = segno');
+    await tocca(b, altra); assert.equal(await b.evaluate(i => G.P.st.c[i], altra), 0, g + ': terzo tocco = vuota');
+    await shot(b, g);
+    await tocca(b, ultima);
+    await esito(g);
+  }
+  // ponti: un'isola e poi l'altra
+  await apri(giorni.ultimo.ponti);
+  const qp = await quasi(() => { const sol = soluzione(G.s), st = G.E.statoRisolto(G.s.p, sol); const q = sol.findIndex(x => x > 0); st.x[q]--; G.P.st = st; disegnaGioco(); const e = G.E.archi(G.s.p).E[q]; return [e.a, e.b]; });
+  await shot(b, 'ponti');
+  await b.tap(`#tav [data-isola="${qp[0]}"]`); await b.tap(`#tav [data-isola="${qp[1]}"]`);
+  await esito('ponti');
+  // chi è chi: tabella, una consegna sbagliata, poi giusta
+  await apri(giorni.ultimo.logigramma);
+  const tab = await quasi(() => G.E.soluzione(G.s.p).tabella);
+  for (let c = 1; c < tab.length; c++) for (let i = 0; i < tab[c].length; i++) {
+    await b.tap(`.cella-t[data-ci="${c - 1}"][data-ri="${i}"]`);
+    const v = c === 1 && i < 2 ? tab[c][1 - i] : tab[c][i];                // le prime due scambiate
+    await b.tap(`.scelte-t .chip[data-v="${v}"]`);
+  }
+  await shot(b, 'logigramma');
+  await b.tap('#sConsegna'); await sbagliata('chi è chi');
+  await b.tap('.cella-t[data-ci="0"][data-ri="0"]'); await b.tap(`.scelte-t .chip[data-v="${tab[1][0]}"]`);
+  // il valore tolto dalla seconda riga la lascia vuota, e la selezione passa lì da sola
+  assert.equal(await b.evaluate(() => G.sel), 1, 'chi è chi: si passa alla casella vuota della colonna');
+  await b.tap(`.scelte-t .chip[data-v="${tab[1][1]}"]`);
+  await b.tap('#sConsegna'); await esito('chi è chi');
+  // criptaritmo: il valore della parola del risultato
+  await apri(giorni.ultimo.criptaritmo);
+  const cr = await quasi(() => G.E.soluzione(G.s.p).risposta);
+  await tasti(cr); await shot(b, 'criptaritmo');
+  await b.tap('#sConsegna'); await esito('criptaritmo');
+  bene('gabbie, somme, flotta, tende, luci, ponti, chi è chi e criptaritmo si finiscono dall’interfaccia');
+
   /* ---------- 3. Calendario e «I miei tempi» ---------- */
   const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
   const meseTesto = d => `${mesi[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`;
@@ -310,7 +365,8 @@ const bene = m => console.log('ok  ', m);
   await c.clock.fastForward(100000);                                  // passa mezzanotte
   await c.waitForTimeout(400);
   assert.match(await c.textContent('#toast'), /mezzanotte/);
-  await c.evaluate(() => { const sol = soluzione(G.s); G.P.st = G.E.statoRisolto(G.s.p, sol); controllaFine(); });
+  // qualunque tipo sia la sfida di quel giorno: soluzione nello stato, poi fine o consegna
+  await c.evaluate(() => { const sol = soluzione(G.s); G.P.st = G.E.statoRisolto(G.s.p, sol); if (['risposta', 'codice', 'testo'].includes(G.E.tipo)) consegna(); else controllaFine(); });
   await c.waitForSelector('#sEsito:not([hidden])');
   const rm = (await sto(c)).giorni['2026-12-30'];
   assert.equal(rm.esito, 'risolta'); assert.equal(rm.giornata, false, 'finita dopo mezzanotte: non il giorno stesso');
