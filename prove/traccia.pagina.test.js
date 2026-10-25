@@ -169,12 +169,11 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
   assert.equal(await page.evaluate(() => { location.hash = 'frecce'; return 1; }), 1);
   await page.waitForTimeout(100);
   assert.ok(await page.isHidden('#apri3d'), 'sul piano niente vista da fuori');
-  // sul bitoro niente 3D, e le stelline del punto singolare sono gli 8 angoli della L
+  // sul bitoro le stelline del punto singolare sono gli 8 angoli della L
   await page.evaluate(() => { location.hash = 'bitoro'; }); await page.waitForTimeout(100);
   await page.evaluate(() => vai(4)); await page.waitForTimeout(60);
-  assert.ok(await page.isHidden('#apri3d'), 'bitoro: niente vista da fuori');
   assert.equal(await page.evaluate(() => document.querySelectorAll('#tavola .singolari circle').length), 8, 'bitoro: otto stelline');
-  for (const [area, k] of [['cilindro', 1], ['mobius', 3], ['sfera', 4], ['toro', 1], ['klein', 2], ['rp2', 2], ['segreto', 2], ['segreto', 4]]) {
+  for (const [area, k] of [['cilindro', 1], ['mobius', 3], ['sfera', 4], ['toro', 1], ['klein', 2], ['rp2', 2], ['bitoro', 2], ['bitoro', 4], ['segreto', 2], ['segreto', 4]]) {
     await page.evaluate(id => { location.hash = id; }, area); await page.waitForTimeout(120);
     await page.evaluate(k => vai(k), k); await page.waitForTimeout(80);
     await page.click('#apri3d');
@@ -187,11 +186,11 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
       assert.ok(await page.isVisible('#giro4') && await colori() > 20, area + ': R⁴ disegnato');
       await scatto('3d-' + area + '-r4');
     } else assert.ok(await page.isHidden('#modo3d'), area + ': R⁴ solo per Klein e RP²');
-    await scatto('3d-' + area);
+    await scatto('3d-' + area + '-' + k);
     await page.click('#chiudi3d');
     assert.ok(await page.isHidden('#vista3d'));
   }
-  bene('Guarda da fuori: cilindro, Möbius, sfera, toro, Klein e RP² disegnati in 3D, Klein e RP² anche in R⁴; il bitoro no');
+  bene('Guarda da fuori: cilindro, Möbius, sfera, toro, Klein, RP² e bitoro disegnati in 3D, Klein e RP² anche in R⁴');
 
   // i progressi restano dopo il ricaricamento; Reset (due tocchi) li cancella
   await page.goto(ROOT + 'giochi/traccia/');

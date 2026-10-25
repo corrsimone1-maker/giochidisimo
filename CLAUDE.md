@@ -496,8 +496,12 @@ lilla `#c4a8ff`; font Major Mono Display solo per il marchio, B612 Mono, Figtree
   u = s + t − 1 e v = s − t la busta incolla (u, v) con (−u, v) sul bordo: v è la latitudine, u la longitudine; gli angoli piegati
   sono i poli), ciambella, bottiglia di Klein e superficie di Boy (Bryant–Kusner) con le loro autointersezioni (Simo le vuole: sono
   istruttive); in R⁴ Klein `(A cos u, A sin u, r sin v cos(u/2), r sin v sin(u/2))` e RP² `(x² − y², 2xy, 2xz, 2yz)` sulla
-  semisfera, ruotati nei piani (x, w) e (y, w) e proiettati, con la quarta coordinata come colore. Il bitoro non ha la vista 3D.
-  Trascinare ruota, pizzicare avvicina, doppio tocco torna all'inizio.
+  semisfera, ruotati nei piani (x, w) e (y, w) e proiettati, con la quarta coordinata come colore. Il bitoro è una palla con due
+  manici, costruita a pezzi (`bitoro()`): il blocco A copre la palla tranne quattro foglie che si toccano in cima nel punto
+  singolare (lì i 6π diventano un giro: gli angoli di A diventano punte); B è il manico sopra e C quello sotto, dalle foglie est–ovest
+  e nord–sud; i bordi in comune usano le stesse curve dalle due parti, quindi gli incollamenti sono esatti; le prove controllano che
+  sia un embedding (χ = −2 della griglia in R³, punti lontani restano lontani). Sulle superfici orientabili la tavola si legge da
+  fuori, non allo specchio (le prove lo controllano). Trascinare ruota, pizzicare avvicina, doppio tocco torna all'inizio.
 - **Tavola nuova:** `node strumenti/traccia.js contorni|occhi|numeri '<base json>' [quante] [seme]` (spiegazione in cima al file):
   per contorni e occhi toglie i simboli finché la tavola resta risolvibile **ragionando** e stampa la fatica (idee e prova più lunga);
   per i numeri enumera tutte le linee e toglie i numeri finché la soluzione resta unica. Poi si aggiunge in `tavole.js` con un `id`

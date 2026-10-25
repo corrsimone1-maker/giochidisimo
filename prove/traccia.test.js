@@ -402,13 +402,17 @@ function indip(p) {
   const V3 = require('../giochi/traccia/vista3d.js');
   const d = (a, b) => Math.hypot(...a.map((x, i) => x - b[i]));
   let prove = 0;
+  const misure = sup => sup === 'sfera' ? [[3, 3], [4, 4], [5, 5]] : sup === 'bitoro' ? [[4, 4, [2, 2]], [5, 5, [3, 2]], [6, 6, [3, 3]], [5, 6, [2, 4]]] : [[3, 3], [4, 3], [4, 4]];
   for (const sup of Object.keys(V3.FORME)) {
-    for (const [w, h] of sup === 'sfera' ? [[3, 3], [4, 4], [5, 5]] : [[3, 3], [4, 3], [4, 4]]) {
-      const p = { w, h, sup };
+    for (const [w, h, L] of misure(sup)) {
+      const p = { w, h, L, sup };
       for (const modo of V3.ha4(sup) ? ['r3', 'r4'] : ['r3']) {
         const f = (s, t) => modo === 'r3' ? V3.punto3(sup, s, t, p) : V3.punto4(sup, s, t, p);
-        let scala = 0; for (let k = 0; k <= 20; k++) scala = Math.max(scala, Math.hypot(...f(k / 20, 0.37)));
-        for (let k = 0; k <= 40; k++) for (const v of [f(k / 40, 0.5), f(0.5, k / 40)]) assert.ok(v.every(Number.isFinite), `${sup} ${modo}: punto finito`);
+        let scala = 0; for (let k = 0; k <= 20; k++) scala = Math.max(scala, Math.hypot(...f(k / 20, 0.97)));
+        for (let k = 0; k <= 40; k++) for (const [s, t] of [[k / 40, 0.5], [0.5, k / 40], [k / 40, 0.95], [0.03, k / 40]]) {
+          if (V3.fuoriL(s, t, p)) { assert.equal(f(s, t), null, `${sup}: fuori dalla L niente punto`); continue; }
+          assert.ok(f(s, t).every(Number.isFinite), `${sup} ${modo}: punto finito`);
+        }
         // ogni cucitura: il punto t del lato a e il punto t del lato b vanno nello stesso punto
         for (const cu of TR.cuciture(p)) for (let k = 0; k <= 40; k++) {
           const t = k / 40 * cu.a.n, pa = [cu.a.da[0] + t * cu.a.dir[0], cu.a.da[1] + t * cu.a.dir[1]], pb = [cu.b.da[0] + t * cu.b.dir[0], cu.b.da[1] + t * cu.b.dir[1]];
@@ -450,7 +454,54 @@ function indip(p) {
     }
     assert.ok(min > 0.02, `sfera: niente autointersezioni (${min.toFixed(3)})`);
   }
-  bene(`«Guarda da fuori»: forme coerenti con le cuciture (${prove} controlli); in R⁴ Klein e RP² senza autointersezioni, la sfera senza autointersezioni`);
+  // sulle superfici orientabili la tavola si legge da fuori, non allo specchio: la normale (∂s, −∂t) punta fuori
+  {
+    const sub = (a, b) => a.map((x, i) => x - b[i]), cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const fuori = (sup, p, s, t, centro) => {
+      const e = 1e-5, F = V3.punto3(sup, s, t, p), N = cr(sub(V3.punto3(sup, s + e, t, p), F), sub(V3.punto3(sup, s, t + e, p), F)).map(x => -x);
+      return dot(N, sub(F, centro(F))) > 0;
+    };
+    const asse = F => [0, F[1], 0], O = () => [0, 0, 0];
+    for (const [s, t] of [[0.2, 0.3], [0.6, 0.7], [0.9, 0.15]]) {
+      assert.ok(fuori('cilindro', { w: 4, h: 3 }, s, t, asse), 'cilindro da fuori');
+      assert.ok(fuori('sfera', { w: 4, h: 4 }, s, t, O), 'sfera da fuori');
+      assert.ok(fuori('toro', { w: 4, h: 3 }, s, t, F => { const k = Math.hypot(F[0], F[2]), R = Math.max(4 / 3, 1.7); return [F[0] / k * R, 0, F[2] / k * R]; }), 'toro da fuori');
+    }
+    // bitoro: sulla palla e sui manici (fuori = lontano dal centro della sezione del manico)
+    const p = { w: 6, h: 6, L: [3, 3], sup: 'bitoro' }, f = (x, y) => V3.punto3('bitoro', x / 6, y / 6, p);
+    for (const [x, y] of [[1, 4.5], [2.5, 3.5], [0.5, 5.5]]) assert.ok(fuori('bitoro', p, x / 6, y / 6, O), 'bitoro, palla da fuori');
+    for (const x of [4.2, 4.5, 4.8]) { let c = [0, 0, 0]; for (let k = 0; k < 60; k++) { const q = f(x, 3 + 3 * k / 60); c = c.map((v, i) => v + q[i] / 60); } for (const y of [3.5, 5.5]) assert.ok(fuori('bitoro', p, x / 6, y / 6, () => c), 'bitoro, manico sopra da fuori'); }
+    for (const y of [1.2, 1.8]) { let c = [0, 0, 0]; for (let k = 0; k < 60; k++) { const q = f(3 * k / 60, y); c = c.map((v, i) => v + q[i] / 60); } for (const x of [0.5, 2.5]) assert.ok(fuori('bitoro', p, x / 6, y / 6, () => c), 'bitoro, manico sotto da fuori'); }
+  }
+  // bitoro: è un embedding. Su una griglia fine, unendo i punti che finiscono nello stesso punto di R³, viene una
+  // superficie con χ = −2 (quindi nessun contatto in più oltre agli incollamenti), e punti lontani più di due caselle
+  // sulla superficie restano lontani in R³
+  for (const [w, h, L] of [[4, 4, [2, 2]], [6, 6, [3, 3]], [5, 6, [2, 4]]]) {
+    const p = { w, h, L, sup: 'bitoro' }, K = 12, nx = w * K, ny = h * K, id = (i, j) => j * (nx + 1) + i, pos = [];
+    const inL = (x, y) => !(x > L[0] + 1e-9 && y < L[1] - 1e-9);
+    for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) pos.push(inL(i / K, j / K) ? V3.punto3('bitoro', i / nx, j / ny, p) : null);
+    const par = pos.map((_, i) => i), tr = i => { while (par[i] !== i) { par[i] = par[par[i]]; i = par[i]; } return i; }, giaVisto = new Map();
+    pos.forEach((q, i) => { if (!q) return; const k = q.map(v => Math.round(v * 1e7)).join(','); if (giaVisto.has(k)) par[tr(i)] = tr(giaVisto.get(k)); else giaVisto.set(k, i); });
+    const adj = new Map(), lati = new Set(), ag = (a, b) => { a = tr(a); b = tr(b); if (a === b) return; lati.add(Math.min(a, b) + ':' + Math.max(a, b)); (adj.get(a) || adj.set(a, []).get(a)).push(b); (adj.get(b) || adj.set(b, []).get(b)).push(a); };
+    let F = 0;
+    for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+      if (!pos[id(i, j)]) continue;
+      if (i < nx && pos[id(i + 1, j)] && inL((i + 0.5) / K, j / K)) ag(id(i, j), id(i + 1, j));
+      if (j < ny && pos[id(i, j + 1)] && inL(i / K, (j + 0.5) / K)) ag(id(i, j), id(i, j + 1));
+      if (i < nx && j < ny && inL((i + 0.5) / K, (j + 0.5) / K)) F++;
+    }
+    const nodi = [...new Set(pos.map((q, i) => q ? tr(i) : -1).filter(x => x >= 0))];
+    assert.equal(nodi.length - lati.size + F, -2, `bitoro ${w}x${h}: χ della griglia in R³`);
+    let s = 3, minimo = Infinity; const rnd = n => { s = (s * 1103515245 + 12345) >>> 0; return s % n; };
+    for (let k = 0; k < 60; k++) {
+      const a = nodi[rnd(nodi.length)], dist = new Map([[a, 0]]), coda = [a];
+      for (let qi = 0; qi < coda.length; qi++) { const u = coda[qi]; if (dist.get(u) >= 2 * K) continue; for (const v of adj.get(u) || []) if (!dist.has(v)) { dist.set(v, dist.get(u) + 1); coda.push(v); } }
+      for (const b of nodi) if (!dist.has(b)) minimo = Math.min(minimo, Math.hypot(...pos[a].map((x, i) => x - pos[b][i])));
+    }
+    assert.ok(minimo > 0.1, `bitoro ${w}x${h}: niente autointersezioni (${minimo.toFixed(3)})`);
+  }
+  bene(`«Guarda da fuori»: forme coerenti con le cuciture (${prove} controlli); in R⁴ Klein e RP² senza autointersezioni, sfera e bitoro senza autointersezioni; la tavola si legge da fuori`);
 }
 
 console.log(`\n${ok} prove superate`);

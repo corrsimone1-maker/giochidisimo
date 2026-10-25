@@ -19,8 +19,12 @@
                v = s − t i due incollamenti diventano (u, v) ~ (−u, v) sul bordo, quindi
                ogni riga v = costante è un cerchio: v dà la latitudine (gli angoli piegati
                sono i poli) e u la longitudine
-     Il bitoro non c'è: una L avvolta su una ciambella a due buchi senza strappi
-     richiede una costruzione a pezzi che qui non vale la pena.
+     bitoro    la L (A in basso a sinistra, B a destra, C in alto, L = [a, c]) su una palla
+               con due manici, una costruzione a pezzi (vedi bitoro() qui sotto): A copre la
+               palla tranne quattro foglie che si toccano in cima, nel punto singolare; le
+               foglie a est e a ovest sono le estremità di B, che è il manico sopra, quelle a
+               nord e a sud le estremità di C, il manico sotto. I bordi in comune si
+               costruiscono con le stesse curve dalle due parti: gli incollamenti sono esatti.
    La parte di calcolo (FORME, punto3, punto4) non usa la pagina; il
    visualizzatore WebGL (Vista) è scritto a mano, senza librerie, così
    funziona anche senza connessione.
@@ -57,12 +61,80 @@
   function busta(s, t) {
     const u = s + t - 1, v = s - t, L = 1 - Math.abs(v), th = L > 1e-12 ? PI * u / L : 0;
     const r = cos(PI * v / 2);
-    return [r * cos(th), sin(PI * v / 2), r * sin(th)];
+    return [r * cos(th), sin(PI * v / 2), -r * sin(th)];   // il segno: la tavola si legge da fuori, non allo specchio
   }
+
+  /* ---------- Bitoro: palla con due manici ----------
+     Assi con y in alto. Sulla palla (raggio 1) θ è l'angolo dal polo nord, che è il punto singolare, e φ l'azimut.
+     Intorno al polo i 12 angoli delle caselle (6π) diventano un giro solo: le quattro foglie (B, C, B, C) si prendono
+     90° ciascuna, gli angoli di A diventano punte sottili tra una foglia e l'altra. */
+  const BT = { thM: 2.0, thC: 0.95, rho: 0.3, R: 1.5, t1: 0.24 };
+  const palla = (th, ph) => [sin(th) * cos(ph), cos(th), sin(th) * sin(ph)];
+  const pscal = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const pvett = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const versore = a => { const n = hypot(a[0], a[1], a[2]) || 1; return [a[0] / n, a[1] / n, a[2] / n]; };
+  // A: il quadrato (U verso destra, V verso l'alto, in [−1, 1]) sulla palla. Per ogni direzione φ del quadrato
+  // il raggio va dal polo sud (centro) al bordo della foglia θ_b(φ), che vale 0 sulle diagonali: gli angoli al polo nord.
+  function bitoroA(U, V) {
+    const r = Math.max(Math.abs(U), Math.abs(V));
+    if (r < 1e-12) return [0, -1, 0];
+    const ph = Math.atan2(V, U), thB = BT.thM * Math.abs(cos(2 * ph));
+    return palla(PI - (PI - thB) * r, ph);
+  }
+  // il colletto di un manico, sulla palla: nella carta azimutale attorno al centro c della foglia, il punto q del
+  // petalo (mu = 0) scende lungo il suo raggio fino al cerchio del piede, di raggio angolare rho (mu = 1)
+  function colletto(c, q, mu) {
+    if (mu <= 0) return q;
+    const cq = Math.min(1, Math.max(-1, pscal(q, c))), al = Math.acos(cq);
+    const d = versore([q[0] - cq * c[0], q[1] - cq * c[1], q[2] - cq * c[2]]), rr = (1 - mu) * al + mu * BT.rho;
+    return [cos(rr) * c[0] + sin(rr) * d[0], cos(rr) * c[1] + sin(rr) * d[1], cos(rr) * c[2] + sin(rr) * d[2]];
+  }
+  // angolo, nel piano (e1, e2), della direzione dal centro c del piede verso il petalo; decresce da a0 ad a0 − 2π
+  function angoloPiede(c, q, e1, e2, a0, sg) {
+    const cq = pscal(q, c), d = [q[0] - cq * c[0], q[1] - cq * c[1], q[2] - cq * c[2]];
+    const raw = Math.atan2(pscal(d, e2), pscal(d, e1));
+    let del = ((a0 - raw) % (2 * PI) + 2 * PI) % (2 * PI);
+    if (sg > 0.5 && del < 0.5) del += 2 * PI;
+    if (sg < 0.5 && del > 2 * PI - 0.5) del -= 2 * PI;
+    return a0 - del;
+  }
+  // un manico: m = { c0, c1, p0(σ), p1(σ), oriz, thA, thB, e2, a0 }. t va da 0 (foglia c0) a 1 (foglia c1), σ fa il giro.
+  function manico(t, sg, m) {
+    const t1 = BT.t1, rho = BT.rho;
+    if (t <= t1) return colletto(m.c0, m.p0(sg), t / t1);
+    if (t >= 1 - t1) return colletto(m.c1, m.p1(sg), (1 - t) / t1);
+    const tau = (t - t1) / (1 - 2 * t1);
+    const centro = x => {
+      const th = m.thA + (m.thB - m.thA) * x, rr = cos(rho) + (BT.R - cos(rho)) * Math.sqrt(Math.max(0, sin(PI * x)));
+      return [rr * (sin(th) * m.oriz[0]), rr * cos(th), rr * (sin(th) * m.oriz[2])];
+    };
+    const C = centro(tau), e = 1e-4;
+    let T;
+    if (tau < e) T = m.c0; else if (tau > 1 - e) T = m.c1.map(x => -x);
+    else { const a = centro(tau - e), b = centro(tau + e); T = versore([b[0] - a[0], b[1] - a[1], b[2] - a[2]]); }
+    const e1 = versore(pvett(T, m.e2)), e1a = versore(pvett(m.c0, m.e2)), e1b = versore(pvett(m.c1.map(x => -x), m.e2));
+    const b0 = angoloPiede(m.c0, m.p0(sg), e1a, m.e2, m.a0, sg), b1 = angoloPiede(m.c1, m.p1(sg), e1b, m.e2, m.a0, sg);
+    const w = tau * tau * (3 - 2 * tau), be = (1 - w) * b0 + w * b1, r = sin(rho);
+    return [C[0] + r * (cos(be) * e1[0] + sin(be) * m.e2[0]), C[1] + r * (cos(be) * e1[1] + sin(be) * m.e2[1]), C[2] + r * (cos(be) * e1[2] + sin(be) * m.e2[2])];
+  }
+  // B, manico sopra: da est (bordo destro di A) a ovest (bordo sinistro di A), nel piano xy
+  const MB = { c0: palla(BT.thC, 0), c1: palla(BT.thC, PI), p0: sg => bitoroA(1, 1 - 2 * sg), p1: sg => bitoroA(-1, 1 - 2 * sg),
+    oriz: [1, 0, 0], thA: BT.thC, thB: -BT.thC, e2: [0, 0, 1], a0: PI };
+  // C, manico sotto: da nord (bordo di sopra di A) a sud (bordo di sotto), nel piano yz, passando sotto la palla
+  const MC = { c0: palla(BT.thC, PI / 2), c1: palla(BT.thC, 3 * PI / 2), p0: sg => bitoroA(2 * sg - 1, 1), p1: sg => bitoroA(2 * sg - 1, -1),
+    oriz: [0, 0, 1], thA: BT.thC, thB: 2 * PI - BT.thC, e2: [1, 0, 0], a0: 0 };
+  function bitoro(s, t, p) {
+    const [a, c] = p.L, x = s * p.w, y = t * p.h;
+    if (x <= a && y >= c) return bitoroA(2 * x / a - 1, 1 - 2 * (y - c) / (p.h - c));
+    if (x >= a && y >= c) return manico((x - a) / (p.w - a), (y - c) / (p.h - c), MB);
+    if (x <= a && y <= c) return manico(1 - y / c, x / a, MC);
+    return null;                                   // il blocco che manca alla L
+  }
+  const fuoriL = (s, t, p) => p.L && s * p.w > p.L[0] + 1e-9 && t * p.h < p.L[1] - 1e-9;
 
   const FORME = {
     cilindro: {
-      r3: (s, t, p) => { const R = p.w / (2 * PI), th = 2 * PI * s; return [R * cos(th), (0.5 - t) * p.h, R * sin(th)]; },
+      r3: (s, t, p) => { const R = p.w / (2 * PI), th = 2 * PI * s; return [R * cos(th), (0.5 - t) * p.h, -R * sin(th)]; },   // da fuori, non allo specchio
       nota3: 'Il cilindro: i due lati con la freccia verde sono diventati la stessa linea, e la tavola non si deforma.'
     },
     mobius: {
@@ -83,6 +155,11 @@
       r3: (s, t) => busta(s, t),
       nota3: 'La sfera: la busta chiusa. I quattro lati della tavola sono finiti tutti sullo stesso meridiano, i due angoli piegati sono i poli e la diagonale tra loro è il meridiano opposto.'
     },
+    bitoro: {
+      r3: (s, t, p) => bitoro(s, t, p),
+      dist: 2.3,                                     // è lunga in verticale: la camera si avvicina un po'
+      nota3: 'Il bitoro: una palla con due manici. La palla è il blocco in basso a sinistra della L, il manico sopra è il blocco a destra, quello sotto il blocco in alto. In cima si toccano le quattro foglie: è il punto singolare, dove i 6π di angolo si stringono in un giro solo.'
+    },
     rp2: {
       r3: (s, t) => boy(...disco(s, t)),
       // semisfera sopra il disco: 1 − a² − b² = (1 − X²)(1 − Y²), che sul bordo vale esattamente 0
@@ -95,7 +172,7 @@
   const punto4 = (sup, s, t, p) => FORME[sup].r4(s, t, p);
   const ha4 = sup => !!(FORME[sup] && FORME[sup].r4);
 
-  const V3 = { FORME, punto3, punto4, ha4, disco };
+  const V3 = { FORME, punto3, punto4, ha4, disco, fuoriL, BT };
   if (typeof module !== 'undefined' && module.exports) { module.exports = V3; return; }
   root.V3 = V3;
   if (typeof document === 'undefined') return;
@@ -162,7 +239,7 @@ void main(){
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       this.griglia();
-      this.q = Q0(); this.dist = 2.9; this.giro = true;
+      this.q = Q0(); this.dist = this.dist0 = (FORME[this.sup] && FORME[this.sup].dist) || 2.9; this.giro = true;
     }
     imposta(modo) { this.modo = modo; this.griglia(); }
     griglia() {
@@ -173,6 +250,7 @@ void main(){
       for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const k = j * (nx + 1) + i; this.uv[2 * k] = i / nx; this.uv[2 * k + 1] = j / ny; }
       const idx = new Uint16Array(nx * ny * 6); let n = 0;
       for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+        if (fuoriL((i + 0.5) / nx, (j + 0.5) / ny, p)) continue;     // il blocco che manca alla L del bitoro
         const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, d = c + 1;
         idx[n++] = a; idx[n++] = c; idx[n++] = b; idx[n++] = b; idx[n++] = c; idx[n++] = d;
       }
@@ -182,7 +260,10 @@ void main(){
       // scala: raggio 1 (in R⁴ si misura una volta sola, così la figura non pulsa mentre gira)
       this.scala = 1; this.centro = [0, 0, 0, 0];
       const pts = [];
-      for (let j = 0; j <= ny; j += 4) for (let i = 0; i <= nx; i += 4) pts.push(this.modo === 'r4' ? punto4(this.sup, i / nx, j / ny, p) : punto3(this.sup, i / nx, j / ny, p));
+      for (let j = 0; j <= ny; j += 4) for (let i = 0; i <= nx; i += 4) {
+        if (fuoriL(i / nx, j / ny, p)) continue;
+        pts.push(this.modo === 'r4' ? punto4(this.sup, i / nx, j / ny, p) : punto3(this.sup, i / nx, j / ny, p));
+      }
       const dim = pts[0].length, c = new Array(dim).fill(0);
       for (const q of pts) for (let k = 0; k < dim; k++) c[k] += q[k] / pts.length;
       let r = 0; for (const q of pts) r = Math.max(r, hypot(...q.map((x, k) => x - c[k])));
@@ -201,7 +282,7 @@ void main(){
           [y, w] = [y * cb - w * sb, y * sb + w * cb];
           pos[3 * k] = x; pos[3 * k + 1] = y; pos[3 * k + 2] = z; w4[k] = w * 1.6;
         } else {
-          const q = punto3(this.sup, s, t, p);
+          const q = punto3(this.sup, s, t, p) || c;      // fuori dalla L: punto qualunque, non è in nessun triangolo
           pos[3 * k] = (q[0] - c[0]) * sc; pos[3 * k + 1] = (q[1] - c[1]) * sc; pos[3 * k + 2] = (q[2] - c[2]) * sc; w4[k] = 0;
         }
       }
@@ -260,7 +341,7 @@ void main(){
         this.dita.set(e.pointerId, [e.clientX, e.clientY]);
         if (this.dita.size === 1) {
           const ora = performance.now();
-          if (ora - this.ultimoTocco < 300) { this.q = Q0(); this.dist = 2.9; }   // doppio tocco: vista iniziale
+          if (ora - this.ultimoTocco < 300) { this.q = Q0(); this.dist = this.dist0 || 2.9; }   // doppio tocco: vista iniziale
           this.ultimoTocco = ora;
         }
       };
