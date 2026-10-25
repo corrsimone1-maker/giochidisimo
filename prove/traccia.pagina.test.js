@@ -147,6 +147,34 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
   await scatto('05-segreto');
   bene('Segreto aperto con tutte le stelle e risolto');
 
+  // «Guarda da fuori»: sulle tavole risolte delle superfici la vista 3D disegna davvero (WebGL), anche in R⁴
+  const colori = () => page.evaluate(() => {
+    vista.disegna(); const gl = vista.gl, W = gl.drawingBufferWidth, H = gl.drawingBufferHeight, px = new Uint8Array(4), set = new Set();
+    for (let i = 1; i < 16; i++) for (let j = 1; j < 16; j++) { gl.readPixels(Math.floor(W * i / 16), Math.floor(H * j / 16), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); set.add(px.join(',')); }
+    return set.size;
+  });
+  assert.equal(await page.evaluate(() => { location.hash = 'frecce'; return 1; }), 1);
+  await page.waitForTimeout(100);
+  assert.ok(await page.isHidden('#apri3d'), 'sul piano niente vista da fuori');
+  for (const [area, k] of [['cilindro', 1], ['mobius', 3], ['toro', 1], ['klein', 2], ['rp2', 2], ['segreto', 2]]) {
+    await page.evaluate(id => { location.hash = id; }, area); await page.waitForTimeout(120);
+    await page.evaluate(k => vai(k), k); await page.waitForTimeout(80);
+    await page.click('#apri3d');
+    await page.waitForTimeout(700);
+    assert.ok(await page.isVisible('#vista3d'), area + ': vista aperta');
+    assert.ok(await colori() > 20, area + ': la superficie è disegnata');
+    if (area === 'klein' || area === 'rp2') {
+      assert.ok(await page.isVisible('#modo3d'), area + ': si può passare a R⁴');
+      await page.click('#modo3d [data-m="r4"]'); await page.waitForTimeout(500);
+      assert.ok(await page.isVisible('#giro4') && await colori() > 20, area + ': R⁴ disegnato');
+      await scatto('3d-' + area + '-r4');
+    } else assert.ok(await page.isHidden('#modo3d'), area + ': R⁴ solo per Klein e RP²');
+    await scatto('3d-' + area);
+    await page.click('#chiudi3d');
+    assert.ok(await page.isHidden('#vista3d'));
+  }
+  bene('Guarda da fuori: cilindro, Möbius, toro, Klein e RP² disegnati in 3D, Klein e RP² anche in R⁴');
+
   // i progressi restano dopo il ricaricamento; Reset (due tocchi) li cancella
   await page.goto(ROOT + 'giochi/traccia/');
   await page.waitForTimeout(150);

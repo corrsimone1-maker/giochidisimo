@@ -472,13 +472,24 @@ destra–sinistra e lilla `#c4a8ff` per sopra–sotto; font Major Mono Display s
   `#idArea` apre un'area. Schermata della tavola (Simo la vuole piena): in alto il numero grande della tavola con area, superficie e
   stato; al centro la griglia, misurata da `adatta()` per riempire lo spazio libero; sotto il suggerimento e, sui telefoni alti
   (`schermoAlto()`, almeno 760 px), la mappa dell'area con le tavole in miniatura, altrimenti la fila compatta con le frecce.
+- **Guarda da fuori** (`vista3d.js`, in `extra`): sulle tavole risolte delle superfici il tasto «3D» in alto apre la tavola avvolta
+  sulla superficie, in WebGL scritto a mano (niente librerie: funziona senza rete). La tavola risolta diventa una texture ritagliata
+  sul quadrato fondamentale (i tratti della linea sui lati incollati si ripetono sul gemello); `FORME` dà per ogni superficie la
+  mappa (s, t) → R³ e, per Klein e RP², → R⁴: cilindro arrotolato, nastro di Möbius allungato (con le nostre proporzioni non esiste
+  un nastro di carta: Schwartz, Annals 2025, serve un rapporto > √3; Simo ha detto di cambiare le proporzioni), ciambella, bottiglia
+  di Klein e superficie di Boy (Bryant–Kusner) con le loro autointersezioni (Simo le vuole: sono istruttive); in R⁴ Klein
+  `(A cos u, A sin u, r sin v cos(u/2), r sin v sin(u/2))` e RP² `(x² − y², 2xy, 2xz, 2yz)` sulla semisfera, ruotati nei piani
+  (x, w) e (y, w) e proiettati, con la quarta coordinata come colore. Trascinare ruota, pizzicare avvicina, doppio tocco torna
+  all'inizio. Le prove controllano che ogni mappa rispetti gli incollamenti e che in R⁴ non ci siano autointersezioni.
 - **Tavola nuova:** si cerca con un programma (strade possibili, poi simboli coerenti con una soluzione scelta e tolti finché resta
   unica), si aggiunge in `tavole.js` con un `id` nuovo (gli `id` non si cambiano: sono le chiavi dei progressi) e si lancia
   `node prove/traccia.test.js`. Frecce solo su superfici orientabili, Lati e Specchi solo sul piano, uscita su un bordo vero.
 - **Prove:** `node prove/traccia.test.js` (χ delle sei superfici, zone confrontate con una seconda implementazione scritta da zero
-  su 2.400 linee a caso, **ogni tavola** enumerata dalle due implementazioni con gli stessi cammini e lo stesso numero di soluzioni);
+  su 2.400 linee a caso, **ogni tavola** enumerata dalle due implementazioni con gli stessi cammini e lo stesso numero di soluzioni;
+  le forme di «Guarda da fuori» contro gli incollamenti);
   nel browser `prove/traccia.pagina.test.js` (serve `python3 -m http.server 8765`; risolve tutte le 57 tavole e le stelle trascinando
-  con tocchi veri, anche riprendendo dalla punta, poi linea sbagliata, sospesa, Segreto, salvataggi, Reset, finestre; `SCATTI=cartella`).
+  con tocchi veri, anche riprendendo dalla punta, poi linea sbagliata, sospesa, Segreto, vista 3D di ogni superficie anche in R⁴,
+  salvataggi, Reset, finestre; `SCATTI=cartella`).
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

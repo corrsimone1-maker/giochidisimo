@@ -169,6 +169,22 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes battito{0%{opacity:.8;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.9)}}
 @media (prefers-reduced-motion:reduce){.tav .sim.male,.tav .battito{animation:none}}
 
+/* Guarda da fuori */
+.da-fuori{flex:none;border-color:var(--luce);color:var(--luce);background:var(--luce-fondo);padding:5px 11px;font-family:var(--dati);font-size:13px;margin-right:6px}
+.vista3d{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;background:var(--carta)}
+.vista3d .spazio3d{width:64px;flex:none}
+#tela3d{flex:1;min-height:0;width:100%;display:block;touch-action:none}
+.comandi3d{flex:none;width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:10px max(16px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.interr{display:flex;background:var(--carta-2);border:1.5px solid var(--bordo);border-radius:999px;padding:3px}
+.interr button{border:0;background:none;border-radius:999px;padding:6px 16px;font:700 14px/1 var(--dati);color:var(--tenue)}
+.interr button[aria-pressed="true"]{background:var(--luce);color:var(--carta)}
+.giro4{width:100%;display:flex;align-items:center;gap:10px}
+.giro4 input{flex:1;accent-color:var(--cucitura-b)}
+.giro4 .freccia{font-size:13px}
+.nota3d{margin:0;text-align:center;font-size:14px;line-height:1.45;color:var(--gesso);min-height:4.35em}
+.aiuto3d{margin:0;text-align:center;font-size:12px;color:var(--tenue)}
+
 /* Finestre */
 .velo{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,14,30,.72);
   padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
@@ -216,6 +232,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
     <header class="top">
       <button class="back" id="esci" type="button">‹ Aree</button>
       <div class="titolo" id="titoloArea"></div>
+      <button class="pill da-fuori" id="apri3d" type="button" hidden aria-label="Guarda la superficie da fuori, in 3D">3D</button>
       <button class="linkbtn" id="apriRegola" type="button">Regola</button>
     </header>
     <div class="testa-foglio">
@@ -235,6 +252,27 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
       </div>
     </div>
   </section>
+</div>
+
+<div class="vista3d" id="vista3d" hidden>
+  <header class="top">
+    <button class="back" id="chiudi3d" type="button">‹ Tavola</button>
+    <div class="titolo" id="titolo3d"></div>
+    <span class="spazio3d"></span>
+  </header>
+  <canvas id="tela3d" aria-label="La tavola sulla superficie vista da fuori: trascina per ruotare"></canvas>
+  <div class="comandi3d">
+    <div class="interr" id="modo3d" hidden>
+      <button type="button" data-m="r3" aria-pressed="true">in R³</button>
+      <button type="button" data-m="r4" aria-pressed="false">in R⁴</button>
+    </div>
+    <div class="giro4" id="giro4" hidden>
+      <button type="button" class="freccia" id="pausa4" aria-label="Ferma la rotazione nella quarta dimensione">❚❚</button>
+      <input type="range" id="alfa4" min="0" max="628" value="0" aria-label="Rotazione nella quarta dimensione">
+    </div>
+    <p class="nota3d" id="nota3d"></p>
+    <p class="aiuto3d">Trascina per ruotare, pizzica per avvicinare, doppio tocco per tornare all’inizio.</p>
+  </div>
 </div>
 
 <div class="velo" id="come" hidden>
@@ -271,6 +309,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 <script src="motore.js"></script>
 <script src="tavole.js"></script>
+<script src="vista3d.js"></script>
 <script>
 'use strict';
 const AREE = self.TRACCIA_AREE, TR = self.TR;
@@ -712,6 +751,7 @@ const tavola = new Tavola($('tavola'), {
 const logo = new Tavola($('logo'), { presa: 95, risolta(dirs) { ST.logo = dirs; salvaST(); } });
 
 function apriArea(id) {
+  chiudiVista();
   const a = AREE.find(x => x.id === id);
   if (!a || (a.tipo === 'segreto' && !segretoAperto())) { location.hash = ''; return; }
   areaOra = a; UI.area = a.id;
@@ -817,7 +857,13 @@ function mappa(a) {
   });
 }
 window.addEventListener('resize', () => { if (areaOra && !tavola.tracciando) aggiorna(); });
-function suggerisci(txt, cls) { const h = $('hint'); h.textContent = txt; h.className = 'hint' + (cls ? ' ' + cls : ''); }
+function suggerisci(txt, cls) {
+  const h = $('hint'); h.textContent = txt; h.className = 'hint' + (cls ? ' ' + cls : '');
+  // sulle superfici incollate, a tavola risolta, il tasto «3D» in alto mostra la superficie da fuori
+  const t = areaOra && areaOra.tavole[idxOra];
+  $('apri3d').hidden = !(t && t.sup !== 'piano' && risolta(t) && tavola.stato === 'risolta' && tavola.mostra && window.V3);
+}
+$('apri3d').addEventListener('click', () => { const t = areaOra && areaOra.tavole[idxOra]; if (t && tavola.mostra && !tavola.tracciando) apriVista(t, tavola.mostra); });
 function suggerimentoBase() {
   const a = areaOra, t = a.tavole[idxOra];
   if (risolta(t)) {
@@ -845,10 +891,71 @@ function segna(dirs, k) {
     if (!eraSegreto && segretoAperto()) suggerisci('★ Tutte le stelle: il Segreto è aperto!', 'stella');
     return;
   }
-  if (a.tavole.every(risolta)) suggerisci('Area completata.', 'bene');
-  else suggerisci('Giusta.', 'bene');
+  const fuori = t.sup !== 'piano' ? ' Col tasto 3D in alto la vedi da fuori.' : '';
+  if (a.tavole.every(risolta)) suggerisci('Area completata.' + fuori, 'bene');
+  else suggerisci('Giusta.' + fuori, 'bene');
   if (primaVolta && i < a.tavole.length - 1) avanti = setTimeout(() => { if (areaOra === a && idxOra === i && !tavola.tracciando) vai(i + 1); }, 1100);
 }
+
+/* ---------- Guarda da fuori ---------- */
+/* La tavola risolta come immagine, ritagliata sul quadrato fondamentale: sarà la texture della superficie.
+   I tratti della linea che corrono su un lato incollato si ridisegnano anche sul lato gemello, così sulla
+   superficie la linea ha tutta la sua larghezza. */
+const STILE_TEX = `.lastra{fill:#163f73;stroke:none}.solchi line{stroke:#5a82b7;stroke-width:22;stroke-linecap:round}.solchi circle{fill:#5a82b7}
+.sim .tr{fill:none;stroke:#e6eef7;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}.sim .pi{fill:#e6eef7}
+.sim .fi{fill:none;stroke:#e6eef7;stroke-width:4;stroke-linecap:round}
+.sim text{fill:#e6eef7;font-family:'B612 Mono',ui-monospace,Menlo,monospace;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.linea{fill:none;stroke:#ffe9bd;stroke-width:22;stroke-linecap:round;stroke-linejoin:round}.punto{fill:#ffe9bd}`;
+function immagineTavola(p, passi) {
+  return new Promise((ok, ko) => {
+    const svg = document.createElementNS(NS, 'svg');
+    const base = disegnaTavola(svg, p, { quieta: true }), G = base.G;
+    svg.querySelectorAll('.battito,.anello,.cucitura,.bordo-inc,.prolunga').forEach(x => x.remove());
+    const linea = pts => el('polyline', { class: 'linea', points: pts.map(q => q.join(',')).join(' ') }, base.tg);
+    for (const tr of tratti(base, passi, null)) if (tr.length > 1) linea(tr);
+    for (const st of passi) {
+      const a = st.a, b = st.b;
+      if (G.S.lr && a[0] === b[0] && (a[0] === 0 || a[0] === p.w)) linea([base.pos(G.lr(a)), base.pos(G.lr(b))]);
+      if (G.S.tb && a[1] === b[1] && (a[1] === 0 || a[1] === p.h)) linea([base.pos(G.tb(a)), base.pos(G.tb(b))]);
+    }
+    const W = 1024, H = Math.round(1024 * p.h / p.w);
+    svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', `${M} ${M} ${p.w * U} ${p.h * U}`);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
+    const stile = document.createElementNS(NS, 'style'); stile.textContent = STILE_TEX; svg.insertBefore(stile, svg.firstChild);
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(img, 0, 0, W, H); ok(c); };
+    img.onerror = ko;
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+  });
+}
+let vista = null, vistaTav = null;
+function modo3d(m) {
+  document.querySelectorAll('#modo3d button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  $('giro4').hidden = m !== 'r4';
+  $('nota3d').textContent = V3.FORME[vistaTav.sup][m === 'r4' ? 'nota4' : 'nota3'];
+  if (vista && vista.ok && vista.p) { vista.imposta(m); vista.anima4 = true; $('pausa4').textContent = '❚❚'; }
+}
+async function apriVista(t, passi) {
+  const v = $('vista3d'); vistaTav = t;
+  $('titolo3d').innerHTML = `<b>${areaOra.sigla}</b>${areaOra.nome} da fuori`;
+  $('modo3d').hidden = !V3.ha4(t.sup);
+  v.hidden = false; if (window.gdsAppare) gdsAppare(v);
+  modo3d('r3');
+  if (!vista) { try { vista = new Vista3D($('tela3d')); } catch (e) { vista = { ok: false }; } }
+  if (!vista.ok) { $('nota3d').textContent = 'Questo telefono non riesce a disegnare in 3D.'; return; }
+  try {
+    const img = await immagineTavola(t, passi);
+    if (v.hidden || vistaTav !== t) return;
+    vista.alfa = 0; vista.anima4 = true;
+    vista.carica(t, img, 'r3');
+    vista.avvia(a => { $('alfa4').value = Math.round(a * 100); });
+  } catch (e) { $('nota3d').textContent = 'Non sono riuscito a preparare la vista.'; }
+}
+function chiudiVista() { $('vista3d').hidden = true; if (vista && vista.ok) vista.ferma(); }
+$('chiudi3d').addEventListener('click', chiudiVista);
+document.querySelectorAll('#modo3d button').forEach(b => b.addEventListener('click', () => modo3d(b.dataset.m)));
+$('alfa4').addEventListener('input', e => { if (!vista || !vista.ok) return; vista.anima4 = false; $('pausa4').textContent = '▶'; vista.impostaAlfa(+e.target.value / 100); });
+$('pausa4').addEventListener('click', () => { if (!vista || !vista.ok) return; vista.anima4 = !vista.anima4; $('pausa4').textContent = vista.anima4 ? '❚❚' : '▶'; });
 
 /* ---------- Finestre ---------- */
 function apri(v) { v.hidden = false; }
@@ -897,7 +1004,7 @@ function rotta() {
   const id = decodeURIComponent(location.hash.slice(1));
   if (id && AREE.some(a => a.id === id)) apriArea(id);
   else {
-    areaOra = null; clearTimeout(avanti); UI.area = null; salvaUI();
+    chiudiVista(); areaOra = null; clearTimeout(avanti); UI.area = null; salvaUI();
     $('schermoArea').hidden = true; $('hub').hidden = false; hub();
     if (window.gdsAppare) gdsAppare($('hub'));
   }

@@ -199,4 +199,51 @@ function indip(p) {
   bene('linee valide e non valide riconosciute');
 }
 
+/* ---------- 5. «Guarda da fuori»: le forme in R³ e R⁴ rispettano gli incollamenti ---------- */
+{
+  const V3 = require('../giochi/traccia/vista3d.js');
+  const d = (a, b) => Math.hypot(...a.map((x, i) => x - b[i]));
+  let prove = 0;
+  for (const sup of ['cilindro', 'mobius', 'toro', 'klein', 'rp2']) {
+    const S = TR.SUP[sup];
+    for (const [w, h] of [[3, 3], [4, 3], [4, 4]]) {
+      const p = { w, h, sup };
+      for (const modo of V3.ha4(sup) ? ['r3', 'r4'] : ['r3']) {
+        const f = (s, t) => modo === 'r3' ? V3.punto3(sup, s, t, p) : V3.punto4(sup, s, t, p);
+        let scala = 0; for (let k = 0; k <= 20; k++) scala = Math.max(scala, Math.hypot(...f(k / 20, 0.37)));
+        for (let k = 0; k <= 40; k++) {
+          const q = k / 40;
+          for (const v of [f(q, 0.5), f(0.5, q)]) assert.ok(v.every(Number.isFinite), `${sup} ${modo}: punto finito`);
+          if (S.lr) assert.ok(d(f(1, q), f(0, S.lr === 'dritto' ? q : 1 - q)) < 1e-9 * scala + 1e-9, `${sup} ${modo}: destra e sinistra incollate (t=${q})`);
+          if (S.tb) assert.ok(d(f(q, 1), f(S.tb === 'dritto' ? q : 1 - q, 0)) < 1e-9 * scala + 1e-9, `${sup} ${modo}: sopra e sotto incollati (s=${q})`);
+          prove++;
+        }
+      }
+    }
+  }
+  // R⁴: niente autointersezioni (punti lontani sulla superficie restano lontani), a differenza di R³
+  for (const sup of ['klein', 'rp2']) {
+    const p = { w: 4, h: 3, sup }, S = TR.SUP[sup], N = 36, pts = [];
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pts.push([(i + 0.5) / N, (j + 0.5) / N]);
+    // distanza sulla superficie (nel quadrato, tenendo conto degli incollamenti), approssimata dalle copie vicine
+    const copie = (s, t) => {
+      const out = [[s, t]];
+      if (S.lr) for (const o of [-1, 1]) out.push([s + o, S.lr === 'dritto' ? t : 1 - t]);
+      if (S.tb) for (const o of [-1, 1]) out.push([S.tb === 'dritto' ? s : 1 - s, t + o]);
+      if (S.lr && S.tb) for (const a of [-1, 1]) for (const b of [-1, 1]) out.push([(S.tb === 'dritto' ? s : 1 - s) + a, (S.lr === 'dritto' ? t : 1 - t) + b]);
+      return out;
+    };
+    const dq = (a, b) => Math.min(...copie(...b).map(c => Math.hypot(a[0] - c[0], a[1] - c[1])));
+    let min4 = Infinity, min3 = Infinity;
+    for (let i = 0; i < pts.length; i += 3) for (let j = i + 1; j < pts.length; j += 2) {
+      if (dq(pts[i], pts[j]) < 0.25) continue;
+      min4 = Math.min(min4, d(V3.punto4(sup, ...pts[i], p), V3.punto4(sup, ...pts[j], p)));
+      min3 = Math.min(min3, d(V3.punto3(sup, ...pts[i], p), V3.punto3(sup, ...pts[j], p)));
+    }
+    assert.ok(min4 > 0.08, `${sup}: in R⁴ punti lontani restano separati (${min4.toFixed(3)})`);
+    assert.ok(min3 < min4 / 2, `${sup}: in R³ invece si avvicinano (autointersezione, ${min3.toFixed(3)})`);
+  }
+  bene(`«Guarda da fuori»: forme in R³ e R⁴ coerenti con gli incollamenti (${prove} controlli); in R⁴ Klein e RP² senza autointersezioni`);
+}
+
 console.log(`\n${ok} prove superate`);
