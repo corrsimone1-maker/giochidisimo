@@ -469,7 +469,9 @@ destra–sinistra e lilla `#c4a8ff` per sopra–sotto; font Major Mono Display s
   finirebbe fuori dallo schermo); dal cerchio si ricomincia. Le soluzioni si salvano come stringhe di direzioni `U D L R` dal
   cerchio e si rifanno col motore all'apertura: quelle che non reggono più (tavola cambiata) si scartano. «Regola» mostra il testo
   dell'area solo tenendo premuto (è uno spoiler); «Come si gioca» spiega solo i comandi. Reset (due tocchi) cancella i progressi.
-  `#idArea` apre un'area.
+  `#idArea` apre un'area. Schermata della tavola (Simo la vuole piena): in alto il numero grande della tavola con area, superficie e
+  stato; al centro la griglia, misurata da `adatta()` per riempire lo spazio libero; sotto il suggerimento e, sui telefoni alti
+  (`schermoAlto()`, almeno 760 px), la mappa dell'area con le tavole in miniatura, altrimenti la fila compatta con le frecce.
 - **Tavola nuova:** si cerca con un programma (strade possibili, poi simboli coerenti con una soluzione scelta e tolti finché resta
   unica), si aggiunge in `tavole.js` con un `id` nuovo (gli `id` non si cambiano: sono le chiavi dei progressi) e si lancia
   `node prove/traccia.test.js`. Frecce solo su superfici orientabili, Lati e Specchi solo sul piano, uscita su un bordo vero.

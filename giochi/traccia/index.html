@@ -88,21 +88,25 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .avviso{border-radius:12px;padding:10px 12px;background:var(--luce-fondo);font-size:14px}
 .avviso b{color:var(--luce)}
 
-/* Tavola */
-.meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--dati);font-size:12.5px;letter-spacing:.1em;
-  color:var(--tenue);font-variant-numeric:tabular-nums;border-bottom:1px solid var(--riga);padding-bottom:6px}
-.meta .ok{color:var(--luce)}
-.meta .st{color:var(--stella)}
-.stage{display:flex;align-items:center;justify-content:center;min-height:220px}
-.stage svg{display:block;height:auto;max-width:100%;touch-action:none}
-.hint{margin:0;min-height:1.5em;text-align:center;font-size:14px;color:var(--tenue)}
+/* Tavola: la griglia occupa tutto lo spazio libero al centro (la misura la fa adatta()),
+   sotto una base fissa con suggerimento, tavole dell'area e cartiglio */
+.campo{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  padding:6px max(10px,env(safe-area-inset-right)) 6px max(10px,env(safe-area-inset-left))}
+.campo svg{display:block;flex:none;max-width:100%;max-height:100%;touch-action:none}
+.base{flex:none;width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
+  padding:0 max(16px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.hint{margin:0;min-height:2.9em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;color:var(--tenue)}
 .hint.bene{color:var(--luce)} .hint.stella{color:var(--stella)}
 .trovate{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
 .trovate .et{font-family:var(--dati);font-size:12px;letter-spacing:.1em;color:var(--stella)}
 .mini{width:58px;height:auto;display:block;border-radius:8px}
 .mini.vuota{opacity:.5}
-.strip{display:flex;align-items:center;padding-block:4px}
-.nodo{position:relative;flex:none;width:30px;height:30px;padding:0;display:grid;place-items:center;font:700 12px/1 var(--dati);font-variant-numeric:tabular-nums;
+.scorrimento{display:flex;align-items:center;gap:8px}
+.freccia{flex:none;width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:11px;border:1.5px solid var(--bordo);background:var(--carta-2);
+  font:700 22px/1 var(--ui);color:var(--gesso)}
+.freccia:disabled{opacity:.3;cursor:default}
+.strip{flex:1;min-width:0;display:flex;align-items:center;padding-block:6px}
+.nodo{position:relative;flex:none;width:28px;height:28px;padding:0;display:grid;place-items:center;font:700 12px/1 var(--dati);font-variant-numeric:tabular-nums;
   color:var(--tenue);background:var(--carta);border:2px solid var(--solco);border-radius:7px}
 .nodo.si{background:var(--luce);border-color:var(--luce);color:var(--carta)}
 .nodo.st{border-color:var(--stella)}
@@ -110,8 +114,29 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .nodo.ora{box-shadow:0 0 0 3px var(--carta),0 0 0 5px var(--luce)}
 .nodo:disabled{border-style:dashed;opacity:.45;cursor:default}
 .nodo .s{position:absolute;top:-9px;right:-7px;font-size:12px;line-height:1;color:var(--stella)}
-.cavetto{flex:1 1 auto;height:4px;min-width:5px;background:var(--solco);opacity:.5}
+.cavetto{flex:1 1 auto;height:4px;min-width:3px;background:var(--solco);opacity:.5}
 .cavetto.si{background:var(--luce);opacity:1}
+/* Mappa dell'area (telefoni alti): le tavole in miniatura, con la linea se risolte */
+.mappa{display:grid;gap:8px;justify-content:center;grid-template-columns:repeat(var(--c,4),minmax(0,92px))}
+.tessera{position:relative;aspect-ratio:1;width:100%;padding:4px;display:grid;place-items:center;border:2px solid var(--solco);border-radius:12px;background:var(--lastra)}
+.tessera svg{width:100%;height:100%;display:block;pointer-events:none}
+.tessera .tav .lastra{stroke:none}
+.tessera .n{position:absolute;left:5px;top:3px;font:700 11px/1 var(--dati);color:var(--tenue)}
+.tessera .s{position:absolute;right:4px;top:2px;font-size:12px;line-height:1;color:var(--stella)}
+.tessera.si{border-color:var(--luce)} .tessera.si .n{color:var(--luce)}
+.tessera.st{border-color:var(--stella)}
+.tessera.ora{box-shadow:0 0 0 3px var(--carta),0 0 0 5px var(--luce)}
+.tessera:disabled{border-style:dashed;opacity:.4;cursor:default}
+.testa-foglio{flex:none;width:100%;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:14px;
+  padding:6px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--riga)}
+.testa-foglio .numero{flex:none;display:flex;align-items:baseline;font-family:var(--marchio);font-size:46px;line-height:1;color:var(--luce);font-variant-numeric:tabular-nums}
+.testa-foglio .numero small{font-family:var(--dati);font-size:14px;color:var(--tenue);margin-left:4px;letter-spacing:.06em}
+.testa-foglio .dati{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-family:var(--dati);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue)}
+.testa-foglio .dati span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.testa-foglio .dati span:first-child{color:var(--gesso);font-size:13px}
+.testa-foglio .stato{flex:none;border:1.5px solid var(--bordo);border-radius:999px;padding:5px 11px;font-family:var(--dati);font-size:12.5px;color:var(--tenue);white-space:nowrap}
+.testa-foglio .stato.ok{border-color:var(--luce);color:var(--luce)}
+.testa-foglio .stato.st{border-color:var(--stella);color:var(--stella)}
 
 /* Disegno delle tavole */
 .tav{outline:none;-webkit-tap-highlight-color:transparent}
@@ -193,13 +218,20 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
       <div class="titolo" id="titoloArea"></div>
       <button class="linkbtn" id="apriRegola" type="button">Regola</button>
     </header>
-    <div class="scorri">
-      <div class="colonna">
-        <div class="meta"><span id="tav"></span><span id="stato"></span></div>
-        <div class="stage"><svg id="tavola" class="tav" tabindex="0" aria-label="Tavola: traccia una linea dal cerchio"></svg></div>
-        <p class="hint" id="hint"></p>
-        <div class="trovate" id="trovate" hidden></div>
+    <div class="testa-foglio">
+      <div class="numero"><span id="tav"></span><small id="tavTot"></small></div>
+      <div class="dati"><span id="cArea"></span><span id="cSup"></span></div>
+      <span class="stato" id="stato"></span>
+    </div>
+    <div class="campo" id="campo"><svg id="tavola" class="tav" tabindex="0" aria-label="Tavola: traccia una linea dal cerchio"></svg></div>
+    <div class="base">
+      <p class="hint" id="hint"></p>
+      <div class="trovate" id="trovate" hidden></div>
+      <nav class="mappa" id="mappa" aria-label="Tavole dell’area" hidden></nav>
+      <div class="scorrimento" id="scorrimento">
+        <button class="freccia" id="prima" type="button" aria-label="Tavola precedente">‹</button>
         <nav class="strip" id="strip" aria-label="Tavole dell’area"></nav>
+        <button class="freccia" id="dopo" type="button" aria-label="Tavola successiva">›</button>
       </div>
     </div>
   </section>
@@ -399,7 +431,6 @@ function disegnaTavola(svg, p, opz) {
   }
   const tg = el('g', { class: 'traccia', filter: `url(#bagliore${id})` }, svg);
   el('circle', { class: 'punto', cx: sx, cy: sy, r: 28 }, tg);
-  if (opz && opz.rif) svg.style.width = Math.min(100, W / opz.rif * 100).toFixed(2) + '%';
   return { p, G, W, H, pos, nub, sims, tg };
 }
 
@@ -670,7 +701,7 @@ const st0 = () => { const s = stellate(); return [s.filter(x => presa(x.t)).leng
 /* ---------- Area ---------- */
 let areaOra = null, idxOra = 0, avanti = null;
 const tavola = new Tavola($('tavola'), {
-  presa: 54, rif: 4 * U + 2 * M,
+  presa: 54,
   alVia() { clearTimeout(avanti); suggerisci(''); },
   risolta(dirs, k) { segna(dirs, k); },
   sbagliata() { suggerisci('Qualcosa non torna: guarda i simboli rossi.'); },
@@ -701,13 +732,35 @@ function vai(i) {
   tavola.carica(t, ultima ? ultima.passi : null);
   aggiorna();
   suggerimentoBase();
+  adatta();
 }
+/* La griglia grande quanto lo spazio libero tra la barra in alto e la base, senza deformarla. */
+function adatta() {
+  const c = $('campo'), svg = $('tavola'), b = tavola.base;
+  if (!b || $('schermoArea').hidden) return;
+  const cs = getComputedStyle(c);
+  const cw = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const ch = c.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const k = Math.min(cw / b.W, ch / b.H);
+  if (!(k > 0)) return;
+  svg.style.width = Math.floor(b.W * k) + 'px'; svg.style.height = Math.floor(b.H * k) + 'px';
+}
+if (window.ResizeObserver) new ResizeObserver(() => adatta()).observe($('campo'));
+else window.addEventListener('resize', adatta);
+const NOMI_SUP = { piano: 'piano', cilindro: 'cilindro', mobius: 'Möbius', toro: 'toro', klein: 'Klein', rp2: 'RP²' };
+$('prima').addEventListener('click', () => { if (!tavola.tracciando && idxOra > 0) vai(idxOra - 1); });
+$('dopo').addEventListener('click', () => { if (!tavola.tracciando && idxOra < areaOra.tavole.length - 1 && aperta(areaOra, idxOra + 1)) vai(idxOra + 1); });
 function aggiorna() {
   const a = areaOra, t = a.tavole[idxOra], n = trovate(t);
-  $('tav').textContent = `tav. ${pad(idxOra + 1)} / ${pad(a.tavole.length)}`;
+  $('cArea').textContent = a.nome;
+  $('cSup').textContent = `${NOMI_SUP[t.sup]} ${t.w}×${t.h}`;
+  $('tav').textContent = pad(idxOra + 1);
+  $('tavTot').textContent = '/' + pad(a.tavole.length);
   const st = $('stato');
-  if (t.stella) { st.className = 'st'; st.textContent = `★ ${Math.min(n, t.stella)}/${t.stella} soluzioni`; }
-  else { st.className = n ? 'ok' : ''; st.textContent = n ? 'risolta' : ''; }
+  if (t.stella) { st.className = 'stato st'; st.textContent = `★ ${Math.min(n, t.stella)}/${t.stella}`; }
+  else { st.className = 'stato' + (n ? ' ok' : ''); st.textContent = n ? 'risolta' : 'da fare'; }
+  $('prima').disabled = idxOra === 0;
+  $('dopo').disabled = !(idxOra < a.tavole.length - 1 && aperta(a, idxOra + 1));
   const tr = $('trovate');
   if (t.stella) {
     tr.hidden = false; tr.innerHTML = '';
@@ -717,6 +770,9 @@ function aggiorna() {
     const sol = ST.t[t.id] || [];
     for (let k = 0; k < t.stella; k++) tr.appendChild(miniatura(t, sol[k] || null));
   } else tr.hidden = true;
+  const grande = schermoAlto();
+  $('mappa').hidden = !grande; $('scorrimento').hidden = grande;
+  if (grande) { mappa(a); return; }
   const strip = $('strip'); strip.innerHTML = '';
   a.tavole.forEach((tt, k) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'nodo'; b.textContent = k + 1;
@@ -730,6 +786,37 @@ function aggiorna() {
     if (k < a.tavole.length - 1) { const c = document.createElement('span'); c.className = 'cavetto' + (risolta(tt) ? ' si' : ''); strip.appendChild(c); }
   });
 }
+/* Sui telefoni alti sotto la griglia c'è posto per la mappa dell'area; sugli altri la fila compatta. */
+const schermoAlto = () => window.innerHeight >= 760;
+function mappa(a) {
+  const box = $('mappa'); box.innerHTML = '';
+  const n = a.tavole.length; box.style.setProperty('--c', n <= 3 ? n : n <= 6 ? 3 : 4);
+  a.tavole.forEach((tt, k) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tessera';
+    const sol = ST.t[tt.id] || [], apre = aperta(a, k);
+    if (risolta(tt)) b.classList.add('si');
+    if (tt.stella && presa(tt)) b.classList.add('st');
+    if (k === idxOra) { b.classList.add('ora'); b.setAttribute('aria-current', 'true'); }
+    b.disabled = !apre;
+    if (apre) {
+      const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'tav');
+      const base = disegnaTavola(svg, tt, { quieta: true });
+      const r = sol.length ? rifai(tt, sol[sol.length - 1]) : null;
+      if (r) {
+        svg.classList.add('con-linea');
+        const pe = tt.end ? base.pos(tt.end) : null, d = tt.end ? TR.DV[tt.endDir] : null;
+        for (const tr of tratti(base, r.passi, pe ? [pe[0] + d[0] * base.nub, pe[1] + d[1] * base.nub] : null)) if (tr.length > 1) el('polyline', { class: 'linea', points: tr.map(q => q.join(',')).join(' ') }, base.tg);
+      }
+      b.appendChild(svg);
+    }
+    const num = document.createElement('span'); num.className = 'n'; num.textContent = k + 1; b.appendChild(num);
+    if (tt.stella) { const s = document.createElement('span'); s.className = 's'; s.textContent = '★'; b.appendChild(s); }
+    b.setAttribute('aria-label', `Tavola ${k + 1}${tt.stella ? ', con stella' : ''}${risolta(tt) ? ', risolta' : !apre ? ', chiusa' : ''}`);
+    b.addEventListener('click', () => { if (!tavola.tracciando) vai(k); });
+    box.appendChild(b);
+  });
+}
+window.addEventListener('resize', () => { if (areaOra && !tavola.tracciando) aggiorna(); });
 function suggerisci(txt, cls) { const h = $('hint'); h.textContent = txt; h.className = 'hint' + (cls ? ' ' + cls : ''); }
 function suggerimentoBase() {
   const a = areaOra, t = a.tavole[idxOra];
