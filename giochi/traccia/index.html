@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d2747">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<title>Traccia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=Major+Mono+Display&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* TRACCIA, tema «cianotipia»: carta blu da progetto con i quadretti, lastre più chiare per i pannelli,
+   la linea è l'unica luce calda. Rosso matita solo per gli errori, oro solo per le stelle.
+   I lati incollati hanno due colori: verde acqua per destra–sinistra, lilla per sopra–sotto.
+   Font: Major Mono Display solo per il marchio, B612 Mono per numeri ed etichette, Figtree per i testi. */
+:root{
+  --carta:#0d2747; --carta-2:#10305a; --quadretti:rgba(205,224,246,.06);
+  --lastra:#163f73; --bordo:#2c5b95; --solco:#5a82b7;
+  --gesso:#e6eef7; --tenue:#93abc9; --spento:#5f7fa6; --riga:rgba(147,171,201,.3);
+  --luce:#ffe9bd; --luce-fondo:rgba(255,233,189,.12);
+  --matita:#ff6c5c; --stella:#ffd36b;
+  --cucitura-a:#6fd6c4; --cucitura-b:#c4a8ff;
+  --marchio:'Major Mono Display',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --dati:'B612 Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--carta);color:var(--gesso);font-family:var(--ui);font-size:15px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--luce);outline-offset:2px}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--carta);
+  background-image:linear-gradient(var(--quadretti) 1px,transparent 1px),linear-gradient(90deg,var(--quadretti) 1px,transparent 1px);background-size:24px 24px}
+.schermo{flex:1;min-height:0;display:flex;flex-direction:column}
+
+/* Barra in alto */
+.top{display:flex;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 2px max(14px,env(safe-area-inset-left))}
+.back{flex:none;border:0;background:none;padding:8px 0;color:var(--luce);font-weight:700;font-size:15px;text-decoration:none}
+.titolo{flex:1;min-width:0;text-align:center;margin:0;font-family:var(--dati);font-weight:700;font-size:15px;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.titolo b{color:var(--luce);font-weight:700;margin-right:.4em}
+.linkbtn{flex:none;border:0;background:none;padding:8px 0;color:var(--tenue);font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.linkbtn.armato{color:var(--matita)}
+.scorri{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:4px max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.colonna{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+
+/* Hub */
+.testata{display:flex;align-items:center;gap:16px;padding-top:6px}
+.logo{width:118px;flex:none;height:auto;display:block;touch-action:none}
+.marca{min-width:0;display:flex;flex-direction:column;gap:6px}
+.marca h1{margin:0;font-family:var(--marchio);font-weight:400;font-size:clamp(30px,9vw,40px);line-height:1;letter-spacing:.02em}
+.marca p{margin:0;font-size:13.5px;color:var(--tenue)}
+.riepilogo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  font-family:var(--dati);font-size:12.5px;letter-spacing:.08em;color:var(--tenue);border-bottom:1px solid var(--riga);padding-bottom:8px}
+.riepilogo .st{color:var(--stella)}
+.pill{border:1.5px solid var(--bordo);background:var(--carta-2);border-radius:999px;padding:6px 13px;font-family:var(--ui);font-size:13.5px;font-weight:700;letter-spacing:0;color:var(--gesso)}
+.gruppo{display:flex;flex-direction:column;gap:8px}
+.gruppo h2{margin:4px 0 0;font-family:var(--dati);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue)}
+.area{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--lastra);border:1.5px solid var(--bordo);border-radius:16px;padding:10px 12px}
+.area .ic{width:48px;height:48px;display:block}
+.area .corpo{min-width:0;display:flex;flex-direction:column;gap:5px}
+.area .nome{font-weight:800;font-size:16.5px;line-height:1.15}
+.area .nome b{font-family:var(--dati);font-weight:700;font-size:13px;color:var(--tenue);margin-right:.5em;letter-spacing:.04em}
+.cavo{display:flex;align-items:center;gap:3px}
+.cavo i{width:9px;height:9px;border-radius:3px;border:1.5px solid var(--solco);flex:none}
+.cavo i.si{background:var(--luce);border-color:var(--luce)}
+.cavo i.st{border-color:var(--stella)}
+.cavo i.si.st{background:var(--stella)}
+.area .dx{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-family:var(--dati);font-size:12.5px;color:var(--tenue)}
+.area .dx .stelle{color:var(--stella)}
+.area.finita{border-color:var(--luce)}
+.area.chiusa{opacity:.65}
+.area.chiusa .nome{color:var(--tenue)}
+.avviso{border-radius:12px;padding:10px 12px;background:var(--luce-fondo);font-size:14px}
+.avviso b{color:var(--luce)}
+
+/* Tavola */
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--dati);font-size:12.5px;letter-spacing:.1em;
+  color:var(--tenue);font-variant-numeric:tabular-nums;border-bottom:1px solid var(--riga);padding-bottom:6px}
+.meta .ok{color:var(--luce)}
+.meta .st{color:var(--stella)}
+.stage{display:flex;align-items:center;justify-content:center;min-height:220px}
+.stage svg{display:block;height:auto;max-width:100%;touch-action:none}
+.hint{margin:0;min-height:1.5em;text-align:center;font-size:14px;color:var(--tenue)}
+.hint.bene{color:var(--luce)} .hint.stella{color:var(--stella)}
+.trovate{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.trovate .et{font-family:var(--dati);font-size:12px;letter-spacing:.1em;color:var(--stella)}
+.mini{width:58px;height:auto;display:block;border-radius:8px}
+.mini.vuota{opacity:.5}
+.strip{display:flex;align-items:center;padding-block:4px}
+.nodo{position:relative;flex:none;width:30px;height:30px;padding:0;display:grid;place-items:center;font:700 12px/1 var(--dati);font-variant-numeric:tabular-nums;
+  color:var(--tenue);background:var(--carta);border:2px solid var(--solco);border-radius:7px}
+.nodo.si{background:var(--luce);border-color:var(--luce);color:var(--carta)}
+.nodo.st{border-color:var(--stella)}
+.nodo.si.st.presa{background:var(--stella);border-color:var(--stella)}
+.nodo.ora{box-shadow:0 0 0 3px var(--carta),0 0 0 5px var(--luce)}
+.nodo:disabled{border-style:dashed;opacity:.45;cursor:default}
+.nodo .s{position:absolute;top:-9px;right:-7px;font-size:12px;line-height:1;color:var(--stella)}
+.cavetto{flex:1 1 auto;height:4px;min-width:5px;background:var(--solco);opacity:.5}
+.cavetto.si{background:var(--luce);opacity:1}
+
+/* Disegno delle tavole */
+.tav{outline:none;-webkit-tap-highlight-color:transparent}
+.tav .lastra{fill:var(--lastra);stroke:var(--bordo);stroke-width:3;transition:stroke .4s}
+.tav.risolta .lastra{stroke:var(--luce)}
+.tav:focus-visible .lastra{stroke:var(--luce);stroke-width:6}
+.tav .solchi line{stroke:var(--solco);stroke-width:22;stroke-linecap:round}
+.tav .solchi .prolunga{opacity:.45}
+.tav .solchi circle{fill:var(--solco)}
+.tav .anello{fill:none;stroke:var(--solco);stroke-width:4;stroke-dasharray:8 9}
+.tav .cucitura{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.tav .cucitura.a{stroke:var(--cucitura-a)} .tav .cucitura.b{stroke:var(--cucitura-b)}
+.tav .bordo-inc{stroke-width:4;stroke-dasharray:2 12;stroke-linecap:round;opacity:.8}
+.tav .bordo-inc.a{stroke:var(--cucitura-a)} .tav .bordo-inc.b{stroke:var(--cucitura-b)}
+.tav .sim{color:var(--gesso)}
+.tav .sim .tr{fill:none;stroke:currentColor;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.tav .sim .pi{fill:currentColor}
+.tav .sim .fi{fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round}
+.tav .sim text{fill:currentColor;font-family:var(--dati);font-weight:700;text-anchor:middle;dominant-baseline:central}
+.tav .sim.male{color:var(--matita);animation:lampeggia .5s steps(1,end) 4}
+.tav .traccia{display:none}
+.tav.con-linea .traccia{display:inline}
+.tav .linea{fill:none;stroke:var(--luce);stroke-width:22;stroke-linecap:round;stroke-linejoin:round}
+.tav .punto{fill:var(--luce)}
+.tav.sbagliata .linea{stroke:var(--matita);opacity:.75}
+.tav.sbagliata .punto{fill:var(--matita);opacity:.75}
+.tav .battito{fill:none;stroke:var(--luce);stroke-width:5;opacity:0;transform-box:fill-box;transform-origin:center;animation:battito 2.6s ease-out infinite}
+.tav.traccio .battito,.tav.sbagliata .battito,.tav.risolta .battito,.tav.quieta .battito,.tav.sospesa .battito.inizio{display:none}
+@keyframes lampeggia{50%{opacity:.15}}
+@keyframes battito{0%{opacity:.8;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.9)}}
+@media (prefers-reduced-motion:reduce){.tav .sim.male,.tav .battito{animation:none}}
+
+/* Finestre */
+.velo{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,14,30,.72);
+  padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.foglio{width:100%;max-width:480px;max-height:100%;overflow-y:auto;background:var(--carta-2);border:1.5px solid var(--bordo);border-radius:20px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px}
+.foglio h3{margin:0;font-family:var(--dati);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--luce)}
+.foglio p{margin:0;font-size:15px;line-height:1.5}
+.foglio ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px;font-size:15px;line-height:1.45}
+.foglio .tenue{color:var(--tenue);font-size:13.5px}
+.chiudi{align-self:stretch;border:0;border-radius:12px;padding:12px;background:var(--luce);color:var(--carta);font-weight:800;font-size:15px}
+.tieni{position:relative;overflow:hidden;border:1.5px dashed var(--bordo);border-radius:14px;padding:22px 14px;background:var(--lastra);text-align:center;font-weight:700;color:var(--tenue);touch-action:none}
+.tieni::before{content:"";position:absolute;inset:0;background:var(--luce-fondo);transform:scaleX(var(--p,0));transform-origin:left;transition:transform .05s linear}
+.tieni span{position:relative}
+.regola-testo{font-size:16px!important}
+.leg{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--tenue)}
+.leg svg{width:44px;height:44px;flex:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HUB -->
+  <section class="schermo" id="hub">
+    <header class="top">
+      <a class="back" href="../../">‹ Giochi</a>
+      <div class="titolo"></div>
+      <button class="linkbtn" id="reset" type="button">Reset</button>
+    </header>
+    <div class="scorri">
+      <div class="colonna">
+        <div class="testata">
+          <svg id="logo" class="tav logo quieta" role="img" aria-label="Traccia"></svg>
+          <div class="marca">
+            <h1>traccia</h1>
+            <p>Una linea dal cerchio all’uscita. Ogni area ha la sua regola.</p>
+          </div>
+        </div>
+        <div class="riepilogo"><span id="totali"></span><button class="pill" id="apriCome" type="button">Come si gioca</button></div>
+        <div id="aree" class="colonna" style="gap:18px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AREA -->
+  <section class="schermo" id="schermoArea" hidden>
+    <header class="top">
+      <button class="back" id="esci" type="button">‹ Aree</button>
+      <div class="titolo" id="titoloArea"></div>
+      <button class="linkbtn" id="apriRegola" type="button">Regola</button>
+    </header>
+    <div class="scorri">
+      <div class="colonna">
+        <div class="meta"><span id="tav"></span><span id="stato"></span></div>
+        <div class="stage"><svg id="tavola" class="tav" tabindex="0" aria-label="Tavola: traccia una linea dal cerchio"></svg></div>
+        <p class="hint" id="hint"></p>
+        <div class="trovate" id="trovate" hidden></div>
+        <nav class="strip" id="strip" aria-label="Tavole dell’area"></nav>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="velo" id="come" hidden>
+  <div class="foglio" role="dialog" aria-labelledby="comeT">
+    <h3 id="comeT">Come si gioca</h3>
+    <ul>
+      <li>Metti il dito sul cerchio e trascina: la linea segue le scanalature. Dove sono interrotte non si passa, e non si ripassa dove si è già passati.</li>
+      <li>Arriva all’uscita, il trattino che sporge dal bordo, e solleva il dito. Se lo sollevi prima, la linea resta lì: riprendila toccandone la punta, oppure ricomincia dal cerchio.</li>
+      <li>Sulle superfici chiuse (Toro, Klein, RP²) l’uscita non c’è: torna al cerchio e chiudi l’anello.</li>
+      <li>I lati con le frecce colorate sono incollati: uscendo da uno rientri da quello con le stesse frecce, nel verso delle frecce.</li>
+      <li>Se la linea è sbagliata diventa rossa, e lampeggiano i simboli che non vanno bene.</li>
+      <li>Ogni area ha la sua regola, la stessa per tutte le sue tavole. Scoprila dagli errori, oppure leggila dal tasto «Regola».</li>
+      <li>Le tavole con la <span style="color:var(--stella)">★</span> hanno più di una soluzione: trovale tutte per prendere la stella. Con tutte le stelle si apre il Segreto.</li>
+      <li>Le aree sono tutte aperte e si fanno nell’ordine che vuoi. Dentro un’area, le tavole si aprono una dopo l’altra.</li>
+    </ul>
+    <button class="chiudi" type="button" data-chiudi>Ho capito</button>
+  </div>
+</div>
+
+<div class="velo" id="regola" hidden>
+  <div class="foglio" role="dialog" aria-labelledby="regolaT">
+    <h3 id="regolaT">Regola</h3>
+    <div id="regolaCopri">
+      <p class="tenue" style="margin-bottom:10px">La regola si può scoprire dagli errori. Se la leggi, salti la scoperta.</p>
+      <div class="tieni" id="tieni"><span>Tieni premuto per leggerla</span></div>
+    </div>
+    <div id="regolaTesto" hidden>
+      <p class="regola-testo" id="regolaP"></p>
+      <div class="leg" id="regolaLeg" hidden></div>
+    </div>
+    <button class="chiudi" type="button" data-chiudi>Chiudi</button>
+  </div>
+</div>
+
+<script src="motore.js"></script>
+<script src="tavole.js"></script>
+<script>
+'use strict';
+const AREE = self.TRACCIA_AREE, TR = self.TR;
+const U = 100, M = 80, NS = 'http://www.w3.org/2000/svg';
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const DIR = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
+const LETTERA = d => d[0] === 1 ? 'R' : d[0] === -1 ? 'L' : d[1] === 1 ? 'D' : 'U';
+const tutte = AREE.flatMap(a => a.tavole.map(t => ({ a, t })));
+const tavolaDa = {}; tutte.forEach(x => { tavolaDa[x.t.id] = x; });
+
+/* ---------- Salvataggi ----------
+   gds-traccia-storico  { v: 1, t: { idTavola: ['RRUL…', …] }, logo }   soluzioni trovate (restano: è lo storico)
+   gds-traccia          { area, idx: { idArea: n } }                       dove eri rimasto (si pulisce dopo 7 giorni) */
+const K_ST = 'gds-traccia-storico', K_UI = 'gds-traccia';
+function leggi(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function scrivi(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+/* Rifà una linea da una stringa di direzioni: null se non regge più (tavola cambiata). */
+function rifai(p, str) {
+  if (typeof str !== 'string' || !/^[UDLR]+$/.test(str)) return null;
+  const G = TR.grafo(p); let r = p.start.slice(); const passi = [];
+  for (const ch of str) { const st = TR.passo(G, r, DIR[ch]); if (!st) return null; passi.push(st); r = st.b; }
+  const cammino = { vs: [G.start].concat(passi.map(s => s.v)), es: passi.map(s => s.e) };
+  if (!TR.valido(p, cammino) || !TR.controlla(p, cammino).ok) return null;
+  return { passi, cammino, k: TR.chiave(cammino.es) };
+}
+function caricaStorico() {
+  const s = leggi(K_ST), out = { v: 1, t: {}, logo: null };
+  if (!s || typeof s !== 'object') return out;
+  for (const id in (s.t || {})) {
+    const x = tavolaDa[id]; if (!x || !Array.isArray(s.t[id])) continue;
+    const viste = new Set(), buone = [];
+    for (const str of s.t[id]) { const r = rifai(x.t, str); if (r && !viste.has(r.k)) { viste.add(r.k); buone.push(str); } }
+    if (buone.length) out.t[id] = buone;
+  }
+  if (typeof s.logo === 'string' && rifai(LOGO, s.logo)) out.logo = s.logo;
+  return out;
+}
+const LOGO = { id: 'logo', w: 3, h: 2, sup: 'piano', start: [0, 2], end: [3, 0], endDir: 'up', gaps: [[1, 0, 2, 0], [1, 2, 2, 2]], s: { '2,0': 'NE', '0,0': 'S', '2,1': 'W', '1,1': 'N', '1,0': 'S' } };
+let ST = caricaStorico();
+let UI = (() => { const u = leggi(K_UI); return { area: u && typeof u.area === 'string' ? u.area : null, idx: u && u.idx && typeof u.idx === 'object' ? u.idx : {} }; })();
+const salvaST = () => scrivi(K_ST, ST), salvaUI = () => scrivi(K_UI, UI);
+
+const trovate = t => (ST.t[t.id] || []).length;
+const risolta = t => trovate(t) > 0;
+const presa = t => !!t.stella && trovate(t) >= t.stella;
+const stellate = () => tutte.filter(x => x.t.stella && x.a.tipo !== 'segreto');
+const segretoAperto = () => stellate().every(x => presa(x.t));
+const aperta = (a, k) => k === 0 || risolta(a.tavole[k - 1]) || risolta(a.tavole[k]);
+
+/* ---------- Disegno ---------- */
+function el(tag, attrs, padre) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (padre) padre.appendChild(e);
+  return e;
+}
+let uid = 0;
+function chevron(g, x, y, dir, doppio, classe) {
+  // freccia a punta lungo la direzione dir ([dx,dy]); doppia per sopra–sotto
+  const L = 13, n = doppio ? 2 : 1;
+  for (let k = 0; k < n; k++) {
+    const o = (k - (n - 1) / 2) * 15;
+    const cx = x + dir[0] * o, cy = y + dir[1] * o, px = -dir[1], py = dir[0];
+    el('path', { class: 'cucitura ' + classe, d: `M${cx - dir[0] * L * .6 + px * L} ${cy - dir[1] * L * .6 + py * L}L${cx + dir[0] * L * .6} ${cy + dir[1] * L * .6}L${cx - dir[0] * L * .6 - px * L} ${cy - dir[1] * L * .6 - py * L}` }, g);
+  }
+}
+function simbolo(g, p, k, code, cx, cy, id) {
+  const t = TR.tipo(code), s = el('g', { class: 'sim', 'data-k': k }, g);
+  if (t === 'freccia') {
+    const [vx, vy] = TR.FRECCE[code], L = 25;
+    const tx = cx + vx * L, ty = cy + vy * L, bx = cx - vx * L, by = cy - vy * L;
+    const n = Math.hypot(vx, vy), ux = vx / n, uy = vy / n, h = 16, c = Math.cos(.62), sn = Math.sin(.62);
+    const l1 = [tx - h * (ux * c - uy * sn), ty - h * (uy * c + ux * sn)], l2 = [tx - h * (ux * c + uy * sn), ty - h * (uy * c - ux * sn)];
+    el('path', { class: 'tr', d: `M${bx} ${by}L${tx} ${ty}M${l1[0]} ${l1[1]}L${tx} ${ty}L${l2[0]} ${l2[1]}` }, s);
+  } else if (t === 'numero') {
+    el('text', { x: cx, y: cy + 1, 'font-size': code.length > 1 ? 40 : 52 }, s).textContent = code;
+  } else if (code === 'sole') {
+    el('circle', { class: 'pi', cx, cy, r: 13 }, s);
+    for (let a = 0; a < 8; a++) { const an = a * Math.PI / 4; el('line', { class: 'fi', x1: cx + Math.cos(an) * 20, y1: cy + Math.sin(an) * 20, x2: cx + Math.cos(an) * 28, y2: cy + Math.sin(an) * 28 }, s); }
+  } else if (code === 'luna') {
+    const mid = 'luna' + id;
+    const m = el('mask', { id: mid }, s);
+    el('rect', { x: cx - 40, y: cy - 40, width: 80, height: 80, fill: '#fff' }, m);
+    el('circle', { cx: cx + 11, cy: cy - 8, r: 20, fill: '#000' }, m);
+    el('circle', { class: 'pi', cx, cy, r: 25, mask: `url(#${mid})` }, s);
+  } else if (t === 'specchio') {
+    const v = code === 'mv', A = 30, T = 12, G = 9;
+    if (v) {
+      el('line', { class: 'fi', x1: cx, y1: cy - A, x2: cx, y2: cy + A }, s);
+      el('path', { class: 'pi', d: `M${cx - G - T} ${cy - T}L${cx - G} ${cy}L${cx - G - T} ${cy + T}Z M${cx + G + T} ${cy - T}L${cx + G} ${cy}L${cx + G + T} ${cy + T}Z` }, s);
+    } else {
+      el('line', { class: 'fi', x1: cx - A, y1: cy, x2: cx + A, y2: cy }, s);
+      el('path', { class: 'pi', d: `M${cx - T} ${cy - G - T}L${cx} ${cy - G}L${cx + T} ${cy - G - T}Z M${cx - T} ${cy + G + T}L${cx} ${cy + G}L${cx + T} ${cy + G + T}Z` }, s);
+    }
+  }
+  return s;
+}
+
+/* Disegno statico di una tavola dentro un <svg>: lastra, solchi, cuciture, uscita, simboli. */
+function disegnaTavola(svg, p, opz) {
+  const G = TR.grafo(p), w = p.w, h = p.h, W = w * U + 2 * M, H = h * U + 2 * M, id = ++uid;
+  const pos = q => [M + q[0] * U, M + q[1] * U];
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const defs = el('defs', {}, svg);
+  const f = el('filter', { id: 'bagliore' + id, x: '-30%', y: '-30%', width: '160%', height: '160%' }, defs);
+  el('feGaussianBlur', { stdDeviation: 7, result: 'b' }, f);
+  const mg = el('feMerge', {}, f); el('feMergeNode', { in: 'b' }, mg); el('feMergeNode', { in: 'SourceGraphic' }, mg);
+  el('rect', { x: 4, y: 4, width: W - 8, height: H - 8, rx: 24, class: 'lastra' }, svg);
+  // lati incollati: tratteggio colorato e frecce
+  const cu = el('g', {}, svg);
+  if (G.S.lr) {
+    const rov = G.S.lr === 'rovescio';
+    for (const x of [0, w]) el('line', { class: 'bordo-inc a', x1: M + x * U, y1: M - 6, x2: M + x * U, y2: M + h * U + 6 }, cu);
+    chevron(cu, M - 52, M + h * U / 2, [0, -1], false, 'a');
+    chevron(cu, M + w * U + 52, M + h * U / 2, rov ? [0, 1] : [0, -1], false, 'a');
+  }
+  if (G.S.tb) {
+    const rov = G.S.tb === 'rovescio';
+    for (const y of [0, h]) el('line', { class: 'bordo-inc b', x1: M - 6, y1: M + y * U, x2: M + w * U + 6, y2: M + y * U }, cu);
+    chevron(cu, M + w * U / 2, M - 52, [1, 0], true, 'b');
+    chevron(cu, M + w * U / 2, M + h * U + 52, rov ? [-1, 0] : [1, 0], true, 'b');
+  }
+  const gr = el('g', { class: 'solchi' }, svg);
+  const solco = (a, b) => {
+    const [x1, y1] = pos(a), [x2, y2] = pos(b);
+    if (G.rotti.has(G.eid(a, b))) {
+      const t = .28;
+      el('line', { x1, y1, x2: x1 + (x2 - x1) * t, y2: y1 + (y2 - y1) * t }, gr);
+      el('line', { x1: x2, y1: y2, x2: x2 + (x1 - x2) * t, y2: y2 + (y1 - y2) * t }, gr);
+    } else el('line', { x1, y1, x2, y2 }, gr);
+  };
+  for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) {
+    if (x < w) solco([x, y], [x + 1, y]);
+    if (y < h) solco([x, y], [x, y + 1]);
+  }
+  // prolungamenti oltre i lati incollati (se il solco continua dall'altra parte)
+  const prolunga = (r, d) => {
+    const st = TR.passo(G, r, d); if (!st) return;
+    const [x, y] = pos(r); el('line', { class: 'prolunga', x1: x, y1: y, x2: x + d[0] * 30, y2: y + d[1] * 30 }, gr);
+  };
+  if (G.S.lr) for (let y = 0; y <= h; y++) { prolunga([w, y], [1, 0]); prolunga([0, y], [-1, 0]); }
+  if (G.S.tb) for (let x = 0; x <= w; x++) { prolunga([x, h], [0, 1]); prolunga([x, 0], [0, -1]); }
+  // uscita
+  const nub = U * .34;
+  if (p.end) { const [ex, ey] = pos(p.end), d = TR.DV[p.endDir]; el('line', { x1: ex, y1: ey, x2: ex + d[0] * nub, y2: ey + d[1] * nub }, gr); }
+  const [sx, sy] = pos(p.start);
+  el('circle', { cx: sx, cy: sy, r: 28 }, gr);
+  if (!p.end) el('circle', { class: 'anello', cx: sx, cy: sy, r: 44 }, svg);
+  if (!opz || !opz.quieta) el('circle', { class: 'battito inizio', cx: sx, cy: sy, r: 28 }, svg);
+  // simboli
+  const sg = el('g', {}, svg), sims = {};
+  for (const k in (p.s || {})) {
+    const [i, j] = k.split(',').map(Number);
+    sims[k] = simbolo(sg, p, k, p.s[k], M + (i + .5) * U, M + (j + .5) * U, id + '-' + k.replace(',', '-'));
+  }
+  const tg = el('g', { class: 'traccia', filter: `url(#bagliore${id})` }, svg);
+  el('circle', { class: 'punto', cx: sx, cy: sy, r: 28 }, tg);
+  if (opz && opz.rif) svg.style.width = Math.min(100, W / opz.rif * 100).toFixed(2) + '%';
+  return { p, G, W, H, pos, nub, sims, tg };
+}
+
+/* Tratti della linea (si spezzano dove passa per un lato incollato). */
+function tratti(base, passi, testa) {
+  const out = [[base.pos(base.p.start)]], STUB = 36;
+  let r = base.p.start;
+  for (const st of passi) {
+    let cur = out[out.length - 1];
+    if (st.j[0] || st.j[1]) {
+      const [x, y] = base.pos(r); cur.push([x + st.d[0] * STUB, y + st.d[1] * STUB]);
+      const [ax, ay] = base.pos(st.a); cur = [[ax - st.d[0] * STUB, ay - st.d[1] * STUB], [ax, ay]]; out.push(cur);
+    }
+    cur.push(base.pos(st.b)); r = st.b;
+  }
+  if (testa) out[out.length - 1].push(testa);
+  return out;
+}
+
+/* ---------- Tavola giocabile ---------- */
+class Tavola {
+  constructor(svg, opz) {
+    this.svg = svg; this.opz = opz; this.tracciando = false; this.stato = 'ferma'; this.passi = []; this.mostra = null;
+    svg.addEventListener('pointerdown', e => this.giu(e));
+    svg.addEventListener('pointermove', e => { if (this.tracciando) { e.preventDefault(); this.muovi(e); } });
+    svg.addEventListener('pointerup', () => this.su());
+    svg.addEventListener('pointercancel', () => this.su());
+    svg.addEventListener('keydown', e => this.tasto(e));
+  }
+  carica(p, mostra) {
+    this.p = p; this.tracciando = false; this.passi = []; this.chiuso = false;
+    this.base = disegnaTavola(this.svg, p, this.opz);
+    this.G = this.base.G; this.linee = [];
+    this.mostra = mostra || null;            // passi di una soluzione già trovata, da mostrare
+    this.stato = this.mostra ? 'risolta' : 'ferma';
+    this.ridisegna();
+  }
+  rep() { return this.passi.length ? this.passi[this.passi.length - 1].b : this.p.start; }
+  visitati() { const s = new Set([this.G.start]); for (const st of this.passi) s.add(st.v); return s; }
+  ridisegna(testa) {
+    const st = this.stato, cl = this.svg.classList;
+    let ps = null;
+    if (st === 'traccio' || st === 'sbagliata' || st === 'sospesa') ps = this.passi;
+    else if (st === 'risolta' && this.mostra) ps = this.mostra;
+    cl.toggle('traccio', st === 'traccio');
+    cl.toggle('sbagliata', st === 'sbagliata');
+    cl.toggle('sospesa', st === 'sospesa');
+    cl.toggle('risolta', st === 'risolta' || !!this.opz.sempreRisolta?.());
+    cl.toggle('con-linea', !!ps);
+    for (const l of this.linee) l.remove();
+    this.linee = [];
+    if (!ps) return;
+    let t = testa;
+    if (!t && (st === 'risolta' || st === 'sbagliata') && this.p.end) { const pe = this.base.pos(this.p.end), d = TR.DV[this.p.endDir]; t = [pe[0] + d[0] * this.base.nub, pe[1] + d[1] * this.base.nub]; }
+    for (const tr of tratti(this.base, ps, t)) {
+      if (tr.length < 2) continue;
+      this.linee.push(el('polyline', { class: 'linea', points: tr.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ') }, this.base.tg));
+    }
+    if (st === 'sospesa') {   // punta della linea in sospeso: si riprende da qui
+      const [x, y] = this.base.pos(this.rep());
+      this.linee.push(el('circle', { class: 'punto', cx: x, cy: y, r: 19 }, this.base.tg));
+      this.linee.push(el('circle', { class: 'battito', cx: x, cy: y, r: 19, style: 'display:inline' }, this.base.tg));
+    }
+  }
+  punto(e) {
+    const m = this.svg.getScreenCTM(); if (!m) return [0, 0];
+    const q = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+    return [q.x, q.y];
+  }
+  inizia() {
+    this.tracciando = true; this.stato = 'traccio'; this.passi = []; this.chiuso = false; this.ofs = [0, 0];
+    for (const k in this.base.sims) this.base.sims[k].classList.remove('male');
+    this.opz.alVia && this.opz.alVia();
+  }
+  /* Tocco: sulla punta di una linea in sospeso la riprende, sul cerchio ne comincia una nuova. */
+  giu(e) {
+    if (!this.p || this.tracciando) return;
+    const [x, y] = this.punto(e), [sx, sy] = this.base.pos(this.p.start);
+    const dS = Math.hypot(x - sx, y - sy);
+    if (this.stato === 'sospesa' && this.passi.length) {
+      const [hx, hy] = this.base.pos(this.rep()), dH = Math.hypot(x - hx, y - hy);
+      if (dH <= this.opz.presa && dH <= dS) {
+        e.preventDefault();
+        try { this.svg.setPointerCapture(e.pointerId); } catch (_) {}
+        this.tracciando = true; this.stato = 'traccio'; this.ofs = [hx - x, hy - y];
+        this.opz.alVia && this.opz.alVia();
+        this.cursore([x, y]); return;
+      }
+    }
+    if (dS > this.opz.presa) return;
+    e.preventDefault();
+    try { this.svg.setPointerCapture(e.pointerId); } catch (_) {}
+    this.inizia(); this.cursore([x, y]);
+  }
+  muovi(e) { const [x, y] = this.punto(e); this.cursore([x, y]); }
+  /* Il cursore è il dito più uno spostamento che cambia quando la linea salta da un lato incollato all'altro:
+     così il dito continua a guidare la linea anche dopo il salto. */
+  cursore(dito) {
+    const c = [dito[0] + this.ofs[0], dito[1] + this.ofs[1]];
+    const testa = this.avanza(c);
+    this.ridisegna(testa);
+  }
+  avanza(c) {
+    const G = this.G, p = this.p, nub = this.base.nub;
+    let testa = null;
+    for (let it = 0; it < 80; it++) {
+      const r = this.rep(), [hx, hy] = this.base.pos(r);
+      const dx = (c[0] - hx) / U, dy = (c[1] - hy) / U;
+      const ultimo = this.passi[this.passi.length - 1];
+      const cands = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(d => ({ d, pr: d[0] * dx + d[1] * dy })).filter(x => x.pr > .04).sort((a, b) => b.pr - a.pr);
+      testa = [hx, hy];
+      let mosso = false;
+      for (const { d, pr } of cands) {
+        if (ultimo && d[0] === -ultimo.d[0] && d[1] === -ultimo.d[1]) {          // indietro sull'ultimo lato
+          if (pr >= .5) {
+            this.passi.pop(); this.chiuso = false;
+            c[0] -= ultimo.j[0] * U; c[1] -= ultimo.j[1] * U; this.ofs[0] -= ultimo.j[0] * U; this.ofs[1] -= ultimo.j[1] * U;
+            mosso = true;
+          } else testa = [hx + d[0] * pr * U, hy + d[1] * pr * U];
+          break;
+        }
+        if (this.chiuso) continue;
+        if (p.end && this.passi.length && ultimo.v === G.end) {
+          const e = TR.DV[p.endDir];
+          if (d[0] === e[0] && d[1] === e[1]) { const t = Math.min(pr * U, nub); testa = [hx + d[0] * t, hy + d[1] * t]; break; }
+        }
+        const st = TR.passo(G, r, d);
+        if (!st) continue;
+        const parte = q => { const k = Math.min(pr, q); return [hx + d[0] * k * U, hy + d[1] * k * U]; };
+        if (G.anello && st.v === G.start) {
+          if (this.passi.length >= 2) {
+            if (pr >= .9) {
+              this.passi.push(st); this.chiuso = true; mosso = true;
+              c[0] += st.j[0] * U; c[1] += st.j[1] * U; this.ofs[0] += st.j[0] * U; this.ofs[1] += st.j[1] * U;
+            } else testa = parte(1);
+          }
+          else testa = parte(.7);
+          break;
+        }
+        if (this.visitati().has(st.v)) { testa = parte(.7); break; }
+        if (pr >= .9) {
+          this.passi.push(st);
+          c[0] += st.j[0] * U; c[1] += st.j[1] * U; this.ofs[0] += st.j[0] * U; this.ofs[1] += st.j[1] * U;
+          mosso = true;
+        } else testa = parte(1);
+        break;
+      }
+      if (!mosso) break;
+    }
+    return testa;
+  }
+  arrivato() {
+    if (!this.passi.length) return false;
+    return this.G.anello ? this.chiuso : this.passi[this.passi.length - 1].v === this.G.end;
+  }
+  /* Dito sollevato: all'uscita (o ad anello chiuso) si consegna; altrimenti la linea resta in sospeso,
+     così si può riprendere dalla punta (serve quando la linea gira attorno a un toro e il dito
+     arriverebbe fuori dallo schermo). Esc da tastiera la cancella. */
+  su(cancella) {
+    if (!this.tracciando) return;
+    this.tracciando = false;
+    if (!cancella && this.arrivato()) this.consegna();
+    else if (!cancella && this.passi.length) { this.stato = 'sospesa'; this.ridisegna(); this.opz.sospesa && this.opz.sospesa(); }
+    else { this.stato = this.mostra ? 'risolta' : 'ferma'; this.passi = []; this.ridisegna(); this.opz.annullata && this.opz.annullata(); }
+  }
+  consegna() {
+    const cammino = { vs: [this.G.start].concat(this.passi.map(s => s.v)), es: this.passi.map(s => s.e) };
+    const res = TR.controlla(this.p, cammino);
+    const dirs = this.passi.map(s => LETTERA(s.d)).join('');
+    if (res.ok) {
+      this.stato = 'risolta'; this.mostra = this.passi.slice(); this.ridisegna();
+      this.opz.risolta && this.opz.risolta(dirs, TR.chiave(cammino.es));
+    } else {
+      this.stato = 'sbagliata'; this.ridisegna();
+      for (const k of res.male) { const s = this.base.sims[k]; if (!s) continue; s.classList.remove('male'); void s.getBoundingClientRect(); s.classList.add('male'); }
+      this.opz.sbagliata && this.opz.sbagliata(res.male);
+    }
+  }
+  tasto(e) {
+    const mappa = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+    if (mappa[e.key]) {
+      e.preventDefault();
+      if (!this.tracciando) this.inizia();
+      const d = mappa[e.key], ultimo = this.passi[this.passi.length - 1];
+      if (ultimo && d[0] === -ultimo.d[0] && d[1] === -ultimo.d[1]) { this.passi.pop(); this.chiuso = false; }
+      else if (!this.chiuso) {
+        const st = TR.passo(this.G, this.rep(), d);
+        if (st) {
+          if (this.G.anello && st.v === this.G.start) { if (this.passi.length >= 2) { this.passi.push(st); this.chiuso = true; } }
+          else if (!this.visitati().has(st.v)) this.passi.push(st);
+        }
+      }
+      this.ridisegna(); return;
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && this.tracciando) { e.preventDefault(); this.su(); return; }
+    if (e.key === 'Escape' && this.tracciando) { this.su(true); return; }
+  }
+}
+
+/* Miniatura di una soluzione (per le stelle). */
+function miniatura(p, str) {
+  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'tav mini' + (str ? '' : ' vuota'));
+  const base = disegnaTavola(svg, { ...p, s: {} }, { quieta: true });
+  svg.querySelectorAll('.battito,.anello').forEach(x => x.remove());
+  if (str) {
+    const r = rifai(p, str);
+    if (r) { svg.classList.add('con-linea'); for (const tr of tratti(base, r.passi, p.end ? (() => { const pe = base.pos(p.end), d = TR.DV[p.endDir]; return [pe[0] + d[0] * base.nub, pe[1] + d[1] * base.nub]; })() : null)) if (tr.length > 1) el('polyline', { class: 'linea', points: tr.map(q => q.join(',')).join(' ') }, base.tg); }
+  }
+  return svg;
+}
+
+/* Icone delle aree */
+function icona(a) {
+  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 48 48'); svg.setAttribute('class', 'ic tav quieta');
+  el('rect', { x: 1, y: 1, width: 46, height: 46, rx: 10, class: 'lastra' }, svg);
+  if (a.tipo === 'forma') {
+    const S = TR.SUP[a.sup], g = el('g', {}, svg);
+    el('rect', { x: 12, y: 12, width: 24, height: 24, fill: 'none', stroke: 'var(--solco)', 'stroke-width': 2 }, g);
+    const fr = (x, y, d, cl, dop) => { const n = dop ? 2 : 1; for (let k = 0; k < n; k++) { const o = (k - (n - 1) / 2) * 5, cx = x + d[0] * o, cy = y + d[1] * o, px = -d[1], py = d[0], L = 4;
+      el('path', { d: `M${cx - d[0] * 2.4 + px * L} ${cy - d[1] * 2.4 + py * L}L${cx + d[0] * 2.4} ${cy + d[1] * 2.4}L${cx - d[0] * 2.4 - px * L} ${cy - d[1] * 2.4 - py * L}`, fill: 'none', stroke: cl, 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g); } };
+    if (S.lr) { fr(12, 24, [0, -1], 'var(--cucitura-a)'); fr(36, 24, S.lr === 'rovescio' ? [0, 1] : [0, -1], 'var(--cucitura-a)'); }
+    if (S.tb) { fr(24, 12, [1, 0], 'var(--cucitura-b)', true); fr(24, 36, S.tb === 'rovescio' ? [-1, 0] : [1, 0], 'var(--cucitura-b)', true); }
+  } else if (a.tipo === 'segreto') {
+    el('text', { x: 24, y: 25, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 26, fill: 'var(--stella)' }, svg).textContent = '★';
+  } else {
+    const g = el('g', { transform: 'translate(24 24) scale(.36) translate(-50 -50)' }, svg);
+    simbolo(g, null, 'x', a.simbolo, 50, 50, 'ic' + a.id);
+  }
+  return svg;
+}
+
+/* ---------- Hub ---------- */
+function hub() {
+  const tavTot = tutte.filter(x => x.a.tipo !== 'segreto');
+  const st = stellate();
+  $('totali').innerHTML = `TAVOLE ${tavTot.filter(x => risolta(x.t)).length}/${tavTot.length} · <span class="st">★ ${st.filter(x => presa(x.t)).length}/${st.length}</span>`;
+  const box = $('aree'); box.innerHTML = '';
+  const gruppi = [['Regole', a => a.tipo === 'regola'], ['Superfici', a => a.tipo === 'forma'], ['', a => a.tipo === 'segreto']];
+  for (const [nome, f] of gruppi) {
+    const div = document.createElement('div'); div.className = 'gruppo';
+    if (nome) { const h = document.createElement('h2'); h.textContent = nome; div.appendChild(h); }
+    for (const a of AREE.filter(f)) div.appendChild(cartaArea(a));
+    box.appendChild(div);
+  }
+}
+function cartaArea(a) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'area';
+  const fatte = a.tavole.filter(risolta).length, stelle = a.tavole.filter(t => t.stella), prese = stelle.filter(presa).length;
+  const chiusa = a.tipo === 'segreto' && !segretoAperto();
+  if (chiusa) b.classList.add('chiusa');
+  if (fatte === a.tavole.length && prese === stelle.length) b.classList.add('finita');
+  b.appendChild(icona(a));
+  const corpo = document.createElement('span'); corpo.className = 'corpo';
+  corpo.innerHTML = `<span class="nome"><b>${a.sigla}</b>${a.nome}</span>`;
+  const cavo = document.createElement('span'); cavo.className = 'cavo';
+  if (chiusa) { const s = st0(); cavo.innerHTML = `<span style="font-size:13px;color:var(--tenue)">Si apre con tutte le stelle: <span style="color:var(--stella)">★ ${s[0]}/${s[1]}</span></span>`; }
+  else for (const t of a.tavole) { const i = document.createElement('i'); if (risolta(t) && (!t.stella || presa(t))) i.className = 'si'; if (t.stella) i.classList.add('st'); cavo.appendChild(i); }
+  corpo.appendChild(cavo); b.appendChild(corpo);
+  const dx = document.createElement('span'); dx.className = 'dx';
+  dx.innerHTML = chiusa ? '<span>chiuso</span>' : `<span>${fatte}/${a.tavole.length}</span>` + (stelle.length ? `<span class="stelle">★ ${prese}/${stelle.length}</span>` : '');
+  b.appendChild(dx);
+  b.setAttribute('aria-label', `${a.nome}: ${chiusa ? 'chiuso' : fatte + ' tavole su ' + a.tavole.length}`);
+  b.addEventListener('click', () => { if (!chiusa) location.hash = a.id; });
+  return b;
+}
+const st0 = () => { const s = stellate(); return [s.filter(x => presa(x.t)).length, s.length]; };
+
+/* ---------- Area ---------- */
+let areaOra = null, idxOra = 0, avanti = null;
+const tavola = new Tavola($('tavola'), {
+  presa: 54, rif: 4 * U + 2 * M,
+  alVia() { clearTimeout(avanti); suggerisci(''); },
+  risolta(dirs, k) { segna(dirs, k); },
+  sbagliata() { suggerisci('Qualcosa non torna: guarda i simboli rossi.'); },
+  sospesa() { suggerisci('Riprendi dalla punta della linea, o ricomincia dal cerchio.'); },
+  annullata() { suggerimentoBase(); },
+  sempreRisolta: () => areaOra && risolta(areaOra.tavole[idxOra])
+});
+const logo = new Tavola($('logo'), { presa: 95, risolta(dirs) { ST.logo = dirs; salvaST(); } });
+
+function apriArea(id) {
+  const a = AREE.find(x => x.id === id);
+  if (!a || (a.tipo === 'segreto' && !segretoAperto())) { location.hash = ''; return; }
+  areaOra = a; UI.area = a.id;
+  let i = UI.idx[a.id];
+  if (!Number.isInteger(i) || i < 0 || i >= a.tavole.length || !aperta(a, i)) {
+    i = a.tavole.findIndex(t => !risolta(t)); if (i < 0) i = 0;
+  }
+  $('hub').hidden = true; $('schermoArea').hidden = false;
+  $('titoloArea').innerHTML = `<b>${a.sigla}</b>${a.nome}`;
+  vai(i);
+  if (window.gdsAppare) gdsAppare($('schermoArea'));
+}
+function vai(i) {
+  clearTimeout(avanti);
+  const a = areaOra; idxOra = i; UI.idx[a.id] = i; salvaUI();
+  const t = a.tavole[i], sol = ST.t[t.id] || [];
+  const ultima = sol.length ? rifai(t, sol[sol.length - 1]) : null;
+  tavola.carica(t, ultima ? ultima.passi : null);
+  aggiorna();
+  suggerimentoBase();
+}
+function aggiorna() {
+  const a = areaOra, t = a.tavole[idxOra], n = trovate(t);
+  $('tav').textContent = `tav. ${pad(idxOra + 1)} / ${pad(a.tavole.length)}`;
+  const st = $('stato');
+  if (t.stella) { st.className = 'st'; st.textContent = `★ ${Math.min(n, t.stella)}/${t.stella} soluzioni`; }
+  else { st.className = n ? 'ok' : ''; st.textContent = n ? 'risolta' : ''; }
+  const tr = $('trovate');
+  if (t.stella) {
+    tr.hidden = false; tr.innerHTML = '';
+    const et = document.createElement('span'); et.className = 'et';
+    et.textContent = presa(t) ? '★ STELLA PRESA' : `★ ${t.stella} SOLUZIONI DIVERSE`;
+    tr.appendChild(et);
+    const sol = ST.t[t.id] || [];
+    for (let k = 0; k < t.stella; k++) tr.appendChild(miniatura(t, sol[k] || null));
+  } else tr.hidden = true;
+  const strip = $('strip'); strip.innerHTML = '';
+  a.tavole.forEach((tt, k) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'nodo'; b.textContent = k + 1;
+    if (risolta(tt)) b.classList.add('si');
+    if (tt.stella) { b.classList.add('st'); if (presa(tt)) b.classList.add('presa'); const s = document.createElement('span'); s.className = 's'; s.textContent = '★'; b.appendChild(s); }
+    if (k === idxOra) { b.classList.add('ora'); b.setAttribute('aria-current', 'true'); }
+    b.disabled = !aperta(a, k);
+    b.setAttribute('aria-label', `Tavola ${k + 1}${tt.stella ? ', con stella' : ''}${risolta(tt) ? ', risolta' : b.disabled ? ', chiusa' : ''}`);
+    b.addEventListener('click', () => { if (!tavola.tracciando) vai(k); });
+    strip.appendChild(b);
+    if (k < a.tavole.length - 1) { const c = document.createElement('span'); c.className = 'cavetto' + (risolta(tt) ? ' si' : ''); strip.appendChild(c); }
+  });
+}
+function suggerisci(txt, cls) { const h = $('hint'); h.textContent = txt; h.className = 'hint' + (cls ? ' ' + cls : ''); }
+function suggerimentoBase() {
+  const a = areaOra, t = a.tavole[idxOra];
+  if (risolta(t)) {
+    if (t.stella && !presa(t)) return suggerisci('Traccia un’altra soluzione per la stella.', 'stella');
+    if (a.tavole.every(risolta)) return suggerisci('Area completata.', 'bene');
+    return suggerisci('');
+  }
+  if (idxOra > 0) return suggerisci('');
+  if (!t.end) return suggerisci('Qui non c’è uscita: torna al cerchio.');
+  if (a.tipo === 'forma') return suggerisci('I lati con le frecce sono incollati.');
+  suggerisci('Trascina dal cerchio fino all’uscita.');
+}
+function segna(dirs, k) {
+  const a = areaOra, t = a.tavole[idxOra], i = idxOra;
+  const lista = ST.t[t.id] || [];
+  const chiavi = lista.map(s => (rifai(t, s) || {}).k);
+  const nuova = !chiavi.includes(k), primaVolta = !lista.length, eraSegreto = segretoAperto();
+  if (nuova) { ST.t[t.id] = lista.concat([dirs]); salvaST(); }
+  aggiorna();
+  if (t.stella) {
+    const n = trovate(t);
+    if (!nuova) suggerisci('Questa soluzione l’avevi già trovata.', 'stella');
+    else if (n >= t.stella) suggerisci('★ Stella presa!', 'stella');
+    else suggerisci(`Soluzione ${n} di ${t.stella}: cercane un’altra.`, 'stella');
+    if (!eraSegreto && segretoAperto()) suggerisci('★ Tutte le stelle: il Segreto è aperto!', 'stella');
+    return;
+  }
+  if (a.tavole.every(risolta)) suggerisci('Area completata.', 'bene');
+  else suggerisci('Giusta.', 'bene');
+  if (primaVolta && i < a.tavole.length - 1) avanti = setTimeout(() => { if (areaOra === a && idxOra === i && !tavola.tracciando) vai(i + 1); }, 1100);
+}
+
+/* ---------- Finestre ---------- */
+function apri(v) { v.hidden = false; }
+function chiudi(v) { v.hidden = true; }
+document.querySelectorAll('.velo').forEach(v => {
+  v.addEventListener('click', e => { if (e.target === v || e.target.hasAttribute('data-chiudi')) chiudi(v); });
+});
+$('apriCome').addEventListener('click', () => apri($('come')));
+$('apriRegola').addEventListener('click', () => {
+  const a = areaOra; if (!a) return;
+  $('regolaT').textContent = `Regola · ${a.nome}`;
+  $('regolaP').textContent = a.regola;
+  $('regolaCopri').hidden = false; $('regolaTesto').hidden = true;
+  $('tieni').style.setProperty('--p', 0);
+  apri($('regola'));
+});
+(() => {
+  const b = $('tieni'); let t0 = 0, raf = 0;
+  const ferma = () => { cancelAnimationFrame(raf); t0 = 0; b.style.setProperty('--p', 0); };
+  const passo = () => {
+    const p = Math.min(1, (performance.now() - t0) / 700); b.style.setProperty('--p', p);
+    if (p >= 1) { ferma(); $('regolaCopri').hidden = true; $('regolaTesto').hidden = false; return; }
+    raf = requestAnimationFrame(passo);
+  };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); t0 = performance.now(); raf = requestAnimationFrame(passo); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, ferma));
+})();
+
+/* Reset: due tocchi entro 3 secondi */
+(() => {
+  const b = $('reset'); let timer = null;
+  b.addEventListener('click', () => {
+    if (!b.classList.contains('armato')) {
+      b.classList.add('armato'); b.textContent = 'Ancora una volta';
+      clearTimeout(timer); timer = setTimeout(() => { b.classList.remove('armato'); b.textContent = 'Reset'; }, 3000);
+      return;
+    }
+    clearTimeout(timer); b.classList.remove('armato'); b.textContent = 'Reset';
+    ST = { v: 1, t: {}, logo: null }; UI = { area: null, idx: {} }; salvaST(); salvaUI();
+    logo.carica(LOGO, null); hub();
+  });
+})();
+
+/* ---------- Navigazione: #idArea apre l'area, niente # è l'elenco ---------- */
+function rotta() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id && AREE.some(a => a.id === id)) apriArea(id);
+  else {
+    areaOra = null; clearTimeout(avanti); UI.area = null; salvaUI();
+    $('schermoArea').hidden = true; $('hub').hidden = false; hub();
+    if (window.gdsAppare) gdsAppare($('hub'));
+  }
+}
+let dalHub = false;   // si è entrati nell'area da questo elenco: «‹ Aree» torna indietro nella cronologia
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.area')) dalHub = true; }, true);
+$('esci').addEventListener('click', () => { if (dalHub && location.hash) { dalHub = false; history.back(); } else location.hash = ''; });
+window.addEventListener('hashchange', rotta);
+
+logo.carica(LOGO, ST.logo ? (rifai(LOGO, ST.logo) || {}).passi : null);
+rotta();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

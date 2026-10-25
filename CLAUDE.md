@@ -42,7 +42,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
-- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, MENTAL, ALIBI);
+- `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, MENTAL, ALIBI, Traccia);
 - `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
@@ -125,7 +125,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
      7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
      Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`,
-     ALIBI giallo evidenziatore `#F2D21B`, MENTAL verde menta `#3DDCA0`);
+     ALIBI giallo evidenziatore `#F2D21B`, MENTAL verde menta `#3DDCA0`, Traccia crema della linea `#FFE9BD`);
    - `filo` (facoltativo): un filo sottile sul lato interno della striscia, per i colori troppo scuri sul fondo;
    - `extra` se la pagina carica altri file, così funzionano anche offline;
    - `dati` con tutte le chiavi che il gioco salva sul telefono (nomi, squadre, impostazioni, partita), tranne gli
@@ -167,6 +167,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-alibi` (modo, livello, luogo, telefoni), `gds-alibi-partita` (`par` e `caso` intero, telefoni, `io`, consegna, accusa, taccuino `tac`), `gds-alibi-storico` (casi chiusi: risolto o no, durata);
   - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
   - `gds-mental-partite` (tavole a metà di MENTAL, per data, e allenamenti `data|prova`), `gds-mental-storico` (il tempo ufficiale e l'esito di ogni giorno giocato: è «I miei tempi»);
+  - `gds-traccia` (dove eri rimasto: `area`, `idx` per area), `gds-traccia-storico` (`{ v: 1, t: { idTavola: ['RRUL…'] }, logo }`: le soluzioni trovate come direzioni, cioè i progressi e le stelle);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
   - `gds-ultimo-uso` (quando è stato aperto l'ultima volta ogni gioco, la scrive `comune/pulizia.js`).
@@ -187,7 +188,7 @@ nomi, squadre, impostazioni e partite di un gioco che non usa vanno via.
   di tutti i giochi, compresi nome e tavoli del poker.
 - **Restano sempre:**
   - gli storici (`giochidisimo:7wonders:storico`, `gds-dossier-storico`, che serve a bilanciare gli indizi, `gds-camelup-storico`,
-    `gds-codenames-storico`, `gds-societa-storico`, `gds-alibi-storico`, `gds-mental-storico`);
+    `gds-codenames-storico`, `gds-societa-storico`, `gds-alibi-storico`, `gds-mental-storico`, `gds-traccia-storico`, cioè i progressi di Traccia);
   - `fiches:device`;
   - tutto ciò che non è elencato. Sullo stesso indirizzo `corrsimone1-maker.github.io` ci sono anche altri siti di
     Simo, quindi **mai** `localStorage.clear()`.
@@ -440,6 +441,42 @@ mine; font Bricolage Grotesque e Figtree.
   rimescolamento; circa 2 minuti); nel browser `prove/mental.pagina.test.js` (serve `python3 -m http.server 8765`; orologio
   del browser spostato: lancio, ricaricamento, ogni tipo di sfida finito dall'interfaccia, consegne sbagliate, mina,
   resa, calendario, mezzanotte a partita aperta).
+
+### Traccia → `giochi/traccia/`
+
+Gioco da soli alla The Witness (chiesto da Simo per usare l'app anche quando si è da soli): si traccia col dito una linea dal
+cerchio all'uscita e i simboli nelle caselle dicono cosa deve valere nelle zone in cui la linea divide la griglia. Tema
+«cianotipia» (carta blu `#0d2747` coi quadretti, lastre `#163f73`, solchi `#5a82b7`, la linea crema `#ffe9bd` è l'unica luce;
+rosso matita `#ff6c5c` solo per gli errori, oro `#ffd36b` solo per le stelle; lati incollati verde acqua `#6fd6c4` per
+destra–sinistra e lilla `#c4a8ff` per sopra–sotto; font Major Mono Display solo per il marchio, B612 Mono, Figtree).
+- **Aree** (in `tavole.js`, `self.TRACCIA_AREE`), **tutte aperte, in qualunque ordine** (scelta di Simo); dentro un'area le tavole si
+  aprono una dopo l'altra. Ogni area ha **una regola sola** per tutte le sue tavole:
+  - regole sul piano: Frecce (in ogni zona i vettori si annullano, una diagonale vale due passi), Numeri (il numero è quante caselle
+    ha la sua zona), Lati (camminando dal cerchio all'uscita i soli stanno a sinistra, le lune a destra), Specchi (zona simmetrica
+    rispetto all'asse dello specchio, che passa per il centro della sua casella);
+  - superfici coi lati incollati, tutte coi Numeri: Cilindro, Möbius, Toro, Klein, RP² (`SUP` in `motore.js`: `lr`/`tb`
+    `dritto` o `rovescio`). Sulle superfici chiuse non c'è uscita: la linea deve tornare al cerchio (un anello);
+  - Segreto: tre tavole con le regole insieme, si apre quando si hanno **tutte** le stelle.
+- **Stelle:** le tavole con `stella: n` hanno esattamente n soluzioni diverse (stessi lati = stessa soluzione, anche un anello al
+  contrario); trovarle tutte dà la stella. Oggi una per area, 9 in tutto. Le altre tavole con simboli hanno **una sola soluzione**;
+  quelle senza simboli sono labirinti (va bene tutto).
+- **`motore.js`** (`self.TR`, anche `require`): `grafo(p)` (vertici e lati identificati dagli incollamenti con union-find, caselle,
+  lati interrotti), `passo(G, r, d)` (un passo dalla copia `r` di un vertice; se esce da un lato incollato rientra dal gemello:
+  `j` è il salto), `zone`, `controlla(p, { vs, es })` (regole, con i simboli sbagliati), `valido`, `cammini` (tutte le linee),
+  `soluzioni`. Le regole sono **solo qui**: la pagina usa le stesse funzioni.
+- **Pagina:** il cursore è il dito più uno spostamento che cambia a ogni salto, così il dito continua a guidare la linea dall'altra
+  parte. Se si solleva il dito prima dell'uscita la linea **resta in sospeso** e si riprende toccandone la punta (sul toro il dito
+  finirebbe fuori dallo schermo); dal cerchio si ricomincia. Le soluzioni si salvano come stringhe di direzioni `U D L R` dal
+  cerchio e si rifanno col motore all'apertura: quelle che non reggono più (tavola cambiata) si scartano. «Regola» mostra il testo
+  dell'area solo tenendo premuto (è uno spoiler); «Come si gioca» spiega solo i comandi. Reset (due tocchi) cancella i progressi.
+  `#idArea` apre un'area.
+- **Tavola nuova:** si cerca con un programma (strade possibili, poi simboli coerenti con una soluzione scelta e tolti finché resta
+  unica), si aggiunge in `tavole.js` con un `id` nuovo (gli `id` non si cambiano: sono le chiavi dei progressi) e si lancia
+  `node prove/traccia.test.js`. Frecce solo su superfici orientabili, Lati e Specchi solo sul piano, uscita su un bordo vero.
+- **Prove:** `node prove/traccia.test.js` (χ delle sei superfici, zone confrontate con una seconda implementazione scritta da zero
+  su 2.400 linee a caso, **ogni tavola** enumerata dalle due implementazioni con gli stessi cammini e lo stesso numero di soluzioni);
+  nel browser `prove/traccia.pagina.test.js` (serve `python3 -m http.server 8765`; risolve tutte le 57 tavole e le stelle trascinando
+  con tocchi veri, anche riprendendo dalla punta, poi linea sbagliata, sospesa, Segreto, salvataggi, Reset, finestre; `SCATTI=cartella`).
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

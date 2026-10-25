@@ -34,7 +34,7 @@ self.GIOCHI = {
   categorie: [
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
-    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, Perudo, Hex ad Aste, Claude\u00A0Machine, MENTAL e ALIBI', simbolo: 'maschera' },
+    { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, Perudo, Hex ad Aste, Claude\u00A0Machine, MENTAL, ALIBI e Traccia', simbolo: 'maschera' },
     { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
     { id: 'expansions', nome: 'Expansions', descrizione: 'Espansioni nostre per i giochi da tavolo che abbiamo già', simbolo: 'fascicolo', unita: ['espansione', 'espansioni'] }
   ],
@@ -53,6 +53,7 @@ self.GIOCHI = {
       extra: ['giochi/mental/comune.js', 'giochi/mental/viste.js', 'giochi/mental/viste-griglie.js', 'giochi/mental/sfide/indice.js'].concat(['corone', 'stelle', 'binario', 'sudoku', 'campo', 'grattacieli', 'futoshiki', 'nonogramma', 'cavalieri', 'enigma', 'codice', 'linea', 'bilancia', 'calcolatrice', 'travasi', 'gabbie', 'kakuro', 'flotta', 'tende', 'luci', 'ponti', 'logigramma', 'criptaritmo'].map(m => 'giochi/mental/motori/' + m + '.js')),
       dati: ['gds-mental-partite'] },
     { categoria: 'giochi', nome: 'ALIBI', descrizione: 'Un delitto, una pianta, un quarto d’ora alla volta: trova chi non può essere dove dice', link: 'giochi/alibi/', colore: '#F2D21B', extra: ['giochi/alibi/motore.js'], dati: ['gds-alibi', 'gds-alibi-partita', 'gds-giocatori'] },
+    { categoria: 'giochi', nome: 'Traccia', descrizione: 'Una linea dal cerchio all’uscita: nove aree con la loro regola, anche su toro, Möbius, Klein e RP²', link: 'giochi/traccia/', colore: '#FFE9BD', extra: ['giochi/traccia/motore.js', 'giochi/traccia/tavole.js'], dati: ['gds-traccia'] },
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A', dati: [{ poker: true }] },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70', dati: ['giochidisimo:7wonders'] },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0', dati: ['gds-chiinizia'] },
