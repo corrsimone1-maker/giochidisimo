@@ -147,6 +147,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .tav .solchi .prolunga{opacity:.45}
 .tav .solchi circle{fill:var(--solco)}
 .tav .anello{fill:none;stroke:var(--solco);stroke-width:4;stroke-dasharray:8 9}
+.tav .singolari circle{fill:var(--carta);stroke:var(--solco);stroke-width:4}
+.tav .singolari path{fill:none;stroke:var(--tenue);stroke-width:4;stroke-linecap:round}
 .tav .cucitura{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 .tav .cucitura.a{stroke:var(--cucitura-a)} .tav .cucitura.b{stroke:var(--cucitura-b)}
 .tav .bordo-inc{stroke-width:4;stroke-dasharray:2 12;stroke-linecap:round;opacity:.8}
@@ -281,8 +283,9 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
     <ul>
       <li>Metti il dito sul cerchio e trascina: la linea segue le scanalature. Dove sono interrotte non si passa, e non si ripassa dove si è già passati.</li>
       <li>Arriva all’uscita, il trattino che sporge dal bordo, e solleva il dito. Se lo sollevi prima, la linea resta lì: riprendila toccandone la punta, oppure ricomincia dal cerchio.</li>
-      <li>Sulle superfici chiuse (Toro, Klein, RP²) l’uscita non c’è: torna al cerchio e chiudi l’anello.</li>
-      <li>I lati con le frecce colorate sono incollati: uscendo da uno rientri da quello con le stesse frecce, nel verso delle frecce.</li>
+      <li>Sulle superfici chiuse (Sfera, Toro, Klein, RP², Bitoro) l’uscita non c’è: torna al cerchio e chiudi l’anello.</li>
+      <li>I lati con le frecce colorate sono incollati: uscendo da uno rientri da quello con le stesse frecce (stesso colore, stesso numero), nel verso delle frecce. Sulla sfera il gemello è girato: esci da sopra e rientri da destra, andando verso sinistra.</li>
+      <li>Sul bitoro tutti gli angoli della L sono lo stesso punto, segnato con la stellina: da lì la linea non passa.</li>
       <li>Se la linea è sbagliata diventa rossa, e lampeggiano i simboli che non vanno bene.</li>
       <li>Ogni area ha la sua regola, la stessa per tutte le sue tavole. Scoprila dagli errori, oppure leggila dal tasto «Regola».</li>
       <li>Le tavole con la <span style="color:var(--stella)">★</span> hanno più di una soluzione: trovale tutte per prendere la stella. Con tutte le stelle si apre il Segreto.</li>
@@ -358,7 +361,8 @@ const trovate = t => (ST.t[t.id] || []).length;
 const risolta = t => trovate(t) > 0;
 const presa = t => !!t.stella && trovate(t) >= t.stella;
 const stellate = () => tutte.filter(x => x.t.stella && x.a.tipo !== 'segreto');
-const segretoAperto = () => stellate().every(x => presa(x.t));
+// si apre con tutte le stelle; chi ha già risolto una sua tavola non lo perde quando arrivano stelle nuove
+const segretoAperto = () => stellate().every(x => presa(x.t)) || AREE.some(a => a.tipo === 'segreto' && a.tavole.some(risolta));
 const aperta = (a, k) => k === 0 || risolta(a.tavole[k - 1]) || risolta(a.tavole[k]);
 
 /* ---------- Disegno ---------- */
@@ -388,6 +392,17 @@ function simbolo(g, p, k, code, cx, cy, id) {
     el('path', { class: 'tr', d: `M${bx} ${by}L${tx} ${ty}M${l1[0]} ${l1[1]}L${tx} ${ty}L${l2[0]} ${l2[1]}` }, s);
   } else if (t === 'numero') {
     el('text', { x: cx, y: cy + 1, 'font-size': code.length > 1 ? 40 : 52 }, s).textContent = code;
+  } else if (t === 'contorno') {
+    // i quattro lati di una casellina, attorno al numero
+    const A = 31, G = 9;
+    el('path', { class: 'fi', d: `M${cx - A + G} ${cy - A}H${cx + A - G}M${cx + A} ${cy - A + G}V${cy + A - G}M${cx + A - G} ${cy + A}H${cx - A + G}M${cx - A} ${cy + A - G}V${cy - A + G}` }, s);
+    el('text', { x: cx, y: cy + 1, 'font-size': 36 }, s).textContent = TR.valore(code);
+  } else if (t === 'occhio') {
+    // il numero con quattro sguardi, uno per direzione
+    const n = TR.valore(code), r1 = n > 9 ? 27 : 23, r2 = 36;
+    el('path', { class: 'fi', d: `M${cx} ${cy - r1}V${cy - r2}M${cx} ${cy + r1}V${cy + r2}M${cx - r1} ${cy}H${cx - r2}M${cx + r1} ${cy}H${cx + r2}` }, s);
+    el('path', { class: 'fi', d: `M${cx - 5} ${cy - r2 + 5}L${cx} ${cy - r2}L${cx + 5} ${cy - r2 + 5}M${cx - 5} ${cy + r2 - 5}L${cx} ${cy + r2}L${cx + 5} ${cy + r2 - 5}M${cx - r2 + 5} ${cy - 5}L${cx - r2} ${cy}L${cx - r2 + 5} ${cy + 5}M${cx + r2 - 5} ${cy - 5}L${cx + r2} ${cy}L${cx + r2 - 5} ${cy + 5}` }, s);
+    el('text', { x: cx, y: cy + 1, 'font-size': n > 9 ? 30 : 36 }, s).textContent = n;
   } else if (code === 'sole') {
     el('circle', { class: 'pi', cx, cy, r: 13 }, s);
     for (let a = 0; a < 8; a++) { const an = a * Math.PI / 4; el('line', { class: 'fi', x1: cx + Math.cos(an) * 20, y1: cy + Math.sin(an) * 20, x2: cx + Math.cos(an) * 28, y2: cy + Math.sin(an) * 28 }, s); }
@@ -410,6 +425,20 @@ function simbolo(g, p, k, code, cx, cy, id) {
   return s;
 }
 
+/* Lastra a forma di L (bitoro): angoli esterni arrotondati, a 76 px dalla griglia. */
+function contornoL(p) {
+  const [a, c] = p.L, o = M - 4, X = x => M + x * U, Y = y => M + y * U, r = 24, ri = 14;
+  const pt = [[X(0) - o, Y(0) - o, r], [X(a) + o, Y(0) - o, r], [X(a) + o, Y(c) - o, ri], [X(p.w) + o, Y(c) - o, r], [X(p.w) + o, Y(p.h) + o, r], [X(0) - o, Y(p.h) + o, r]];
+  let d = '';
+  pt.forEach((q, k) => {
+    const pr = pt[(k + pt.length - 1) % pt.length], nx = pt[(k + 1) % pt.length], rr = q[2];
+    const u1 = [Math.sign(pr[0] - q[0]), Math.sign(pr[1] - q[1])], u2 = [Math.sign(nx[0] - q[0]), Math.sign(nx[1] - q[1])];
+    const p1 = [q[0] + u1[0] * rr, q[1] + u1[1] * rr], p2 = [q[0] + u2[0] * rr, q[1] + u2[1] * rr];
+    d += (k ? 'L' : 'M') + p1[0] + ' ' + p1[1] + 'Q' + q[0] + ' ' + q[1] + ' ' + p2[0] + ' ' + p2[1];
+  });
+  return d + 'Z';
+}
+
 /* Disegno statico di una tavola dentro un <svg>: lastra, solchi, cuciture, uscita, simboli. */
 function disegnaTavola(svg, p, opz) {
   const G = TR.grafo(p), w = p.w, h = p.h, W = w * U + 2 * M, H = h * U + 2 * M, id = ++uid;
@@ -420,23 +449,19 @@ function disegnaTavola(svg, p, opz) {
   const f = el('filter', { id: 'bagliore' + id, x: '-30%', y: '-30%', width: '160%', height: '160%' }, defs);
   el('feGaussianBlur', { stdDeviation: 7, result: 'b' }, f);
   const mg = el('feMerge', {}, f); el('feMergeNode', { in: 'b' }, mg); el('feMergeNode', { in: 'SourceGraphic' }, mg);
-  el('rect', { x: 4, y: 4, width: W - 8, height: H - 8, rx: 24, class: 'lastra' }, svg);
-  // lati incollati: tratteggio colorato e frecce
+  if (p.L) el('path', { class: 'lastra', d: contornoL(p) }, svg);
+  else el('rect', { x: 4, y: 4, width: W - 8, height: H - 8, rx: 24, class: 'lastra' }, svg);
+  // lati incollati: tratteggio colorato e frecce; i gemelli hanno colore e numero di frecce uguali,
+  // e le frecce dicono il verso in cui si incollano
   const cu = el('g', {}, svg);
-  if (G.S.lr) {
-    const rov = G.S.lr === 'rovescio';
-    for (const x of [0, w]) el('line', { class: 'bordo-inc a', x1: M + x * U, y1: M - 6, x2: M + x * U, y2: M + h * U + 6 }, cu);
-    chevron(cu, M - 52, M + h * U / 2, [0, -1], false, 'a');
-    chevron(cu, M + w * U + 52, M + h * U / 2, rov ? [0, 1] : [0, -1], false, 'a');
-  }
-  if (G.S.tb) {
-    const rov = G.S.tb === 'rovescio';
-    for (const y of [0, h]) el('line', { class: 'bordo-inc b', x1: M - 6, y1: M + y * U, x2: M + w * U + 6, y2: M + y * U }, cu);
-    chevron(cu, M + w * U / 2, M - 52, [1, 0], true, 'b');
-    chevron(cu, M + w * U / 2, M + h * U + 52, rov ? [-1, 0] : [1, 0], true, 'b');
+  for (const L of G.bordi) {
+    const s = L.seg, a = pos(s.da), b = pos([s.da[0] + s.n * s.dir[0], s.da[1] + s.n * s.dir[1]]);
+    el('line', { class: 'bordo-inc ' + L.col, x1: a[0] - s.dir[0] * 6, y1: a[1] - s.dir[1] * 6, x2: b[0] + s.dir[0] * 6, y2: b[1] + s.dir[1] * 6 }, cu);
+    chevron(cu, (a[0] + b[0]) / 2 + L.nrm[0] * 52, (a[1] + b[1]) / 2 + L.nrm[1] * 52, s.dir, L.segni === 2, L.col);
   }
   const gr = el('g', { class: 'solchi' }, svg);
   const solco = (a, b) => {
+    if (!G.latoEsiste(a, b)) return;
     const [x1, y1] = pos(a), [x2, y2] = pos(b);
     if (G.rotti.has(G.eid(a, b))) {
       const t = .28;
@@ -449,12 +474,21 @@ function disegnaTavola(svg, p, opz) {
     if (y < h) solco([x, y], [x, y + 1]);
   }
   // prolungamenti oltre i lati incollati (se il solco continua dall'altra parte)
-  const prolunga = (r, d) => {
-    const st = TR.passo(G, r, d); if (!st) return;
+  for (const L of G.bordi) for (let k = 0; k <= L.seg.n; k++) {
+    const r = [L.seg.da[0] + k * L.seg.dir[0], L.seg.da[1] + k * L.seg.dir[1]], d = L.nrm;
+    // non sugli angoli piegati della sfera: da lì parte un lato solo, e la linea non ci passa
+    if (!TR.passo(G, r, d) || (G.adj[G.vid(...r)] || []).length < 2) continue;
     const [x, y] = pos(r); el('line', { class: 'prolunga', x1: x, y1: y, x2: x + d[0] * 30, y2: y + d[1] * 30 }, gr);
-  };
-  if (G.S.lr) for (let y = 0; y <= h; y++) { prolunga([w, y], [1, 0]); prolunga([0, y], [-1, 0]); }
-  if (G.S.tb) for (let x = 0; x <= w; x++) { prolunga([x, h], [0, 1]); prolunga([x, 0], [0, -1]); }
+  }
+  // punti singolari (sul bitoro): la linea non ci passa
+  const sg = el('g', { class: 'singolari' }, svg);
+  for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) {
+    if (!G.vertEsiste([x, y]) || !G.singolari.has(G.vid(x, y))) continue;
+    const [cx, cy] = pos([x, y]);
+    el('circle', { cx, cy, r: 21 }, sg);
+    let dd = ''; for (let k = 0; k < 6; k++) { const an = k * Math.PI / 3 + Math.PI / 6; dd += `M${cx} ${cy}L${cx + Math.cos(an) * 13} ${cy + Math.sin(an) * 13}`; }
+    el('path', { d: dd }, sg);
+  }
   // uscita
   const nub = U * .34;
   if (p.end) { const [ex, ey] = pos(p.end), d = TR.DV[p.endDir]; el('line', { x1: ex, y1: ey, x2: ex + d[0] * nub, y2: ey + d[1] * nub }, gr); }
@@ -463,10 +497,10 @@ function disegnaTavola(svg, p, opz) {
   if (!p.end) el('circle', { class: 'anello', cx: sx, cy: sy, r: 44 }, svg);
   if (!opz || !opz.quieta) el('circle', { class: 'battito inizio', cx: sx, cy: sy, r: 28 }, svg);
   // simboli
-  const sg = el('g', {}, svg), sims = {};
+  const simg = el('g', {}, svg), sims = {};
   for (const k in (p.s || {})) {
     const [i, j] = k.split(',').map(Number);
-    sims[k] = simbolo(sg, p, k, p.s[k], M + (i + .5) * U, M + (j + .5) * U, id + '-' + k.replace(',', '-'));
+    sims[k] = simbolo(simg, p, k, p.s[k], M + (i + .5) * U, M + (j + .5) * U, id + '-' + k.replace(',', '-'));
   }
   const tg = el('g', { class: 'traccia', filter: `url(#bagliore${id})` }, svg);
   el('circle', { class: 'punto', cx: sx, cy: sy, r: 28 }, tg);
@@ -476,20 +510,21 @@ function disegnaTavola(svg, p, opz) {
 /* Tratti della linea (si spezzano dove passa per un lato incollato). */
 function tratti(base, passi, testa) {
   const out = [[base.pos(base.p.start)]], STUB = 36;
-  let r = base.p.start;
   for (const st of passi) {
     let cur = out[out.length - 1];
-    if (st.j[0] || st.j[1]) {
-      const [x, y] = base.pos(r); cur.push([x + st.d[0] * STUB, y + st.d[1] * STUB]);
-      const [ax, ay] = base.pos(st.a); cur = [[ax - st.d[0] * STUB, ay - st.d[1] * STUB], [ax, ay]]; out.push(cur);
+    if (st.a[0] !== st.r[0] || st.a[1] !== st.r[1]) {
+      // esce da un lato nella direzione d e rientra dal gemello nella direzione dd (sulla sfera gira)
+      const [x, y] = base.pos(st.r); cur.push([x + st.d[0] * STUB, y + st.d[1] * STUB]);
+      const [ax, ay] = base.pos(st.a); cur = [[ax - st.dd[0] * STUB, ay - st.dd[1] * STUB], [ax, ay]]; out.push(cur);
     }
-    cur.push(base.pos(st.b)); r = st.b;
+    cur.push(base.pos(st.b));
   }
   if (testa) out[out.length - 1].push(testa);
   return out;
 }
 
 /* ---------- Tavola giocabile ---------- */
+const trasforma = (T, q) => { const v = T.R ? TR.per(T.R, q) : q; return [v[0] + T.o[0], v[1] + T.o[1]]; };
 class Tavola {
   constructor(svg, opz) {
     this.svg = svg; this.opz = opz; this.tracciando = false; this.stato = 'ferma'; this.passi = []; this.mostra = null;
@@ -540,7 +575,7 @@ class Tavola {
     return [q.x, q.y];
   }
   inizia() {
-    this.tracciando = true; this.stato = 'traccio'; this.passi = []; this.chiuso = false; this.ofs = [0, 0];
+    this.tracciando = true; this.stato = 'traccio'; this.passi = []; this.chiuso = false; this.T = { R: null, o: [0, 0] };
     for (const k in this.base.sims) this.base.sims[k].classList.remove('male');
     this.opz.alVia && this.opz.alVia();
   }
@@ -554,7 +589,7 @@ class Tavola {
       if (dH <= this.opz.presa && dH <= dS) {
         e.preventDefault();
         try { this.svg.setPointerCapture(e.pointerId); } catch (_) {}
-        this.tracciando = true; this.stato = 'traccio'; this.ofs = [hx - x, hy - y];
+        this.tracciando = true; this.stato = 'traccio'; this.T = { R: null, o: [hx - x, hy - y] };
         this.opz.alVia && this.opz.alVia();
         this.cursore([x, y]); return;
       }
@@ -565,12 +600,25 @@ class Tavola {
     this.inizia(); this.cursore([x, y]);
   }
   muovi(e) { const [x, y] = this.punto(e); this.cursore([x, y]); }
-  /* Il cursore è il dito più uno spostamento che cambia quando la linea salta da un lato incollato all'altro:
-     così il dito continua a guidare la linea anche dopo il salto. */
+  /* Il cursore è il dito più uno spostamento, che cambia quando la linea salta da un lato incollato all'altro:
+     così il dito continua a guidare la linea anche dopo il salto, sempre nelle direzioni dello schermo. */
   cursore(dito) {
-    const c = [dito[0] + this.ofs[0], dito[1] + this.ofs[1]];
+    this.dito = dito;
+    const c = trasforma(this.T, dito);
     const testa = this.avanza(c);
     this.ridisegna(testa);
+  }
+  /* Salto da un lato incollato (avanti = true) o ritorno indietro: il cursore c passa dall'altra parte. Quello
+     che il dito ha fatto oltre il lato si gira come il lato gemello (sulla sfera di 90°), così il cursore arriva
+     poco oltre la punta e non torna indietro; da lì il dito guida di nuovo nelle direzioni dello schermo. */
+  salta(st, c, avanti) {
+    if (st.a[0] === st.r[0] && st.a[1] === st.r[1]) return;
+    const da = this.base.pos(avanti ? st.r : st.a), a = this.base.pos(avanti ? st.a : st.r);
+    const R = st.giro ? (avanti ? st.giro : TR.trasposta(st.giro)) : null;
+    const v = [c[0] - da[0], c[1] - da[1]], w = R ? TR.per(R, v) : v;
+    c[0] = a[0] + w[0]; c[1] = a[1] + w[1];
+    const q = this.dito ? trasforma({ R: this.T.R, o: [0, 0] }, this.dito) : [0, 0];
+    this.T = { R: this.T.R, o: [c[0] - q[0], c[1] - q[1]] };
   }
   avanza(c) {
     const G = this.G, p = this.p, nub = this.base.nub;
@@ -583,10 +631,10 @@ class Tavola {
       testa = [hx, hy];
       let mosso = false;
       for (const { d, pr } of cands) {
-        if (ultimo && d[0] === -ultimo.d[0] && d[1] === -ultimo.d[1]) {          // indietro sull'ultimo lato
+        if (ultimo && d[0] === -ultimo.dd[0] && d[1] === -ultimo.dd[1]) {        // indietro sull'ultimo lato
           if (pr >= .5) {
             this.passi.pop(); this.chiuso = false;
-            c[0] -= ultimo.j[0] * U; c[1] -= ultimo.j[1] * U; this.ofs[0] -= ultimo.j[0] * U; this.ofs[1] -= ultimo.j[1] * U;
+            this.salta(ultimo, c, false);
             mosso = true;
           } else testa = [hx + d[0] * pr * U, hy + d[1] * pr * U];
           break;
@@ -600,10 +648,10 @@ class Tavola {
         if (!st) continue;
         const parte = q => { const k = Math.min(pr, q); return [hx + d[0] * k * U, hy + d[1] * k * U]; };
         if (G.anello && st.v === G.start) {
-          if (this.passi.length >= 2) {
+          if (this.passi.length >= 1 && st.e !== ultimo.e) {
             if (pr >= .9) {
               this.passi.push(st); this.chiuso = true; mosso = true;
-              c[0] += st.j[0] * U; c[1] += st.j[1] * U; this.ofs[0] += st.j[0] * U; this.ofs[1] += st.j[1] * U;
+              this.salta(st, c, true);
             } else testa = parte(1);
           }
           else testa = parte(.7);
@@ -612,7 +660,7 @@ class Tavola {
         if (this.visitati().has(st.v)) { testa = parte(.7); break; }
         if (pr >= .9) {
           this.passi.push(st);
-          c[0] += st.j[0] * U; c[1] += st.j[1] * U; this.ofs[0] += st.j[0] * U; this.ofs[1] += st.j[1] * U;
+          this.salta(st, c, true);
           mosso = true;
         } else testa = parte(1);
         break;
@@ -654,11 +702,11 @@ class Tavola {
       e.preventDefault();
       if (!this.tracciando) this.inizia();
       const d = mappa[e.key], ultimo = this.passi[this.passi.length - 1];
-      if (ultimo && d[0] === -ultimo.d[0] && d[1] === -ultimo.d[1]) { this.passi.pop(); this.chiuso = false; }
+      if (ultimo && d[0] === -ultimo.dd[0] && d[1] === -ultimo.dd[1]) { this.passi.pop(); this.chiuso = false; }
       else if (!this.chiuso) {
         const st = TR.passo(this.G, this.rep(), d);
         if (st) {
-          if (this.G.anello && st.v === this.G.start) { if (this.passi.length >= 2) { this.passi.push(st); this.chiuso = true; } }
+          if (this.G.anello && st.v === this.G.start) { if (this.passi.length >= 1 && st.e !== ultimo.e) { this.passi.push(st); this.chiuso = true; } }
           else if (!this.visitati().has(st.v)) this.passi.push(st);
         }
       }
@@ -686,12 +734,24 @@ function icona(a) {
   const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 48 48'); svg.setAttribute('class', 'ic tav quieta');
   el('rect', { x: 1, y: 1, width: 46, height: 46, rx: 10, class: 'lastra' }, svg);
   if (a.tipo === 'forma') {
-    const S = TR.SUP[a.sup], g = el('g', {}, svg);
-    el('rect', { x: 12, y: 12, width: 24, height: 24, fill: 'none', stroke: 'var(--solco)', 'stroke-width': 2 }, g);
-    const fr = (x, y, d, cl, dop) => { const n = dop ? 2 : 1; for (let k = 0; k < n; k++) { const o = (k - (n - 1) / 2) * 5, cx = x + d[0] * o, cy = y + d[1] * o, px = -d[1], py = d[0], L = 4;
+    // la forma della tavola (un quadrato, o la L del bitoro) con le frecce dei lati incollati
+    const g = el('g', {}, svg), q = a.sup === 'bitoro' ? { w: 2, h: 2, L: [1, 1] } : { w: 1, h: 1 };
+    const G = TR.grafo({ ...q, sup: a.sup, start: [0, 0], end: null, gaps: [] }), k = 24 / Math.max(q.w, q.h), P = v => [12 + v[0] * k, 12 + v[1] * k];
+    const bordo = q.L ? [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2], [0, 2]] : [[0, 0], [1, 0], [1, 1], [0, 1]];
+    el('path', { d: 'M' + bordo.map(v => P(v).join(' ')).join('L') + 'Z', fill: 'none', stroke: 'var(--solco)', 'stroke-width': 2, 'stroke-linejoin': 'round' }, g);
+    const fr = (x, y, d, cl, dop) => { const n = dop ? 2 : 1; for (let m = 0; m < n; m++) { const o = (m - (n - 1) / 2) * 5, cx = x + d[0] * o, cy = y + d[1] * o, px = -d[1], py = d[0], L = q.L ? 3.2 : 4;
       el('path', { d: `M${cx - d[0] * 2.4 + px * L} ${cy - d[1] * 2.4 + py * L}L${cx + d[0] * 2.4} ${cy + d[1] * 2.4}L${cx - d[0] * 2.4 - px * L} ${cy - d[1] * 2.4 - py * L}`, fill: 'none', stroke: cl, 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g); } };
-    if (S.lr) { fr(12, 24, [0, -1], 'var(--cucitura-a)'); fr(36, 24, S.lr === 'rovescio' ? [0, 1] : [0, -1], 'var(--cucitura-a)'); }
-    if (S.tb) { fr(24, 12, [1, 0], 'var(--cucitura-b)', true); fr(24, 36, S.tb === 'rovescio' ? [-1, 0] : [1, 0], 'var(--cucitura-b)', true); }
+    for (const L of G.bordi) {
+      const s = L.seg, cl = L.col === 'a' ? 'var(--cucitura-a)' : 'var(--cucitura-b)';
+      if (q.L) {
+        // sulla L le frecce non ci stanno: ogni lato col colore del suo gemello (tratteggiato se ha due frecce)
+        const a = P(s.da), b = P([s.da[0] + s.dir[0] * s.n, s.da[1] + s.dir[1] * s.n]);
+        el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: cl, 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-dasharray': L.segni === 2 ? '2.5 3' : 'none' }, g);
+      } else {
+        const m = P([s.da[0] + s.dir[0] * s.n / 2, s.da[1] + s.dir[1] * s.n / 2]);
+        fr(m[0], m[1], s.dir, cl, L.segni === 2);
+      }
+    }
   } else if (a.tipo === 'segreto') {
     el('text', { x: 24, y: 25, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 26, fill: 'var(--stella)' }, svg).textContent = '★';
   } else {
@@ -787,7 +847,7 @@ function adatta() {
 }
 if (window.ResizeObserver) new ResizeObserver(() => adatta()).observe($('campo'));
 else window.addEventListener('resize', adatta);
-const NOMI_SUP = { piano: 'piano', cilindro: 'cilindro', mobius: 'Möbius', toro: 'toro', klein: 'Klein', rp2: 'RP²' };
+const NOMI_SUP = { piano: 'piano', cilindro: 'cilindro', mobius: 'Möbius', toro: 'toro', klein: 'Klein', rp2: 'RP²', sfera: 'sfera', bitoro: 'bitoro' };
 $('prima').addEventListener('click', () => { if (!tavola.tracciando && idxOra > 0) vai(idxOra - 1); });
 $('dopo').addEventListener('click', () => { if (!tavola.tracciando && idxOra < areaOra.tavole.length - 1 && aperta(areaOra, idxOra + 1)) vai(idxOra + 1); });
 function aggiorna() {
@@ -861,8 +921,9 @@ function suggerisci(txt, cls) {
   const h = $('hint'); h.textContent = txt; h.className = 'hint' + (cls ? ' ' + cls : '');
   // sulle superfici incollate, a tavola risolta, il tasto «3D» in alto mostra la superficie da fuori
   const t = areaOra && areaOra.tavole[idxOra];
-  $('apri3d').hidden = !(t && t.sup !== 'piano' && risolta(t) && tavola.stato === 'risolta' && tavola.mostra && window.V3);
+  $('apri3d').hidden = !(t && ha3d(t) && risolta(t) && tavola.stato === 'risolta' && tavola.mostra);
 }
+const ha3d = t => !!(window.V3 && V3.FORME[t.sup]);
 $('apri3d').addEventListener('click', () => { const t = areaOra && areaOra.tavole[idxOra]; if (t && tavola.mostra && !tavola.tracciando) apriVista(t, tavola.mostra); });
 function suggerimentoBase() {
   const a = areaOra, t = a.tavole[idxOra];
@@ -872,6 +933,8 @@ function suggerimentoBase() {
     return suggerisci('');
   }
   if (idxOra > 0) return suggerisci('');
+  if (t.sup === 'sfera') return suggerisci('Non c’è uscita: torna al cerchio. Sopra è incollato a destra, sinistra a sotto.');
+  if (t.sup === 'bitoro') return suggerisci('Non c’è uscita: torna al cerchio. Dalle stelline non si passa.');
   if (!t.end) return suggerisci('Qui non c’è uscita: torna al cerchio.');
   if (a.tipo === 'forma') return suggerisci('I lati con le frecce sono incollati.');
   suggerisci('Trascina dal cerchio fino all’uscita.');
@@ -891,7 +954,7 @@ function segna(dirs, k) {
     if (!eraSegreto && segretoAperto()) suggerisci('★ Tutte le stelle: il Segreto è aperto!', 'stella');
     return;
   }
-  const fuori = t.sup !== 'piano' ? ' Col tasto 3D in alto la vedi da fuori.' : '';
+  const fuori = ha3d(t) ? ' Col tasto 3D in alto la vedi da fuori.' : '';
   if (a.tavole.every(risolta)) suggerisci('Area completata.' + fuori, 'bene');
   else suggerisci('Giusta.' + fuori, 'bene');
   if (primaVolta && i < a.tavole.length - 1) avanti = setTimeout(() => { if (areaOra === a && idxOra === i && !tavola.tracciando) vai(i + 1); }, 1100);
@@ -913,11 +976,7 @@ function immagineTavola(p, passi) {
     svg.querySelectorAll('.battito,.anello,.cucitura,.bordo-inc,.prolunga').forEach(x => x.remove());
     const linea = pts => el('polyline', { class: 'linea', points: pts.map(q => q.join(',')).join(' ') }, base.tg);
     for (const tr of tratti(base, passi, null)) if (tr.length > 1) linea(tr);
-    for (const st of passi) {
-      const a = st.a, b = st.b;
-      if (G.S.lr && a[0] === b[0] && (a[0] === 0 || a[0] === p.w)) linea([base.pos(G.lr(a)), base.pos(G.lr(b))]);
-      if (G.S.tb && a[1] === b[1] && (a[1] === 0 || a[1] === p.h)) linea([base.pos(G.tb(a)), base.pos(G.tb(b))]);
-    }
+    for (const st of passi) { const g = TR.gemello(G, st.a, st.b); if (g) linea([base.pos(g[0]), base.pos(g[1])]); }
     const W = 1024, H = Math.round(1024 * p.h / p.w);
     svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', `${M} ${M} ${p.w * U} ${p.h * U}`);
     svg.setAttribute('width', W); svg.setAttribute('height', H);

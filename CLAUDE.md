@@ -445,51 +445,71 @@ mine; font Bricolage Grotesque e Figtree.
 ### Traccia → `giochi/traccia/`
 
 Gioco da soli alla The Witness (chiesto da Simo per usare l'app anche quando si è da soli): si traccia col dito una linea dal
-cerchio all'uscita e i simboli nelle caselle dicono cosa deve valere nelle zone in cui la linea divide la griglia. Tema
-«cianotipia» (carta blu `#0d2747` coi quadretti, lastre `#163f73`, solchi `#5a82b7`, la linea crema `#ffe9bd` è l'unica luce;
-rosso matita `#ff6c5c` solo per gli errori, oro `#ffd36b` solo per le stelle; lati incollati verde acqua `#6fd6c4` per
-destra–sinistra e lilla `#c4a8ff` per sopra–sotto; font Major Mono Display solo per il marchio, B612 Mono, Figtree).
+cerchio all'uscita e i simboli nelle caselle dicono cosa deve valere nelle zone in cui la linea divide la griglia (o nelle caselle
+stesse). Tema «cianotipia» (carta blu `#0d2747` coi quadretti, lastre `#163f73`, solchi `#5a82b7`, la linea crema `#ffe9bd` è
+l'unica luce; rosso matita `#ff6c5c` solo per gli errori, oro `#ffd36b` solo per le stelle; lati incollati verde acqua `#6fd6c4` e
+lilla `#c4a8ff`; font Major Mono Display solo per il marchio, B612 Mono, Figtree).
 - **Aree** (in `tavole.js`, `self.TRACCIA_AREE`), **tutte aperte, in qualunque ordine** (scelta di Simo); dentro un'area le tavole si
-  aprono una dopo l'altra. Ogni area ha **una regola sola** per tutte le sue tavole:
+  aprono una dopo l'altra. Ogni area ha **una regola sola** per tutte le sue tavole. Le `sigla` (numeri romani) si possono cambiare,
+  gli `id` no:
   - regole sul piano: Frecce (in ogni zona i vettori si annullano, una diagonale vale due passi), Numeri (il numero è quante caselle
     ha la sua zona), Lati (camminando dal cerchio all'uscita i soli stanno a sinistra, le lune a destra), Specchi (zona simmetrica
-    rispetto all'asse dello specchio, che passa per il centro della sua casella);
-  - superfici coi lati incollati, tutte coi Numeri: Cilindro, Möbius, Toro, Klein, RP² (`SUP` in `motore.js`: `lr`/`tb`
-    `dritto` o `rovescio`). Sulle superfici chiuse non c'è uscita: la linea deve tornare al cerchio (un anello);
-  - Segreto: tre tavole con le regole insieme, si apre quando si hanno **tutte** le stelle.
+    rispetto all'asse dello specchio, che passa per il centro della sua casella), Contorni (`c0`–`c3`: quanti dei quattro lati della
+    casella fa la linea, come i triangoli di The Witness) e Occhi (`o1`…: quante caselle vede la casella in su, giù, sinistra e destra
+    prima della linea o del bordo, la sua esclusa; solo sul piano). Contorni e Occhi sono le regole «da ragionare» che Simo ha
+    chiesto: le ultime tavole sono 6×6 e chiedono 15–25 idee (vedi `strumenti/traccia.js`);
+  - superfici coi lati incollati, tutte coi Numeri: Cilindro, Möbius, Sfera, Toro, Klein, RP², Bitoro. Sulle superfici chiuse non c'è
+    uscita: la linea deve tornare al cerchio (un anello). La Sfera è la busta (sopra con destra, sinistra con sotto: il gemello è
+    girato di 90°; serve `w = h`); il Bitoro è una L (`L: [a, c]`: manca il blocco con `i >= a` e `j < c`) coi lati incollati per
+    traslazione, e tutti gli angoli della L sono un punto solo con angolo 6π;
+  - Segreto: cinque tavole con le regole insieme, si apre quando si hanno **tutte** le stelle; chi ha già risolto una sua tavola non
+    lo perde quando arrivano stelle nuove.
 - **Stelle:** le tavole con `stella: n` hanno esattamente n soluzioni diverse (stessi lati = stessa soluzione, anche un anello al
-  contrario); trovarle tutte dà la stella. Oggi una per area, 9 in tutto. Le altre tavole con simboli hanno **una sola soluzione**;
+  contrario); trovarle tutte dà la stella. Oggi una per area, 13 in tutto. Le altre tavole con simboli hanno **una sola soluzione**;
   quelle senza simboli sono labirinti (va bene tutto).
-- **`motore.js`** (`self.TR`, anche `require`): `grafo(p)` (vertici e lati identificati dagli incollamenti con union-find, caselle,
-  lati interrotti), `passo(G, r, d)` (un passo dalla copia `r` di un vertice; se esce da un lato incollato rientra dal gemello:
-  `j` è il salto), `zone`, `controlla(p, { vs, es })` (regole, con i simboli sbagliati), `valido`, `cammini` (tutte le linee),
-  `soluzioni`. Le regole sono **solo qui**: la pagina usa le stesse funzioni.
+- **`motore.js`** (`self.TR`, anche `require`):
+  - `cuciture(p)`: le coppie di segmenti del bordo incollati punto per punto (`{ a, b, col, segni }`, con `col` e `segni` per il
+    disegno); `grafo(p)` ne ricava per ogni lato la normale e l'isometria verso il gemello (`G.bordi`), identifica vertici e lati con
+    union-find e calcola l'angolo attorno a ogni vertice: dove supera un giro (sul bitoro) il vertice è **singolare** e la linea non ci
+    passa, perché da lì non c'è un solo modo di andare dritto;
+  - `passo(G, r, d)`: un passo dalla copia `r` di un vertice; se esce da un lato incollato rientra dal gemello: `a` è la copia da cui
+    riparte, `dd` la direzione da lì (sulla sfera gira), `giro` la rotazione da `d` a `dd`;
+  - `zone`, `controlla(p, { vs, es })` (regole, con i simboli sbagliati), `valido`, `cammini` (tutte le linee, con la potatura dei
+    contorni e degli occhi, che sono monotoni), `soluzioni`, `gemello` (la copia di un lato sul lato incollato).
+  Le regole sono **solo qui**: la pagina usa le stesse funzioni.
 - **Pagina:** il cursore è il dito più uno spostamento che cambia a ogni salto, così il dito continua a guidare la linea dall'altra
-  parte. Se si solleva il dito prima dell'uscita la linea **resta in sospeso** e si riprende toccandone la punta (sul toro il dito
-  finirebbe fuori dallo schermo); dal cerchio si ricomincia. Le soluzioni si salvano come stringhe di direzioni `U D L R` dal
-  cerchio e si rifanno col motore all'apertura: quelle che non reggono più (tavola cambiata) si scartano. «Regola» mostra il testo
-  dell'area solo tenendo premuto (è uno spoiler); «Come si gioca» spiega solo i comandi. Reset (due tocchi) cancella i progressi.
-  `#idArea` apre un'area. Schermata della tavola (Simo la vuole piena): in alto il numero grande della tavola con area, superficie e
-  stato; al centro la griglia, misurata da `adatta()` per riempire lo spazio libero; sotto il suggerimento e, sui telefoni alti
-  (`schermoAlto()`, almeno 760 px), la mappa dell'area con le tavole in miniatura, altrimenti la fila compatta con le frecce.
+  parte, sempre nelle direzioni dello schermo (sulla sfera quello che il dito ha fatto oltre il lato si gira come il gemello, poi si
+  torna dritti). Se si solleva il dito prima dell'uscita la linea **resta in sospeso** e si riprende toccandone la punta (sul toro il
+  dito finirebbe fuori dallo schermo); dal cerchio si ricomincia. Le soluzioni si salvano come stringhe di direzioni `U D L R` dal
+  cerchio (la direzione d'uscita di ogni passo) e si rifanno col motore all'apertura: quelle che non reggono più (tavola cambiata) si
+  scartano. «Regola» mostra il testo dell'area solo tenendo premuto (è uno spoiler); «Come si gioca» spiega solo i comandi. Reset (due
+  tocchi) cancella i progressi. `#idArea` apre un'area. Schermata della tavola (Simo la vuole piena): in alto il numero grande della
+  tavola con area, superficie e stato; al centro la griglia, misurata da `adatta()` per riempire lo spazio libero; sotto il
+  suggerimento e, sui telefoni alti (`schermoAlto()`, almeno 760 px), la mappa dell'area con le tavole in miniatura, altrimenti la
+  fila compatta con le frecce. I lati gemelli hanno lo stesso colore e lo stesso numero di frecce; il bitoro ha la lastra a L e una
+  stellina sui punti singolari.
 - **Guarda da fuori** (`vista3d.js`, in `extra`): sulle tavole risolte delle superfici il tasto «3D» in alto apre la tavola avvolta
   sulla superficie, in WebGL scritto a mano (niente librerie: funziona senza rete). La tavola risolta diventa una texture ritagliata
   sul quadrato fondamentale (i tratti della linea sui lati incollati si ripetono sul gemello); `FORME` dà per ogni superficie la
   mappa (s, t) → R³ e, per Klein e RP², → R⁴: cilindro arrotolato, nastro di Möbius allungato (con le nostre proporzioni non esiste
-  un nastro di carta: Schwartz, Annals 2025, serve un rapporto > √3; Simo ha detto di cambiare le proporzioni), ciambella, bottiglia
-  di Klein e superficie di Boy (Bryant–Kusner) con le loro autointersezioni (Simo le vuole: sono istruttive); in R⁴ Klein
-  `(A cos u, A sin u, r sin v cos(u/2), r sin v sin(u/2))` e RP² `(x² − y², 2xy, 2xz, 2yz)` sulla semisfera, ruotati nei piani
-  (x, w) e (y, w) e proiettati, con la quarta coordinata come colore. Trascinare ruota, pizzicare avvicina, doppio tocco torna
-  all'inizio. Le prove controllano che ogni mappa rispetti gli incollamenti e che in R⁴ non ci siano autointersezioni.
-- **Tavola nuova:** si cerca con un programma (strade possibili, poi simboli coerenti con una soluzione scelta e tolti finché resta
-  unica), si aggiunge in `tavole.js` con un `id` nuovo (gli `id` non si cambiano: sono le chiavi dei progressi) e si lancia
-  `node prove/traccia.test.js`. Frecce solo su superfici orientabili, Lati e Specchi solo sul piano, uscita su un bordo vero.
-- **Prove:** `node prove/traccia.test.js` (χ delle sei superfici, zone confrontate con una seconda implementazione scritta da zero
-  su 2.400 linee a caso, **ogni tavola** enumerata dalle due implementazioni con gli stessi cammini e lo stesso numero di soluzioni;
-  le forme di «Guarda da fuori» contro gli incollamenti);
-  nel browser `prove/traccia.pagina.test.js` (serve `python3 -m http.server 8765`; risolve tutte le 57 tavole e le stelle trascinando
-  con tocchi veri, anche riprendendo dalla punta, poi linea sbagliata, sospesa, Segreto, vista 3D di ogni superficie anche in R⁴,
-  salvataggi, Reset, finestre; `SCATTI=cartella`).
+  un nastro di carta: Schwartz, Annals 2025, serve un rapporto > √3; Simo ha detto di cambiare le proporzioni), sfera (con
+  u = s + t − 1 e v = s − t la busta incolla (u, v) con (−u, v) sul bordo: v è la latitudine, u la longitudine; gli angoli piegati
+  sono i poli), ciambella, bottiglia di Klein e superficie di Boy (Bryant–Kusner) con le loro autointersezioni (Simo le vuole: sono
+  istruttive); in R⁴ Klein `(A cos u, A sin u, r sin v cos(u/2), r sin v sin(u/2))` e RP² `(x² − y², 2xy, 2xz, 2yz)` sulla
+  semisfera, ruotati nei piani (x, w) e (y, w) e proiettati, con la quarta coordinata come colore. Il bitoro non ha la vista 3D.
+  Trascinare ruota, pizzicare avvicina, doppio tocco torna all'inizio.
+- **Tavola nuova:** `node strumenti/traccia.js contorni|occhi|numeri '<base json>' [quante] [seme]` (spiegazione in cima al file):
+  per contorni e occhi toglie i simboli finché la tavola resta risolvibile **ragionando** e stampa la fatica (idee e prova più lunga);
+  per i numeri enumera tutte le linee e toglie i numeri finché la soluzione resta unica. Poi si aggiunge in `tavole.js` con un `id`
+  nuovo (gli `id` non si cambiano: sono le chiavi dei progressi) e si lancia `node prove/traccia.test.js`. Frecce solo su superfici
+  orientabili, Lati, Specchi e Occhi solo sul piano, Contorni su caselle con quattro lati diversi, uscita su un bordo vero.
+- **Prove:** `node prove/traccia.test.js` (circa un minuto: χ delle otto superfici e Gauss–Bonnet, ogni passo da ogni copia di ogni
+  vertice e le zone confrontati con una seconda implementazione scritta da zero, che incolla con mappe scritte a mano per ogni
+  superficie; contorni, occhi e potatura contro conti fatti a mano; **ogni tavola** enumerata dalle due implementazioni con le stesse
+  soluzioni, e ogni soluzione tracciabile col dito; le forme di «Guarda da fuori» contro le cuciture);
+  nel browser `prove/traccia.pagina.test.js` (serve `python3 -m http.server 8765`; risolve tutte le 83 tavole e le stelle
+  trascinando con tocchi veri, anche riprendendo dalla punta, poi linee sbagliate, sospesa, Segreto, vista 3D di ogni superficie
+  anche in R⁴, salvataggi, Reset, finestre; circa 4 minuti; `SCATTI=cartella`).
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

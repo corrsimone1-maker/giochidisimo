@@ -1,7 +1,8 @@
 // Prova nel browser di TRACCIA: risolve TUTTE le tavole trascinando il dito come su un iPhone,
 // comprese le stelle (ogni soluzione) e il Segreto, che si apre con tutte le stelle.
 // Sulle superfici incollate la linea passa da un lato all'altro; quando il dito finirebbe fuori
-// dallo schermo lo si solleva (la linea resta in sospeso) e si riprende dalla punta.
+// dallo schermo lo si solleva (la linea resta in sospeso) e si riprende dalla punta. Il dito guida la
+// linea nelle direzioni dello schermo anche dopo un salto (sulla sfera il lato gemello è girato).
 // Uso, dalla cartella della repo:
 //   python3 -m http.server 8765 &
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node prove/traccia.pagina.test.js
@@ -33,10 +34,10 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
   await page.goto(ROOT + 'giochi/traccia/');
   await page.waitForTimeout(200);
   const nAree = await page.evaluate(() => document.querySelectorAll('#aree .area').length);
-  assert.equal(nAree, 10, 'dieci carte nell’elenco');
+  assert.equal(nAree, 14, 'quattordici carte nell’elenco');
   assert.ok(await page.evaluate(() => document.querySelector('#aree .area.chiusa') !== null), 'il Segreto parte chiuso');
   await scatto('01-elenco');
-  bene('elenco: nove aree aperte e il Segreto chiuso');
+  bene('elenco: tredici aree aperte e il Segreto chiuso');
 
   // soluzioni di una tavola come stringhe di direzioni (rifatte col motore della pagina)
   const soluzioniDi = id => page.evaluate(id => {
@@ -63,9 +64,12 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
     let f = scr(geo.start);
     await tocca('touchStart', f[0], f[1]);
     const D = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
-    let sospensioni = 0;
+    let sospensioni = 0, R = null;
+    // il dito si muove in Rᵀ·d, così il cursore (R·dito + o) va nella direzione d del passo
+    const dito = d => R ? [R[0] * d[0] + R[2] * d[1], R[1] * d[0] + R[3] * d[1]] : d;
     for (const ch of str) {
-      const d = D[ch], passo = 100 * geo.s;
+      const passo = 100 * geo.s;
+      let d = dito(D[ch]);
       const fine = [f[0] + d[0] * passo, f[1] + d[1] * passo];
       if (fine[0] < 6 || fine[0] > 384 || fine[1] < 60 || fine[1] > 838) {
         // il dito uscirebbe dallo schermo: si solleva e si riprende dalla punta
@@ -73,12 +77,15 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
         const testa = await page.evaluate(() => { const r = tavola.rep(); return [80 + r[0] * 100, 80 + r[1] * 100]; });
         f = scr(testa);
         await tocca('touchStart', f[0], f[1]);
+        R = null; d = D[ch];
       }
       for (let k = 1; k <= 6; k++) await tocca('touchMove', f[0] + d[0] * passo * k / 6, f[1] + d[1] * passo * k / 6);
       f = [f[0] + d[0] * passo, f[1] + d[1] * passo];
+      // i movimenti del dito arrivano alla pagina col fotogramma: si aspetta prima di leggere la rotazione
+      R = await page.evaluate(() => new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(() => ok(tavola.T && tavola.T.R)))));
     }
     await tocca('touchEnd');
-    await page.waitForTimeout(30);
+    await page.evaluate(() => new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(ok))));
     return sospensioni;
   }
 
@@ -98,7 +105,7 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
       const salvate = await page.evaluate(id => (ST.t[id] || []).length, t.id);
       assert.equal(salvate, quante, t.id + ': soluzioni salvate dopo il tracciamento');
       if (t.stella) assert.ok(await page.evaluate(id => presa(tavolaDa[id].t), t.id), t.id + ': stella presa');
-      if (['f1', 'c1', 'm2', 't2', 'k3', 'r3', 'f4', 'n5'].includes(t.id)) await scatto('tav-' + t.id);
+      if (['f1', 'c1', 'm2', 't2', 'k3', 'r3', 'f4', 'n5', 'co7', 'oc7', 'sf3', 'sf5', 'bt3', 'bt5'].includes(t.id)) await scatto('tav-' + t.id);
     }
     bene(`${a.id}: tutte le tavole risolte trascinando (${a.tavole.length})`);
   }
@@ -113,7 +120,13 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
   assert.ok(await page.evaluate(() => document.getElementById('tavola').classList.contains('sbagliata')), 'linea rossa');
   assert.ok(await page.evaluate(() => document.querySelectorAll('#tavola .sim.male').length === 1), 'il numero lampeggia');
   await scatto('02-sbagliata');
-  bene('una linea sbagliata diventa rossa e segna il simbolo');
+  // contorni: una linea che non fa i lati giusti segna il quadratino
+  await page.evaluate(() => { location.hash = 'contorni'; }); await page.waitForTimeout(100);
+  await page.evaluate(() => vai(0));
+  await traccia('RRRUUU');     // co1: lungo il bordo il 3 resta senza lati, e lo 0 ne ha uno
+  assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#tavola .sim.male')].map(x => x.dataset.k).sort()), ['1,1', '1,2'], 'i contorni lampeggiano');
+  bene('una linea sbagliata diventa rossa e segna il simbolo (anche i contorni)');
+  await page.evaluate(() => { location.hash = 'numeri'; }); await page.waitForTimeout(100);
 
   // linea in sospeso
   await page.evaluate(() => vai(0));
@@ -156,7 +169,12 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
   assert.equal(await page.evaluate(() => { location.hash = 'frecce'; return 1; }), 1);
   await page.waitForTimeout(100);
   assert.ok(await page.isHidden('#apri3d'), 'sul piano niente vista da fuori');
-  for (const [area, k] of [['cilindro', 1], ['mobius', 3], ['toro', 1], ['klein', 2], ['rp2', 2], ['segreto', 2]]) {
+  // sul bitoro niente 3D, e le stelline del punto singolare sono gli 8 angoli della L
+  await page.evaluate(() => { location.hash = 'bitoro'; }); await page.waitForTimeout(100);
+  await page.evaluate(() => vai(4)); await page.waitForTimeout(60);
+  assert.ok(await page.isHidden('#apri3d'), 'bitoro: niente vista da fuori');
+  assert.equal(await page.evaluate(() => document.querySelectorAll('#tavola .singolari circle').length), 8, 'bitoro: otto stelline');
+  for (const [area, k] of [['cilindro', 1], ['mobius', 3], ['sfera', 4], ['toro', 1], ['klein', 2], ['rp2', 2], ['segreto', 2], ['segreto', 4]]) {
     await page.evaluate(id => { location.hash = id; }, area); await page.waitForTimeout(120);
     await page.evaluate(k => vai(k), k); await page.waitForTimeout(80);
     await page.click('#apri3d');
@@ -173,7 +191,7 @@ let ok = 0; const bene = m => { ok++; console.log('ok  ', m); };
     await page.click('#chiudi3d');
     assert.ok(await page.isHidden('#vista3d'));
   }
-  bene('Guarda da fuori: cilindro, Möbius, toro, Klein e RP² disegnati in 3D, Klein e RP² anche in R⁴');
+  bene('Guarda da fuori: cilindro, Möbius, sfera, toro, Klein e RP² disegnati in 3D, Klein e RP² anche in R⁴; il bitoro no');
 
   // i progressi restano dopo il ricaricamento; Reset (due tocchi) li cancella
   await page.goto(ROOT + 'giochi/traccia/');

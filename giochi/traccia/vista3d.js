@@ -15,6 +15,12 @@
      rp2       (1, t) ~ (0, 1 − t), (s, 1) ~ (1 − s, 0): il quadrato è un disco col
                bordo incollato per antipodi. R³: superficie di Boy (parametrizzazione di
                Bryant–Kusner); R⁴: (x² − y², xy, xz, yz) sulla semisfera
+     sfera     (s, 0) ~ (1, 1 − s), (0, t) ~ (1 − t, 1): la busta. Con u = s + t − 1 e
+               v = s − t i due incollamenti diventano (u, v) ~ (−u, v) sul bordo, quindi
+               ogni riga v = costante è un cerchio: v dà la latitudine (gli angoli piegati
+               sono i poli) e u la longitudine
+     Il bitoro non c'è: una L avvolta su una ciambella a due buchi senza strappi
+     richiede una costruzione a pezzi che qui non vale la pena.
    La parte di calcolo (FORME, punto3, punto4) non usa la pagina; il
    visualizzatore WebGL (Vista) è scritto a mano, senza librerie, così
    funziona anche senza connessione.
@@ -48,6 +54,12 @@
     return [x, -y, z];
   }
 
+  function busta(s, t) {
+    const u = s + t - 1, v = s - t, L = 1 - Math.abs(v), th = L > 1e-12 ? PI * u / L : 0;
+    const r = cos(PI * v / 2);
+    return [r * cos(th), sin(PI * v / 2), r * sin(th)];
+  }
+
   const FORME = {
     cilindro: {
       r3: (s, t, p) => { const R = p.w / (2 * PI), th = 2 * PI * s; return [R * cos(th), (0.5 - t) * p.h, R * sin(th)]; },
@@ -66,6 +78,10 @@
       r4: (s, t) => { const u = 2 * PI * t, v = 2 * PI * s, R = 2, r = 1, A = R + r * cos(v); return [A * cos(u), A * sin(u), r * sin(v) * cos(u / 2), r * sin(v) * sin(u / 2)]; },
       nota3: 'La bottiglia di Klein in R³: per chiudersi deve passare attraverso sé stessa. L’autointersezione è il cerchio dove il collo entra nel fianco.',
       nota4: 'In R⁴ non si autointerseca: il colore è la quarta coordinata. Dove due fogli sembrano incrociarsi hanno colori diversi, quindi non si toccano.'
+    },
+    sfera: {
+      r3: (s, t) => busta(s, t),
+      nota3: 'La sfera: la busta chiusa. I quattro lati della tavola sono finiti tutti sullo stesso meridiano, i due angoli piegati sono i poli e la diagonale tra loro è il meridiano opposto.'
     },
     rp2: {
       r3: (s, t) => boy(...disco(s, t)),
