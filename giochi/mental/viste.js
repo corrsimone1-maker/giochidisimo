@@ -132,7 +132,7 @@ function aggiornaConsegna() {
   $('sConsegna').disabled = G.P.finito != null || vuota;
   if ($('sPen')) {
     const c = G.prova ? (G.P.consegne || 0) : (G.r.consegne || 0);
-    $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b> · +${c} min` : 'Ogni consegna sbagliata aggiunge un minuto';
+    $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b>` : 'Le consegne sbagliate si contano';
   }
 }
 

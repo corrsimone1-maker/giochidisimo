@@ -1,9 +1,9 @@
 // Prova nel browser di MENTAL a schermo iPhone (390×844, tocco), con l'orologio del browser spostato:
-// giorno del lancio (inizio, tempo che continua dopo un ricaricamento, corone risolte toccando, condivisione),
-// allenamento che non tocca il tempo ufficiale, tutti i tipi di sfida finiti dall'interfaccia (griglie, enigmi
+// giorno del lancio (inizio, niente cronometro anche dopo un ricaricamento, corone risolte toccando, condivisione),
+// allenamento che non tocca il risultato ufficiale, tutti i tipi di sfida finiti dall'interfaccia (griglie, enigmi
 // con numeri, frazioni e parole, codici, in fila, moneta falsa, calcolatrice, travasi), consegne sbagliate
-// (+1 minuto), mina, resa, calendario senza giorni futuri, mezzanotte a partita aperta, giorno senza sfida
-// pronta, prima del lancio, «I miei tempi».
+// (contate, senza minuti), mina, resa, calendario senza giorni futuri, mezzanotte a partita aperta, giorno senza
+// sfida pronta, prima del lancio, «Le mie sfide», voci salvate col cronometro di prima.
 // Uso, dalla cartella della repo:
 //   python3 -m http.server 8765 &
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node prove/mental.pagina.test.js
@@ -38,6 +38,8 @@ const bene = m => console.log('ok  ', m);
   const visibile = (page, id) => page.isVisible('#' + id);
   const sto = page => page.evaluate(() => JSON.parse(localStorage.getItem('gds-mental-storico') || 'null'));
   const tocca = (page, i) => page.tap(`#tav [data-i="${i}"]`);
+  // niente tempi da nessuna parte: né «1:05» né «1:02:05» (il conto alla rovescia della home è a parte)
+  const senzaTempi = async (page, sel, cosa) => assert.doesNotMatch(await page.textContent(sel), /\d:\d\d|\bmin\b|minut/, cosa + ': niente tempi');
 
   /* ---------- 1. Giorno del lancio ---------- */
   const a = await telefono('2026-10-22T08:00:00Z');                     // 10:00 a Roma
@@ -50,7 +52,8 @@ const bene = m => console.log('ok  ', m);
   assert.equal(await a.evaluate(() => G.s.gioco), 'corone');
   await a.clock.fastForward(65000);
   await a.waitForTimeout(400);
-  assert.match(await a.textContent('#gTempo'), /^1:0[5-9]$/, 'il tempo scorre');
+  assert.equal(await a.$('#gTempo'), null, 'niente cronometro');
+  await senzaTempi(a, '#sGioco', 'gioco');
   // una croce e poi una corona sulla stessa casella, poi annulla
   const sol1 = await a.evaluate(() => soluzione(G.s));
   const vuota = sol1.findIndex(x => !x);
@@ -61,10 +64,10 @@ const bene = m => console.log('ok  ', m);
   await a.mouse.move(b0.x + 5, b0.y + 5); await a.mouse.down(); await a.mouse.move(b3.x + 5, b3.y + 5, { steps: 6 }); await a.mouse.up();
   assert.deepEqual(await a.evaluate(() => G.P.st.c.slice(0, 4)), [1, 1, 1, 1], 'trascinando: croci in fila');
   await a.tap('#sAnn');
-  // ricarico: il tempo non riparte
+  // ricarico: la partita si riapre, sempre senza tempo
   await a.reload(); await a.waitForTimeout(500);
   assert.ok(await visibile(a, 'sGioco'), 'si riapre la partita');
-  assert.ok(/^1:\d\d$/.test(await a.textContent('#gTempo')), 'il tempo continua dopo il ricaricamento');
+  await senzaTempi(a, '#sGioco', 'gioco dopo il ricaricamento');
   await shot(a, 'corone');
   // risolvo toccando: due tocchi per corona
   const corone = sol1.map((x, i) => (x ? i : -1)).filter(i => i >= 0);
@@ -75,26 +78,29 @@ const bene = m => console.log('ok  ', m);
   await tocca(a, ultima); await tocca(a, ultima);
   await a.waitForSelector('#sEsito:not([hidden])', { timeout: 4000 });
   const r1 = (await sto(a)).giorni['2026-10-22'];
-  assert.equal(r1.esito, 'risolta'); assert.ok(r1.giornata); assert.ok(r1.ms >= 65000 && r1.ms < 200000, 'tempo ' + r1.ms);
+  assert.equal(r1.esito, 'risolta'); assert.ok(r1.giornata); assert.equal(r1.ms, undefined, 'nessun tempo salvato'); assert.equal(r1.pen, undefined);
   assert.match(await a.textContent('#eCorpo'), /Risolta/);
   assert.match(await a.textContent('#eCorpo'), /Il giorno stesso/);
   assert.match(await a.textContent('#eCorpo'), /Le chiavi/);
+  await senzaTempi(a, '#sEsito .esito', 'esito');
   await shot(a, 'esito');
   await a.tap('#eCond');
   const testo = await a.evaluate(() => navigator.clipboard.readText());
-  assert.match(testo, /^MENTAL #001 · Corone\n/); assert.match(testo, /Risolta in \d+:\d\d/); assert.match(testo, /giochi\/mental\//);
-  bene(`lancio: #001 Corone, tempo che continua dopo il ricaricamento, risolta toccando (${n1}×${n1}), condivisione senza spoiler`);
+  assert.match(testo, /^MENTAL #001 · Corone\n/); assert.match(testo, /\n✅ Risolta\n/); assert.match(testo, /giochi\/mental\//);
+  assert.doesNotMatch(testo, /\d:\d\d/, 'condivisione senza tempo');
+  bene(`lancio: #001 Corone, niente cronometro nemmeno dopo il ricaricamento, risolta toccando (${n1}×${n1}), condivisione senza spoiler e senza tempo`);
   // allenamento: non tocca lo storico
   await a.tap('#eProva');
   await a.waitForSelector('#sGioco:not([hidden])'); assert.match(await a.textContent('#gSotto'), /Allenamento/);
   await a.tap('#gRegole'); await tieni(a, '#veloBox .btn.hold:last-of-type');
   await a.waitForSelector('#velo:not([hidden])'); assert.match(await a.textContent('#veloBox'), /non conta/);
   await shot(a, 'allenamento');
-  assert.deepEqual((await sto(a)).giorni['2026-10-22'], r1, 'l’allenamento non cambia il tempo ufficiale');
+  assert.deepEqual((await sto(a)).giorni['2026-10-22'], r1, 'l’allenamento non cambia il risultato ufficiale');
+  assert.match(await a.textContent('#veloBox'), /risultato ufficiale non cambia/);
   await a.tap('#veloBox .btn.sec');
   await a.waitForSelector('#sOggi:not([hidden])'); await a.waitForTimeout(200); assert.equal((await a.textContent('#oCta')).trim(), 'Risultato');
   assert.equal(await a.getAttribute('#oSett .giornino.oggi .segno', 'class'), 'segno risolta');
-  bene('allenamento: si rigioca, la soluzione si vede, il tempo ufficiale resta');
+  bene('allenamento: si rigioca, la soluzione si vede, il risultato ufficiale resta');
   await a.context().close();
 
   /* ---------- 2. Tutti i tipi di sfida, all'ultimo giorno pronto ---------- */
@@ -128,7 +134,8 @@ const bene = m => console.log('ok  ', m);
     return r;
   };
   const sbagliata = async g => {
-    await b.waitForSelector('#toast:not([hidden])'); assert.match(await b.textContent('#toast'), /\+1 minuto/, g);
+    await b.waitForSelector('#toast:not([hidden])'); assert.match(await b.textContent('#toast'), /^Non è giusto$/, g);
+    if (await b.$('#sPen')) assert.match(await b.textContent('#sPen'), /^Consegne sbagliate \d+$/, g + ': consegne contate, niente minuti');
     assert.ok(await visibile(b, 'sGioco'), g + ': consegna sbagliata, si resta in gioco');
     await b.waitForTimeout(150);
   };
@@ -170,7 +177,7 @@ const bene = m => console.log('ok  ', m);
   await b.tap('#sAnn'); assert.equal(await b.evaluate(i => G.P.st.s[i], mina), 0, 'annulla toglie la bandiera');
   await tocca(b, mina);
   await esito('campo (mina)', 'persa');
-  // sinceri e bugiardi: consegna sbagliata (+1 minuto), poi giusta
+  // sinceri e bugiardi: consegna sbagliata (si conta), poi giusta
   await apri(giorni.ultimo.cavalieri);
   const solC = await b.evaluate(() => soluzione(G.s));
   for (let i = 0; i < solC.length; i++) await b.tap(`#tav .scelta [data-i="${i}"][data-v="${i === 0 ? (solC[0] ? 2 : 1) : (solC[i] ? 1 : 2)}"]`);
@@ -178,7 +185,9 @@ const bene = m => console.log('ok  ', m);
   await b.tap(`#tav .scelta [data-i="0"][data-v="${solC[0] ? 1 : 2}"]`);
   await b.tap('#sConsegna');
   const rc = await esito('cavalieri');
-  assert.equal(rc.consegne, 1); assert.equal(rc.pen, 60000); assert.ok(rc.ms >= 60000);
+  assert.equal(rc.consegne, 1); assert.equal(rc.pen, undefined); assert.equal(rc.ms, undefined);
+  assert.match(await b.textContent('#eCorpo'), /1 consegna sbagliata/);
+  await senzaTempi(b, '#sEsito .esito', 'esito con consegna sbagliata');
   assert.match(await b.textContent('#eCorpo'), /Come si ragiona/);
   // corone: resa (tenendo premuto)
   await apri(giorni.ultimo.corone);
@@ -186,7 +195,7 @@ const bene = m => console.log('ok  ', m);
   await tieni(b, '#veloBox .btn.hold:last-of-type');
   await esito('corone', 'arresa');
   assert.match(await b.textContent('#eCorpo'), /Non risolta/);
-  bene('i nove giochi del lancio si finiscono dall’interfaccia; mina = persa; resa = non risolta; consegna sbagliata = +1 minuto');
+  bene('i nove giochi del lancio si finiscono dall’interfaccia; mina = persa; resa = non risolta; consegna sbagliata contata, senza minuti');
 
   // enigma con un numero: tastierino, prima sbagliato e poi giusto
   const tasti = async testo => { for (const t of testo) await b.tap(`.tastiera-num .tasto[data-t="${t === '-' ? '−' : t}"]`); };
@@ -199,7 +208,7 @@ const bene = m => console.log('ok  ', m);
   assert.match(await b.textContent('#tav'), /Già consegnate, sbagliate/);
   await cancella(); await tasti(rn); await b.tap('#sConsegna');
   const re = await esito('enigma numero');
-  assert.equal(re.consegne, 1); assert.equal(re.pen, 60000);
+  assert.equal(re.consegne, 1); assert.equal(re.pen, undefined);
   assert.match(await b.textContent('#eCorpo'), /La risposta/);
   await shot(b, 'enigma-esito');
   // enigma con una frazione: la stessa frazione non ridotta vale
@@ -325,7 +334,7 @@ const bene = m => console.log('ok  ', m);
   await b.tap('#sConsegna'); await esito('criptaritmo');
   bene('gabbie, somme, flotta, tende, luci, ponti, chi è chi e criptaritmo si finiscono dall’interfaccia');
 
-  /* ---------- 3. Calendario e «I miei tempi» ---------- */
+  /* ---------- 3. Calendario e «Le mie sfide» ---------- */
   const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
   const meseTesto = d => `${mesi[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`;
   await b.evaluate(() => { location.hash = '#calendario'; });
@@ -339,14 +348,20 @@ const bene = m => console.log('ok  ', m);
   await b.tap('#cCorpo .giorno[data-d="2026-10-25"]');
   await b.waitForSelector('#velo:not([hidden])'); assert.match(await b.textContent('#veloBox'), /Non giocata/);
   await b.tap('#veloBox .btn.sec');
-  await b.evaluate(() => { location.hash = '#tempi'; });
-  await b.waitForSelector('#sTempi:not([hidden])'); await b.waitForTimeout(200);
+  await b.evaluate(() => { location.hash = '#sfide'; });
+  await b.waitForSelector('#sSfide:not([hidden])'); await b.waitForTimeout(200);
   assert.equal(await b.$$eval('#tCorpo .elenco li', x => x.length), finite);
-  await shot(b, 'tempi');
+  await senzaTempi(b, '#sSfide', 'le mie sfide');
+  assert.match(await b.textContent('#tCorpo .elenco'), /Mina/); assert.match(await b.textContent('#tCorpo .elenco'), /Non risolta/);
+  await shot(b, 'sfide');
   await b.tap('#tCopia');
   const elenco = await b.evaluate(() => navigator.clipboard.readText());
-  assert.match(elenco, /^MENTAL · i miei tempi\n/); assert.equal(elenco.split('\n').length, finite + 1);
-  bene(`calendario solo fino a oggi e dal lancio; «I miei tempi» con ${finite} sfide e l’elenco da copiare`);
+  assert.match(elenco, /^MENTAL · le mie sfide\n/); assert.equal(elenco.split('\n').length, finite + 1);
+  assert.doesNotMatch(elenco, /\d:\d\d/, 'elenco senza tempi');
+  await b.evaluate(() => { location.hash = '#calendario'; }); await b.waitForSelector('#sCal:not([hidden])');
+  await b.evaluate(() => { location.hash = '#tempi'; });
+  await b.waitForSelector('#sSfide:not([hidden])');
+  bene(`calendario solo fino a oggi e dal lancio; «Le mie sfide» con ${finite} sfide, senza tempi, e l’elenco da copiare; #tempi porta lì`);
   // un giorno nel mezzo: i giorni dopo non si vedono
   await b.clock.setSystemTime(new Date('2026-12-15T10:00:00Z'));
   await b.evaluate(() => { location.hash = '#calendario=2026-12'; });
@@ -376,7 +391,42 @@ const bene = m => console.log('ok  ', m);
   bene('mezzanotte: la partita continua, vale come «dopo mezzanotte», la home passa al giorno nuovo');
   await c.context().close();
 
-  /* ---------- 5. Giorno senza sfida pronta e prima del lancio ---------- */
+  /* ---------- 5. Voci salvate col cronometro di prima: ms e pen restano nello storico ma non si vedono;
+     una partita aperta da 30 ore si riprende senza tempo ---------- */
+  const f = await telefono('2026-10-24T14:00:00Z');
+  const ieri = await f.evaluate(async () => {
+    await caricaMese('2026-10');
+    const ora = Date.now(), ore = h => ora - h * 3600e3, s1 = MENTAL.dati['2026-10-22'], s2 = MENTAL.dati['2026-10-23'];
+    localStorage.setItem('gds-mental-storico', JSON.stringify({ v: 1, giorni: {
+      '2026-10-22': { n: s1.n, gioco: s1.gioco, nome: nomeDi(s1), livello: s1.livello, esito: 'risolta', inizio: ore(52), fine: ore(51), ms: 3725000, pen: 60000, consegne: 1, giornata: true, firma: firma(s1.p) },
+      '2026-10-23': { n: s2.n, gioco: s2.gioco, nome: nomeDi(s2), livello: s2.livello, esito: 'corso', inizio: ore(30), pen: 0, firma: firma(s2.p) } } }));
+    localStorage.setItem('gds-mental-partite', JSON.stringify({ '2026-10-23': { st: MENTAL.motori[s2.gioco].nuovoStato(s2.p), storia: [], inizio: ore(30), pen: 0, firma: firma(s2.p) } }));
+    return s2;
+  });
+  await f.reload(); await f.waitForTimeout(400);
+  await f.evaluate(() => { location.hash = '#sfide'; }); await f.waitForSelector('#sSfide:not([hidden])'); await f.waitForTimeout(150);
+  await senzaTempi(f, '#sSfide', 'le mie sfide con voci vecchie');
+  assert.match(await f.textContent('#tCorpo .elenco'), /In corso/); assert.match(await f.textContent('#tCorpo .elenco'), /1 consegna sbagliata/);
+  await f.evaluate(() => { location.hash = '#esito=2026-10-22'; }); await f.waitForSelector('#sEsito:not([hidden])'); await f.waitForTimeout(150);
+  await senzaTempi(f, '#sEsito .esito', 'esito di una voce vecchia');
+  await f.evaluate(() => dettaglioGiorno('2026-10-23')); await f.waitForSelector('#velo:not([hidden])');
+  assert.match(await f.textContent('#veloBox'), /In corso\./); await senzaTempi(f, '#veloBox', 'dettaglio di una partita aperta da 30 ore');
+  await f.tap('#veloBox .btn:not(.sec)');
+  await f.waitForSelector('#sGioco:not([hidden])'); await f.waitForTimeout(200);
+  assert.equal(await f.evaluate(() => G.data), '2026-10-23');
+  await senzaTempi(f, '#sGioco', 'partita aperta da 30 ore');
+  await shot(f, 'partita-vecchia');
+  // la si finisce: iniziata il suo giorno e finita dopo, quindi «dopo mezzanotte»; la voce nuova non ha tempi
+  await f.evaluate(() => { const sol = soluzione(G.s); G.P.st = G.E.statoRisolto(G.s.p, sol); if (['risposta', 'codice', 'testo'].includes(G.E.tipo)) consegna(); else controllaFine(); });
+  await f.waitForSelector('#sEsito:not([hidden])');
+  const rv = (await sto(f)).giorni['2026-10-23'];
+  assert.equal(rv.esito, 'risolta'); assert.equal(rv.giornata, false); assert.equal(rv.ms, undefined);
+  assert.match(await f.textContent('#eCorpo'), /Finita dopo mezzanotte/);
+  await senzaTempi(f, '#sEsito .esito', 'esito della partita vecchia');
+  await f.context().close();
+  bene(`voci di prima del cambio: niente tempi in «Le mie sfide», esito e dettaglio; la partita aperta da 30 ore (${ieri.gioco}) si riprende e finisce senza tempo`);
+
+  /* ---------- 6. Giorno senza sfida pronta e prima del lancio ---------- */
   const d = await telefono('2030-01-01T10:00:00Z');
   assert.match(await d.textContent('#oCorpo'), /non è ancora pronta/);
   assert.equal(await d.$('#oCta'), null, 'nessuna sfida a caso');

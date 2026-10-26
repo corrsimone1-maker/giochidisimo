@@ -10,7 +10,7 @@
      uguale per tutti: sta nei file giochi/mental/sfide/AAAA-MM.js;
    - il numero della sfida conta i giorni dal lancio (LANCIO è la #1).
    Non c'è un server: la data viene dall'orologio del telefono e i risultati restano
-   sul telefono. Niente classifica: ognuno si salva tempi e giorni completati.
+   sul telefono. Niente classifica e niente cronometro: ognuno si salva i giorni completati.
    ===================================================================== */
 (function () {
 'use strict';

@@ -166,7 +166,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-societa` (`cfg`), `gds-societa-partita` (partita: società, decreti, eventi, schede segrete comprese, e `ui`), `gds-societa-storico` (riassunti, per bilanciare);
   - `gds-alibi` (modo, livello, luogo, telefoni), `gds-alibi-partita` (`par` e `caso` intero, telefoni, `io`, consegna, accusa, taccuino `tac`), `gds-alibi-storico` (casi chiusi: risolto o no, durata);
   - `gds-machine` (impostazioni e nome), `gds-machine-partita` (partita o sessione di stanza), `gds-machine-stanze` (stanze aperte su questo telefono);
-  - `gds-mental-partite` (tavole a metà di MENTAL, per data, e allenamenti `data|prova`), `gds-mental-storico` (il tempo ufficiale e l'esito di ogni giorno giocato: è «I miei tempi»);
+  - `gds-mental-partite` (tavole a metà di MENTAL, per data, e allenamenti `data|prova`), `gds-mental-storico` (l'esito ufficiale di ogni giorno giocato, con le consegne sbagliate: è «Le mie sfide»);
   - `gds-traccia` (dove eri rimasto: `area`, `idx` per area), `gds-traccia-storico` (`{ v: 1, t: { idTavola: ['RRUL…'] }, logo }`: le soluzioni trovate come direzioni, cioè i progressi e le stelle);
   - `giochidisimo:7wonders` e `giochidisimo:7wonders:storico`;
   - poker, con il vecchio prefisso `fiches:` (vedi la sezione Poker);
@@ -341,13 +341,14 @@ Display (titoli in corsivo), Courier Prime (fascicoli e verbali) e Figtree solo 
 
 ### MENTAL → `giochi/mental/`
 
-La sfida del giorno, da un progetto scritto con un'altra IA («MENTAL», report di Simo) adattato: **niente server e
-niente classifica** (scelta di Simo: gli basta salvarsi tempi e giorni completati e confrontarsi a mano). Ogni giorno
+La sfida del giorno, da un progetto scritto con un'altra IA («MENTAL», report di Simo) adattato: **niente server,
+niente classifica e niente cronometro** (scelte di Simo: gli bastano i giorni completati per confrontarsi a mano; il
+cronometro l'ha fatto togliere perché una sfida lasciata aperta contava per giorni). Ogni giorno
 (giorno di Roma, cambio a mezzanotte italiana anche con l'ora legale) c'è **una sola sfida, uguale per tutti**, già
 preparata e controllata; la #1 è il 22 ottobre 2026 (`LANCIO`). **Simo vuole varietà**: i giochi del progetto erano solo
 idee, va bene qualunque cosa dove bisogna pensare (rompicapi, enigmi, indovinelli, problemi…), e lo stesso tipo deve
 tornare di rado. Tema «notte d'inchiostro»: indaco `#0D0F22` (piani `#15183A`/`#1C2048`), menta `#3DDCA0` per azioni e
-sfide risolte, lavanda `#B2A7FF` per note e selezioni, ambra `#F2B84B` per il tempo, corallo `#FF6B6B` solo per errori e
+sfide risolte, lavanda `#B2A7FF` per note e selezioni, ambra `#F2B84B` per le sfide in corso, corallo `#FF6B6B` solo per errori e
 mine; font Bricolage Grotesque e Figtree.
 - **File:**
   - `comune.js` (`self.MENTAL`): date di Roma (`giornoRoma`, `prossimaMezzanotte`, `numero`), `prng` riproducibile,
@@ -390,14 +391,18 @@ mine; font Bricolage Grotesque e Figtree.
     generarne di nuove.
   - `sfide/AAAA-MM.js` (`MENTAL.mese('AAAA-MM', [sfide])`) e `sfide/indice.js` (`self.MENTAL_INDICE`: mesi, primo, ultimo).
     Una sfida: `{ data, n, gioco, livello, titolo, tecniche, p }`. **Non si modificano a mano.**
-  - `index.html`: oggi (con conto alla rovescia), partita, esito (tempo, condividi senza spoiler, soluzione, «le chiavi»
-    cioè le tecniche che servivano, passi del ragionamento per Sinceri e bugiardi), calendario, «I miei tempi» (per tipo).
-    Indirizzi: `#gioca=AAAA-MM-GG`, `#prova=…` (allenamento), `#esito=…`, `#calendario=AAAA-MM`, `#tempi`.
-- **Regole della pagina:** il tempo parte con «Inizia» e **non si ferma** (orologio vero: `inizio` nello storico);
-  conta il **primo tentativo** di ogni giorno, poi si rigioca per allenamento senza cambiare il tempo; un giorno passato
+  - `index.html`: oggi (con il conto alla rovescia per la sfida dopo), partita, esito (risolta o no, quando, consegne
+    sbagliate, condividi senza spoiler, soluzione, «le chiavi» cioè le tecniche che servivano, passi del ragionamento per
+    Sinceri e bugiardi), calendario, «Le mie sfide» (risolte per tipo, sfida per sfida, «Copia l’elenco»).
+    Indirizzi: `#gioca=AAAA-MM-GG`, `#prova=…` (allenamento), `#esito=…`, `#calendario=AAAA-MM`, `#sfide` (vale anche
+    il vecchio `#tempi`).
+- **Regole della pagina:** **niente cronometro** da nessuna parte (né in partita, né nell'esito, né in «Le mie sfide» o
+  nella condivisione). Lo storico tiene solo le ore `inizio` e `fine`, che non si mostrano: servono a dire «il giorno
+  stesso», «dopo mezzanotte» o «recuperata». Le voci salvate prima hanno anche `ms` e `pen`: restano, ma non si leggono.
+  Conta il **primo tentativo** di ogni giorno, poi si rigioca per allenamento senza cambiare il risultato; un giorno passato
   si recupera dal calendario e vale come «recuperata» (`giornata: false`); finita dopo mezzanotte vale come «dopo
-  mezzanotte». Nelle sfide che si consegnano (enigmi, codici, in fila, moneta falsa, chi è chi, criptaritmi, Sinceri e bugiardi) ogni consegna
-  sbagliata aggiunge un minuto. Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel
+  mezzanotte». Nelle sfide che si consegnano (enigmi, codici, in fila, moneta falsa, chi è chi, criptaritmi, Sinceri e bugiardi) le consegne
+  sbagliate si contano (`consegne`) e compaiono nell'esito, nella condivisione e in «Le mie sfide». Mina = persa; «Mi arrendo» (tenendo premuto) = non risolta. Niente sfide future nel
   calendario; un giorno senza sfida pronta mostra un avviso, mai una sfida inventata. La serie conta i giorni di fila
   risolti il giorno stesso. Lo storico salva anche `nome` e `firma` (impronta della sfida): una partita a metà di una
   sfida che nel frattempo è cambiata riparte pulita.

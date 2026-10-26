@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* MENTAL, la sfida del giorno. Tema «notte d'inchiostro»: indaco profondo, un accento menta per
-   le azioni e le sfide risolte, lavanda per note e selezioni, ambra per il tempo e i momenti decisivi,
+   le azioni e le sfide risolte, lavanda per note e selezioni, ambra per le sfide in corso e i momenti decisivi,
    corallo solo per errori e mine. Le tavole stanno al centro; poche scritte intorno. */
 :root{
   --fondo:#0D0F22; --piano:#15183A; --piano-2:#1C2048; --piano-3:#262B5C;
@@ -112,8 +112,6 @@ button:disabled{cursor:default;opacity:.45}
 .gcentro{flex:1;min-width:0;text-align:center}
 .gcentro .t1{font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gcentro .t1.lungo{font-size:11.5px;letter-spacing:.05em}
-.gcentro .orologio{font-weight:800;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ambra);letter-spacing:.02em}
-.gcentro .orologio.prova{color:var(--lavanda)}
 .gsotto{display:flex;justify-content:center;gap:8px;align-items:center;padding:2px 16px 4px;color:var(--spento);font-size:13px;font-weight:600}
 .etichetta{padding:2px 8px;border-radius:999px;background:var(--lavanda-fondo);color:var(--lavanda);font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .area{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 10px;overflow:hidden}
@@ -267,9 +265,8 @@ table.tabella thead th{text-align:center}
 /* ---------- Esito ---------- */
 .esito{padding:20px 18px 18px;border-radius:22px;background:var(--piano);border:1px solid var(--linea-2);text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
 .esito .k{font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue)}
-.esito .parola{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--menta)}
+.esito .parola{font-family:var(--display);font-weight:800;font-size:clamp(32px,10vw,44px);line-height:1.05;letter-spacing:.05em;text-transform:uppercase;color:var(--menta);margin:4px 0 2px}
 .esito.male .parola{color:var(--corallo)}
-.esito .grande{font-family:var(--display);font-weight:800;font-size:clamp(54px,18vw,76px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .esito .dett{color:var(--tenue);font-size:14px}
 .esito .dett b{color:var(--testo)}
 .pannello{padding:14px 14px 12px;border-radius:18px;background:var(--piano);border:1px solid var(--linea);display:flex;flex-direction:column;gap:9px}
@@ -298,7 +295,7 @@ table.tabella thead th{text-align:center}
 .legenda{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;color:var(--tenue);font-size:12.5px}
 .legenda span{display:inline-flex;align-items:center;gap:6px}
 
-/* ---------- I miei tempi ---------- */
+/* ---------- Le mie sfide ---------- */
 .numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .numeri div{padding:12px 6px;border-radius:14px;background:var(--piano);border:1px solid var(--linea);text-align:center}
 .numeri b{display:block;font-family:var(--display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -434,7 +431,7 @@ table.tabella thead th{text-align:center}
     <div class="marchio">MENTAL</div>
     <div class="icone">
       <button class="ico" id="oCal" aria-label="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
-      <button class="ico" id="oTempi" aria-label="I miei tempi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 9.5v4l2.5 2M9.5 3h5"/></svg></button>
+      <button class="ico" id="oSfide" aria-label="Le mie sfide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5l1.7 1.7 3-3.2M3.5 12.5l1.7 1.7 3-3.2M3.5 18.5l1.7 1.7 3-3.2M12 7h8.5M12 13h8.5M12 19h8.5"/></svg></button>
     </div>
   </header>
   <div class="scorri"><div class="colonna">
@@ -451,7 +448,7 @@ table.tabella thead th{text-align:center}
 <section class="schermo" id="sGioco" hidden>
   <header class="top gtop">
     <button class="back" id="gEsci">‹ MENTAL</button>
-    <div class="gcentro"><div class="t1" id="gT1"></div><div class="orologio" id="gTempo">0:00</div></div>
+    <div class="gcentro"><div class="t1" id="gT1"></div></div>
     <button class="linkbtn" id="gRegole">Regole</button>
   </header>
   <div class="gsotto" id="gSotto"></div>
@@ -471,9 +468,9 @@ table.tabella thead th{text-align:center}
   <div class="scorri"><div class="colonna" id="cCorpo"></div></div>
 </section>
 
-<!-- ================= I miei tempi ================= -->
-<section class="schermo" id="sTempi" hidden>
-  <header class="top"><button class="back" id="tEsci">‹ MENTAL</button><div class="marchio pagina">I miei tempi</div><div style="width:64px"></div></header>
+<!-- ================= Le mie sfide ================= -->
+<section class="schermo" id="sSfide" hidden>
+  <header class="top"><button class="back" id="tEsci">‹ MENTAL</button><div class="marchio pagina">Le mie sfide</div><div style="width:64px"></div></header>
   <div class="scorri"><div class="colonna" id="tCorpo"></div></div>
 </section>
 
@@ -512,22 +509,25 @@ table.tabella thead th{text-align:center}
 /* =====================================================================
    MENTAL — la pagina
    Una sfida al giorno (giorno di Roma), già preparata e controllata in sfide/AAAA-MM.js.
-   Niente server e niente classifica: il primo tentativo di ogni giorno è «il tuo tempo» e resta
-   sul telefono (gds-mental-storico, che non si cancella mai); le tavole a metà stanno in
-   gds-mental-partite (si cancellano dopo 7 giorni senza aprire MENTAL, come gli altri giochi).
+   Niente server, niente classifica e niente cronometro (scelta di Simo): il primo tentativo di
+   ogni giorno è «il tuo risultato» e resta sul telefono (gds-mental-storico, che non si cancella
+   mai); le tavole a metà stanno in gds-mental-partite (si cancellano dopo 7 giorni senza aprire
+   MENTAL, come gli altri giochi).
 
    Indirizzi (#):  (vuoto) oggi · #gioca=AAAA-MM-GG · #prova=AAAA-MM-GG (allenamento, non conta)
-                   #esito=AAAA-MM-GG · #calendario=AAAA-MM · #tempi
-   Storico: { v: 1, giorni: { data: { n, gioco, livello, esito, inizio, fine, ms, pen, giornata, consegne, boom } } }
-     esito: 'corso' | 'risolta' | 'persa' (mina) | 'arresa'; ms = fine − inizio + pen;
-     giornata: finita lo stesso giorno della sfida (ora di Roma).
+                   #esito=AAAA-MM-GG · #calendario=AAAA-MM · #sfide (Le mie sfide; vale anche #tempi)
+   Storico: { v: 1, giorni: { data: { n, gioco, livello, esito, inizio, fine, giornata, consegne, boom } } }
+     esito: 'corso' | 'risolta' | 'persa' (mina) | 'arresa'; consegne: consegne sbagliate;
+     inizio e fine sono ore, non si mostrano: servono solo a dire «il giorno stesso», «dopo
+     mezzanotte» o «recuperata»; giornata: finita lo stesso giorno della sfida (ora di Roma).
+     Le voci salvate prima che il cronometro sparisse hanno anche ms e pen: non si usano più.
    ===================================================================== */
 const M = self.MENTAL, $ = id => document.getElementById(id);
 const K_STO = 'gds-mental-storico', K_PAR = 'gds-mental-partite';
 const SITO = 'https://corrsimone1-maker.github.io/giochidisimo/giochi/mental/';
 const LIV = { impegnativa: { nome: 'Impegnativa', pip: 1 }, esperta: { nome: 'Esperta', pip: 2 }, estrema: { nome: 'Estrema', pip: 3 } };
 const ESITI = { risolta: 'Risolta', persa: 'Persa', arresa: 'Non risolta', corso: 'In corso' };
-const PENALITA = 60000;                                   // consegna sbagliata a Sinceri e bugiardi
+const sbagliate = c => `${c} consegn${c === 1 ? 'a sbagliata' : 'e sbagliate'}`;
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const tre = n => '#' + String(n).padStart(3, '0');
@@ -543,7 +543,7 @@ const salvaPar = () => { scrivi(K_PAR, PAR); };
 let OGGI = M.giornoRoma();
 const INDICE = self.MENTAL_INDICE || { mesi: [] };
 /* Pulizia delle tavole a metà: via gli allenamenti di più di due settimane fa e le tavole di sfide
-   già chiuse (il tempo ufficiale sta nello storico) */
+   già chiuse (il risultato ufficiale sta nello storico) */
 (function () {
   let cambiato = false;
   for (const k of Object.keys(PAR)) {
@@ -629,7 +629,7 @@ const mesePrima = m => M.meseDi(M.piuGiorni(m + '-01', -1));
 function caricaIntorno(data) { const m = M.meseDi(data); return Promise.all([caricaMese(m), caricaMese(mesePrima(m))]); }
 
 /* ---------------- Schermate e indirizzi ---------------- */
-const SCHERMI = ['sOggi', 'sGioco', 'sEsito', 'sCal', 'sTempi'];
+const SCHERMI = ['sOggi', 'sGioco', 'sEsito', 'sCal', 'sSfide'];
 let corrente = 'sOggi';
 function mostra(id) {
   SCHERMI.forEach(s => { $(s).hidden = s !== id; });
@@ -648,7 +648,7 @@ async function instrada() {
   if (k === 'gioca' || k === 'prova') return apriGioco(v, k === 'prova');
   if (k === 'esito') return apriEsito(v);
   if (k === 'calendario') return apriCalendario(v);
-  if (k === 'tempi') return apriTempi();
+  if (k === 'sfide' || k === 'tempi') return apriSfide();          // #tempi: indirizzo di prima
   return apriOggi();
 }
 window.addEventListener('hashchange', instrada);
@@ -704,7 +704,6 @@ function serie() {
   const risolte = Object.values(STO.giorni).filter(r => r.esito === 'risolta').length;
   return { attuale, record: Math.max(record, attuale), risolte };
 }
-const tempoDi = r => (r.esito === 'corso' ? Date.now() - r.inizio + (r.pen || 0) : r.ms);
 
 /* =====================================================================
    OGGI
@@ -729,16 +728,15 @@ function disegnaOggi() {
   } else {
     const r = rec(OGGI), E = M.motori[s.gioco];
     let stato = '', cta = 'Inizia la sfida';
-    if (r && r.esito === 'corso') { stato = `In corso · <b id="oCorre">${M.tempo(tempoDi(r))}</b>`; cta = 'Riprendi'; }
-    else if (r && r.esito === 'risolta') { stato = `<span class="ok">Risolta</span> in <b>${M.tempo(r.ms)}</b>${r.giornata ? '' : ' · dopo mezzanotte'}`; cta = 'Risultato'; }
-    else if (r) { stato = `<span class="ko">${ESITI[r.esito]}</span> · <b>${M.tempo(r.ms)}</b>`; cta = 'Risultato'; }
+    if (r && r.esito === 'corso') { stato = 'In corso'; cta = 'Riprendi'; }
+    else if (r && r.esito === 'risolta') { stato = `<span class="ok">Risolta</span>${r.giornata ? '' : ' · dopo mezzanotte'}${r.consegne ? ' · ' + sbagliate(r.consegne) : ''}`; cta = 'Risultato'; }
+    else if (r) { stato = `<span class="ko">${r.esito === 'persa' ? 'Una mina' : ESITI[r.esito]}</span>`; cta = 'Risultato'; }
     h = `<article class="eroe">
       <div class="riga1"><span class="cat">${icona(s)}${esc(nomeDi(s))}</span><span class="liv">${livTesto(s.livello)} ${pip(s.livello)}</span></div>
       <h1>${esc(s.titolo)}</h1>
       <p class="breve">${esc(breveDi(s))}</p>
       ${stato ? `<div class="stato">${stato}</div>` : ''}
       <button class="btn" id="oCta">${cta}</button>
-      ${!r ? '<p class="nota">Il tempo parte quando inizi e non si ferma, nemmeno se chiudi l’app.</p>' : ''}
     </article>`;
   }
   $('oCorpo').innerHTML = h;
@@ -761,23 +759,23 @@ function aggiornaConto() {
   const ora = Date.now(), mezz = M.prossimaMezzanotte(ora);
   const x = Math.max(0, Math.ceil((mezz - ora) / 1000)), due = v => String(v).padStart(2, '0');
   $('oConto').innerHTML = `Prossima sfida tra <b>${due(Math.floor(x / 3600))}:${due(Math.floor(x / 60) % 60)}:${due(x % 60)}</b>`;
-  const r = rec(OGGI); if (r && r.esito === 'corso' && $('oCorre')) $('oCorre').textContent = M.tempo(tempoDi(r));
 }
 function inizia(data) {
   const s = M.dati[data]; if (!s) return;
-  if (!rec(data)) { STO.giorni[data] = { n: s.n, gioco: s.gioco, nome: nomeDi(s), livello: s.livello, esito: 'corso', inizio: Date.now(), pen: 0, firma: firma(s.p) }; salvaSto(); }
+  if (!rec(data)) { STO.giorni[data] = { n: s.n, gioco: s.gioco, nome: nomeDi(s), livello: s.livello, esito: 'corso', inizio: Date.now(), firma: firma(s.p) }; salvaSto(); }
   vai('#gioca=' + data);
 }
 $('oCal').onclick = () => vai('#calendario');
-$('oTempi').onclick = () => vai('#tempi');
+$('oSfide').onclick = () => vai('#sfide');
 $('oCome').onclick = () => finestra(`<div class="kick">MENTAL</div><h2>Come funziona</h2><ol class="regole">
   <li>Ogni giorno c’è <b>una sfida nuova, uguale per tutti</b>: cambia a mezzanotte, ora italiana.</li>
   <li>Ogni giorno un tipo di sfida diverso: griglie di logica, enigmi, indovinelli, problemi di numeri, codici da scoprire, cose da mettere in ordine… Lo stesso gioco torna di rado. Tre livelli: in settimana impegnativa o esperta, il sabato esperta, la domenica <b>estrema</b>.</li>
   <li>Ogni sfida ha <b>una sola soluzione</b> (o un minimo di mosse) e si risolve ragionando: prima di pubblicarla un programma la ricontrolla da capo, senza mai tirare a indovinare.</li>
-  <li>Dove si consegna una risposta, ogni consegna sbagliata aggiunge <b>un minuto</b>.</li>
-  <li>Il tempo parte con «Inizia» e <b>non si ferma</b>, nemmeno se chiudi l’app. Conta il primo tentativo; dopo puoi rigiocarla per allenamento.</li>
+  <li>Niente cronometro: prenditi il tempo che serve. Puoi chiudere l’app e riprendere quando vuoi.</li>
+  <li>Dove si consegna una risposta, le <b>consegne sbagliate</b> si contano e finiscono nel risultato.</li>
+  <li>Conta il primo tentativo; dopo puoi rigiocarla per allenamento. La serie conta i giorni di fila con la sfida risolta il giorno stesso.</li>
   <li>I giorni passati si recuperano dal <b>calendario</b>: valgono come «recuperata».</li>
-  <li>Niente classifica: i tuoi tempi restano su questo telefono, in <b>I miei tempi</b>. Per confrontarti con gli altri usa «Condividi» a fine sfida o «Copia l’elenco».</li>
+  <li>Niente classifica: i tuoi risultati restano su questo telefono, in <b>Le mie sfide</b>. Per confrontarti con gli altri usa «Condividi» a fine sfida o «Copia l’elenco».</li>
 </ol><p class="piccolo">La data è quella dell’orologio del telefono.</p>`, [{ t: 'Chiudi', cls: 'sec' }]);
 
 /* =====================================================================
@@ -795,18 +793,16 @@ async function apriGioco(data, prova) {
   let P = PAR[chiave];
   const f = firma(s.p);
   if (!P || !P.st || (prova && P.finito != null) || (P.firma && P.firma !== f)) {
-    P = PAR[chiave] = { st: E.nuovoStato(s.p), storia: [], inizio: prova ? Date.now() : r.inizio, pen: 0, firma: f };
+    P = PAR[chiave] = { st: E.nuovoStato(s.p), storia: [], firma: f };
     salvaPar();
   }
   G = { data, prova, s, E, P, r: prova ? null : r, chiave, sel: -1, modo: '', aux: preparaAux(s), avvisato: false };
   mostra('sGioco');
   $('gT1').textContent = `${tre(s.n)} · ${nomeDi(s)}`;
   $('gT1').classList.toggle('lungo', $('gT1').textContent.length > 22);
-  $('gTempo').classList.toggle('prova', prova);
   $('gSotto').innerHTML = `${prova ? '<span class="etichetta">Allenamento</span>' : ''}<span>${esc(s.titolo)}</span><span>·</span><span>${livTesto(s.livello)}</span>`;
   disegnaStrumenti();
   disegnaGioco();
-  aggiornaTempo();
 }
 /* dati di servizio per tipo (mine e numeri del campo, soluzione per le consegne) */
 function preparaAux(s) {
@@ -815,8 +811,6 @@ function preparaAux(s) {
   return a;
 }
 function soluzione(s) { const E = M.motori[s.gioco]; E.conta(s.p, 2); return E.conta.ultima; }
-function tempoPartita() { return G.prova ? Date.now() - G.P.inizio + (G.P.pen || 0) : Date.now() - G.r.inizio + (G.r.pen || 0); }
-function aggiornaTempo() { if (G && corrente === 'sGioco') $('gTempo').textContent = M.tempo(G.P.finito != null ? G.P.finito : tempoPartita()); }
 
 /* Una mossa: si salva lo stato di prima per «Annulla» */
 function mossa(cambia, opz = {}) {
@@ -846,22 +840,22 @@ function controllaFine() {
 function fine(esito) {
   const t = Date.now();
   if (G.prova) {
-    G.P.finito = t - G.P.inizio + (G.P.pen || 0); G.P.esito = esito; salvaPar();
-    disegnaGioco(); disegnaStrumenti(); aggiornaTempo();
-    const d = G.data;
-    const testo = esito === 'risolta' ? `Risolta in <b>${M.tempo(G.P.finito)}</b>.` : esito === 'persa' ? 'Una mina.' : 'Ecco la soluzione.';
-    setTimeout(() => finestra(`<div class="kick">Allenamento · non conta</div><h2>${esito === 'risolta' ? 'Fatto!' : 'Peccato'}</h2><p class="piccolo">${testo} Il tuo tempo ufficiale non cambia.</p>`,
+    G.P.finito = t; G.P.esito = esito; salvaPar();             // finito: quando è finita (la tavola si ferma)
+    disegnaGioco(); disegnaStrumenti();
+    const d = G.data, c = G.P.consegne || 0;
+    const testo = esito === 'risolta' ? `Risolta${c ? `, con ${sbagliate(c)}` : ''}.` : esito === 'persa' ? 'Una mina.' : 'Ecco la soluzione.';
+    setTimeout(() => finestra(`<div class="kick">Allenamento · non conta</div><h2>${esito === 'risolta' ? 'Fatto!' : 'Peccato'}</h2><p class="piccolo">${testo} Il tuo risultato ufficiale non cambia.</p>`,
       [{ t: 'Di nuovo', f: () => { delete PAR[d + '|prova']; salvaPar(); vai('#prova=' + d); } }, { t: 'Torna a MENTAL', cls: 'sec', f: indietro }]), esito === 'risolta' ? 450 : 900);
     return;
   }
   const r = G.r;
-  r.esito = esito; r.fine = t; r.ms = t - r.inizio + (r.pen || 0); r.giornata = M.giornoRoma(t) === G.data;
+  r.esito = esito; r.fine = t; r.giornata = M.giornoRoma(t) === G.data;
   if (esito === 'persa') r.boom = G.P.st.boom;
   salvaSto();
   delete PAR[G.chiave]; salvaPar();
   const d = G.data;
-  G.P.finito = r.ms;
-  disegnaGioco(); aggiornaTempo();
+  G.P.finito = t;
+  disegnaGioco();
   setTimeout(() => { if (G && G.data === d && corrente === 'sGioco') vai('#esito=' + d); }, esito === 'risolta' ? 700 : 1300);
 }
 function arrenditi() {
@@ -933,7 +927,7 @@ function disegnaGioco() {
   }
   if (E.tipo === 'testo' && $('sPen')) {
     const c = G.prova ? (G.P.consegne || 0) : (G.r.consegne || 0);
-    $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b> · +${c} min` : 'Ogni consegna sbagliata aggiunge un minuto';
+    $('sPen').innerHTML = c ? `Consegne sbagliate <b>${c}</b>` : 'Le consegne sbagliate si contano';
     $('sConsegna').disabled = G.P.finito != null || !G.E.completo(G.s.p, G.P.st);
   }
   if (E.tipo === 'cifre' && !E.gruppiDi) {
@@ -1218,16 +1212,16 @@ function consegna() {
     giusta = E.giusta(s.p, P.st.v);
   }
   if (giusta) return fine('risolta');
-  if (G.prova) { G.P.pen = (G.P.pen || 0) + PENALITA; G.P.consegne = (G.P.consegne || 0) + 1; }
-  else { G.r.pen = (G.r.pen || 0) + PENALITA; G.r.consegne = (G.r.consegne || 0) + 1; salvaSto(); }
+  if (G.prova) G.P.consegne = (G.P.consegne || 0) + 1;
+  else { G.r.consegne = (G.r.consegne || 0) + 1; salvaSto(); }
   if (E.tipo !== 'testo') {
     const vista = E.tipo === 'codice' ? P.st.v.map(k => (s.p.stile === 'lucchetto' ? k : k + 1)).join(s.p.stile === 'lucchetto' ? '' : '-') : mostraValore(E, s.p, P.st.v);
     P.st.prove = (P.st.prove || []).concat([vista]).slice(-8);
     if (E.campiGiusti) P.st.giusti = E.campiGiusti(s.p, P.st.v);
   }
   salvaPar();
-  disegnaGioco(); aggiornaTempo();
-  toast('Non è giusto: +1 minuto');
+  disegnaGioco();
+  toast('Non è giusto');
 }
 
 /* ---------------- Gesti ---------------- */
@@ -1370,7 +1364,7 @@ function regoleHTML(s) {
   const E = M.motori[s.gioco];
   return `<div class="kick">${esc(nomeDi(s))} · ${livTesto(s.livello)}</div><h2>Regole</h2>
     <ol class="regole">${regoleDi(s).map(x => `<li>${x}</li>`).join('')}</ol>
-    <p class="piccolo">Ogni sfida ha <b>una sola soluzione</b>, che si trova ragionando: non serve mai tirare a indovinare. Il tempo parte quando inizi e non si ferma; conta il primo tentativo, poi puoi rigiocarla per allenamento.</p>`;
+    <p class="piccolo">Ogni sfida ha <b>una sola soluzione</b>, che si trova ragionando: non serve mai tirare a indovinare. Niente cronometro; conta il primo tentativo, poi puoi rigiocarla per allenamento.</p>`;
 }
 $('gRegole').onclick = () => {
   if (!G) return;
@@ -1390,9 +1384,10 @@ window.addEventListener('resize', () => { if (corrente === 'sGioco') disegnaGioc
 function testoCondividi(d) {
   const s = M.dati[d], r = rec(d);
   const righe = [`MENTAL ${tre(s.n)} · ${nomeDi(s)}`, `${livTesto(s.livello)} ${'◆'.repeat(LIV[s.livello].pip)}${'◇'.repeat(3 - LIV[s.livello].pip)}`];
-  if (r.esito === 'risolta') righe.push(`✅ Risolta in ${M.tempo(r.ms)}${r.giornata ? '' : ' (non il giorno stesso)'}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a' : 'e'} sbagliat${r.consegne === 1 ? 'a' : 'e'}` : ''}`);
-  else if (r.esito === 'persa') righe.push(`💥 Una mina dopo ${M.tempo(r.ms)}`);
-  else righe.push(`🏳️ Non risolta (${M.tempo(r.ms)})`);
+  const extra = r.consegne ? ` · ${sbagliate(r.consegne)}` : '';
+  if (r.esito === 'risolta') righe.push(`✅ Risolta${r.giornata ? '' : ' (non il giorno stesso)'}${extra}`);
+  else if (r.esito === 'persa') righe.push('💥 Una mina');
+  else righe.push(`🏳️ Non risolta${extra}`);
   righe.push(SITO);
   return righe.join('\n');
 }
@@ -1412,8 +1407,7 @@ async function apriEsito(d) {
   let h = `<div class="esito festa${male ? ' male' : ''}">
     <div class="k">${tre(s.n)} · ${esc(nomeDi(s))} · ${livTesto(s.livello)}</div>
     <div class="parola">${r.esito === 'persa' ? 'Una mina' : ESITI[r.esito]}</div>
-    <div class="grande">${M.tempo(r.ms)}</div>
-    <div class="dett">${esc(s.titolo)} · ${M.dataLunga(d)}<br>${r.esito === 'risolta' ? (r.giornata ? 'Il giorno stesso' : (d === M.giornoRoma(r.inizio) ? 'Finita dopo mezzanotte' : 'Recuperata dal calendario')) : ''}${r.consegne ? ` · ${r.consegne} consegn${r.consegne === 1 ? 'a sbagliata' : 'e sbagliate'} (+${r.consegne} min)` : ''}</div>
+    <div class="dett">${esc(s.titolo)} · ${M.dataLunga(d)}<br>${[r.esito === 'risolta' ? (r.giornata ? 'Il giorno stesso' : (d === M.giornoRoma(r.inizio) ? 'Finita dopo mezzanotte' : 'Recuperata dal calendario')) : '', r.consegne ? sbagliate(r.consegne) : ''].filter(Boolean).join(' · ')}</div>
   </div>
   <div class="riga-btn"><button class="btn" id="eCond">${ICO.condividi}Condividi</button></div>`;
   // la soluzione
@@ -1425,12 +1419,12 @@ async function apriEsito(d) {
   if (tec.length) h += `<section class="pannello"><h2>Le chiavi di questa sfida</h2><p>Le mosse di ragionamento che servivano, dalla più difficile.</p><ul class="chiavi">${tec.map(([t, q]) => `<li><span class="q">×${q}</span><span class="n">${esc(E.TECNICHE[t].nome)}</span><span class="d">${esc(E.TECNICHE[t].descr)}</span></li>`).join('')}</ul></section>`;
   if (s.gioco === 'cavalieri') h += `<section class="pannello"><h2>Come si ragiona</h2><ol class="passi">${passiCavalieri(s).map(x => `<li>${x}</li>`).join('')}</ol></section>`;
   h += `<div class="riga-btn"><button class="btn sec" id="eProva">Rigioca per allenamento</button></div>
-    <div class="riga-btn"><button class="btn sec piccolo" id="eCal">Calendario</button><button class="btn sec piccolo" id="eTempi">I miei tempi</button></div>`;
+    <div class="riga-btn"><button class="btn sec piccolo" id="eCal">Calendario</button><button class="btn sec piccolo" id="eSfide">Le mie sfide</button></div>`;
   $('eCorpo').innerHTML = h;
   $('eCond').onclick = () => condividi(testoCondividi(d));
   $('eProva').onclick = () => vai('#prova=' + d);
   $('eCal').onclick = () => vai('#calendario=' + M.meseDi(d));
-  $('eTempi').onclick = () => vai('#tempi');
+  $('eSfide').onclick = () => vai('#sfide');
   if (testuale) return;
   const sol = soluzione(s);
   let st;
@@ -1493,9 +1487,9 @@ async function dettaglioGiorno(d) {
   const s = M.dati[d]; if (!s) return;
   const r = rec(d), E = M.motori[s.gioco];
   let stato = 'Non ancora giocata.', bott = [];
-  if (!r) { stato = d === OGGI ? 'Non ancora giocata.' : 'Non giocata: puoi recuperarla adesso, il tempo si salva come «recuperata».'; bott = [{ t: 'Inizia', f: () => inizia(d) }]; }
-  else if (r.esito === 'corso') { stato = `In corso da <b>${M.tempo(tempoDi(r))}</b>.`; bott = [{ t: 'Riprendi', f: () => vai('#gioca=' + d) }]; }
-  else { stato = `${ESITI[r.esito]}${r.esito === 'persa' ? ' (una mina)' : ''} · <b>${M.tempo(r.ms)}</b>${r.esito === 'risolta' && !r.giornata ? ' · non il giorno stesso' : ''}.`; bott = [{ t: 'Risultato', f: () => vai('#esito=' + d) }, { t: 'Rigioca per allenamento', cls: 'sec', f: () => vai('#prova=' + d) }]; }
+  if (!r) { stato = d === OGGI ? 'Non ancora giocata.' : 'Non giocata: puoi recuperarla adesso, vale come «recuperata».'; bott = [{ t: 'Inizia', f: () => inizia(d) }]; }
+  else if (r.esito === 'corso') { stato = 'In corso.'; bott = [{ t: 'Riprendi', f: () => vai('#gioca=' + d) }]; }
+  else { stato = `${ESITI[r.esito]}${r.esito === 'persa' ? ' (una mina)' : ''}${r.esito === 'risolta' && !r.giornata ? ' · non il giorno stesso' : ''}${r.consegne ? ' · ' + sbagliate(r.consegne) : ''}.`; bott = [{ t: 'Risultato', f: () => vai('#esito=' + d) }, { t: 'Rigioca per allenamento', cls: 'sec', f: () => vai('#prova=' + d) }]; }
   bott.push({ t: 'Chiudi', cls: 'sec' });
   finestra(`<div class="kick">${tre(s.n)} · ${M.dataLunga(d)}</div><h2>${esc(s.titolo)}</h2>
     <div class="cat">${icona(s)}${esc(nomeDi(s))}</div><div class="liv">${livTesto(s.livello)} ${pip(s.livello)}</div>
@@ -1503,43 +1497,47 @@ async function dettaglioGiorno(d) {
 }
 
 /* =====================================================================
-   I MIEI TEMPI
+   LE MIE SFIDE
    ===================================================================== */
-function apriTempi() {
-  mostra('sTempi');
+function apriSfide() {
+  mostra('sSfide');
   const voci = Object.entries(STO.giorni).sort((a, b) => (a[0] < b[0] ? 1 : -1));
   const sr = serie();
   let h = `<div class="numeri"><div><b>${sr.risolte}</b><span>risolte</span></div><div><b>${sr.attuale}</b><span>serie attuale</span></div><div><b>${sr.record}</b><span>serie record</span></div></div>`;
-  if (!voci.length) { $('tCorpo').innerHTML = h + '<p class="vuoto-msg">Qui finiscono i tuoi tempi, sfida per sfida. Restano su questo telefono: per confrontarti con gli altri usa «Copia l’elenco» o «Condividi» a fine sfida.</p>'; return; }
-  // per gioco: risolte, miglior tempo e tempo tipico (mediana) delle risolte
+  if (!voci.length) { $('tCorpo').innerHTML = h + '<p class="vuoto-msg">Qui finiscono le tue sfide, una per una. Restano su questo telefono: per confrontarti con gli altri usa «Copia l’elenco» o «Condividi» a fine sfida.</p>'; return; }
+  // per gioco: risolte su giocate (quelle in corso non contano)
   const per = {};
-  for (const [, r] of voci) { const nome = r.nome || nomeGioco(r.gioco), x = per[nome] || (per[nome] = { g: 0, t: [] }); x.g++; if (r.esito === 'risolta') x.t.push(r.ms); }
-  const mediana = a => { const b = a.slice().sort((x, y) => x - y), k = b.length >> 1; return b.length % 2 ? b[k] : (b[k - 1] + b[k]) / 2; };
-  h += `<section class="pannello"><h2>Per gioco</h2><table class="tabella"><tr><th>Gioco</th><th class="dx">Risolte</th><th class="dx">Migliore</th><th class="dx">Tipico</th></tr>${Object.entries(per).sort((a, b) => b[1].g - a[1].g).map(([g, x]) => `<tr><td>${esc(g)}</td><td class="dx">${x.t.length}/${x.g}</td><td class="dx">${x.t.length ? M.tempo(Math.min(...x.t)) : '—'}</td><td class="dx">${x.t.length ? M.tempo(mediana(x.t)) : '—'}</td></tr>`).join('')}</table>
-    <p>«Tipico» è la mediana dei tuoi tempi. I tempi di giochi diversi non si confrontano tra loro.</p></section>`;
+  for (const [, r] of voci) {
+    if (r.esito === 'corso') continue;
+    const nome = r.nome || nomeGioco(r.gioco), x = per[nome] || (per[nome] = { g: 0, ok: 0 });
+    x.g++; if (r.esito === 'risolta') x.ok++;
+  }
+  const righePer = Object.entries(per).sort((a, b) => b[1].g - a[1].g || a[0].localeCompare(b[0]));
+  if (righePer.length) h += `<section class="pannello"><h2>Per gioco</h2><table class="tabella"><tr><th>Gioco</th><th class="dx">Risolte</th></tr>${righePer.map(([g, x]) => `<tr><td>${esc(g)}</td><td class="dx">${x.ok}/${x.g}</td></tr>`).join('')}</table></section>`;
+  // a destra l'esito; sotto data, livello, quando e consegne sbagliate
+  const corto = r => (r.esito === 'risolta' ? 'Risolta' : r.esito === 'corso' ? 'In corso' : r.esito === 'persa' ? 'Mina' : 'Non risolta');
+  const dettagli = r => [r.esito === 'risolta' ? (r.giornata ? 'il giorno stesso' : 'recuperata') : '', r.consegne ? sbagliate(r.consegne) : ''].filter(Boolean);
   h += `<section class="pannello"><h2>Sfida per sfida</h2><ul class="elenco">${voci.map(([d, r]) => {
-    const ok = r.esito === 'risolta';
-    const quando = r.esito === 'corso' ? 'in corso' : ok ? (r.giornata ? 'il giorno stesso' : 'recuperata') : (r.esito === 'persa' ? 'una mina' : 'non risolta');
-    return `<li data-d="${d}"><span class="n">${tre(r.n)}</span><span class="g">${esc(r.nome || nomeGioco(r.gioco))}</span><span class="t ${ok ? 'ok' : r.esito === 'corso' ? '' : 'ko'}">${r.esito === 'corso' ? '…' : M.tempo(r.ms)}</span><span class="s">${M.dataCorta(d)} · ${livTesto(r.livello)} · ${quando}</span></li>`;
+    const cls = r.esito === 'risolta' ? 'ok' : r.esito === 'corso' ? '' : 'ko';
+    return `<li data-d="${d}"><span class="n">${tre(r.n)}</span><span class="g">${esc(r.nome || nomeGioco(r.gioco))}</span><span class="t ${cls}">${corto(r)}</span><span class="s">${[M.dataCorta(d), livTesto(r.livello)].concat(dettagli(r)).join(' · ')}</span></li>`;
   }).join('')}</ul></section>`;
-  h += `<button class="btn sec" id="tCopia">${ICO.condividi}Copia l’elenco</button><p class="piccolo" style="text-align:center">I tempi restano su questo telefono e non si cancellano con «Pulisci tutto».</p>`;
+  h += `<button class="btn sec" id="tCopia">${ICO.condividi}Copia l’elenco</button><p class="piccolo" style="text-align:center">I risultati restano su questo telefono e non si cancellano con «Pulisci tutto».</p>`;
   $('tCorpo').innerHTML = h;
   $('tCorpo').querySelectorAll('[data-d]').forEach(li => { li.onclick = () => dettaglioGiorno(li.dataset.d); });
   $('tCopia').onclick = () => {
-    const righe = ['MENTAL · i miei tempi'];
+    const righe = ['MENTAL · le mie sfide'];
     for (const [d, r] of voci.slice().reverse()) {
       if (r.esito === 'corso') continue;
-      righe.push(`${tre(r.n)} ${M.dataCorta(d)} · ${r.nome || nomeGioco(r.gioco)} · ${livTesto(r.livello)} · ${r.esito === 'risolta' ? M.tempo(r.ms) + (r.giornata ? '' : ' (recuperata)') : ESITI[r.esito].toLowerCase()}`);
+      righe.push([`${tre(r.n)} ${M.dataCorta(d)}`, r.nome || nomeGioco(r.gioco), livTesto(r.livello), corto(r).toLowerCase()].concat(dettagli(r)).join(' · '));
     }
     condividi(righe.join('\n'));
   };
 }
 $('tEsci').onclick = indietro;
 
-/* ---------------- Orologio ---------------- */
+/* ---------------- Ogni quarto di secondo: conto alla rovescia e mezzanotte ---------------- */
 setInterval(() => {
   if (corrente === 'sGioco') {
-    aggiornaTempo();
     // mezzanotte a partita aperta: si continua, ma non vale più come «il giorno stesso»
     if (G && !G.prova && !G.avvisato && G.P.finito == null && M.giornoRoma() > G.data && M.giornoRoma(G.r.inizio) === G.data) {
       G.avvisato = true;
