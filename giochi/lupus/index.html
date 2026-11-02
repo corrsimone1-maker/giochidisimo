@@ -128,6 +128,34 @@ ol.script li.off{opacity:.45}
 .counts span{display:inline-flex;align-items:center;gap:6px}
 .confirmBox{padding:14px;border:1px solid var(--lupi);border-radius:14px;background:var(--night-2);margin-top:10px}
 .confirmBox p{margin:0 0 10px;font-weight:600}
+/* Narratore automatico: il telefono al centro del tavolo */
+.stage.nt{background:radial-gradient(80% 45% at 50% 0%,rgba(233,225,200,.07),transparent 70%),#080A12}
+.nt .mid{justify-content:flex-start;padding-top:8vh}
+.nt-night{color:var(--muted);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.nt-role{font-family:var(--display);font-weight:800;font-size:clamp(34px,10vw,50px);line-height:1;letter-spacing:-.02em}
+.nt-say{margin:0;color:var(--moon);font-size:clamp(19px,5.4vw,24px);font-weight:600;line-height:1.35;max-width:22ch}
+.nt-sub{margin:0;color:var(--muted);font-size:15px;line-height:1.45;max-width:32ch}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:10px}
+.pick button{min-height:52px;padding:8px 10px;border-radius:13px;border:1px solid var(--line);background:var(--night-2);font-weight:700;font-size:16.5px;line-height:1.15;word-break:break-word}
+.pick button[aria-pressed="true"]{background:var(--moon);color:#1A1F2B;border-color:var(--moon)}
+.pick button.wide{grid-column:1 / -1}
+.res{margin:6px 0 0;font-family:var(--display);font-weight:800;font-size:clamp(28px,8.5vw,42px);line-height:1.08;letter-spacing:-.01em}
+.res.lupo{color:#F28A7C}.res.no{color:#86D6A8}
+.nt-tools{display:flex;justify-content:space-between;align-items:center}
+.nt-tools button{padding:8px 0;border:0;background:none;color:var(--muted);font-weight:700;font-size:14px}
+.mutebar{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(216,168,74,.1);color:#E9D3A3;font-size:14px;font-weight:600}
+/* Giorno */
+.dawn{width:100%;display:grid;gap:8px;margin-top:6px}
+.dawn .d{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:var(--night-2);border:1px solid var(--line);text-align:left}
+.dawn .d b{font-family:var(--display);font-weight:800;font-size:22px}
+.dawn .d span{color:var(--muted);font-weight:600;font-size:14.5px}
+.dawn .d .rl{margin-left:auto;padding:3px 10px;border-radius:999px;background:var(--tc);color:#fff;font-size:13.5px;font-weight:700}
+.dawn .note{padding:10px 14px;border-radius:12px;background:rgba(216,168,74,.1);color:#E9D3A3;font-weight:600;font-size:15px;text-align:left}
+.daytitle{font-family:var(--display);font-weight:800;font-size:clamp(34px,10vw,46px);line-height:1;letter-spacing:-.02em}
+.fin{width:100%;display:grid;gap:6px;margin-top:6px;text-align:left}
+.fin div{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--night-2)}
+.fin div.dead span:first-of-type{text-decoration:line-through;opacity:.55}
+.fin .pr{margin-left:auto;color:var(--muted);font-weight:600;font-size:14px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;padding:11px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 </style>
 </head>
@@ -137,11 +165,23 @@ ol.script li.off{opacity:.45}
 <main class="wrap" id="setup">
   <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
   <h1>Lupus</h1>
-  <p class="lede">Il telefono gira e ognuno scopre il suo ruolo in segreto. Poi passa al narratore, che ha l’elenco dei ruoli e la scaletta della notte.</p>
+  <p class="lede">Il telefono gira e ognuno scopre il suo ruolo in segreto. Poi narra una persona, con l’elenco dei ruoli e la scaletta della notte, oppure il telefono al centro, con la voce.</p>
+
+  <section class="panel">
+    <h2>Chi narra</h2>
+    <div class="seg" role="group" aria-label="Chi narra" id="narrSeg" style="margin-bottom:0">
+      <button data-narra="persona">Una persona</button>
+      <button data-narra="telefono">Il telefono</button>
+    </div>
+    <div id="autoOpts" hidden>
+      <label class="switch"><span>Di chi muore si scopre il ruolo</span><input type="checkbox" id="rivela"></label>
+      <button class="linkbtn" id="testVoice" style="margin-top:8px">Prova la voce</button>
+    </div>
+  </section>
 
   <section class="panel">
     <h2>Giocatori</h2>
-    <p class="sub">Senza il narratore, nell’ordine in cui passerà il telefono.</p>
+    <p class="sub" id="playersSub">Senza il narratore, nell’ordine in cui passerà il telefono.</p>
     <form class="row" id="addPlayer" autocomplete="off">
       <input class="in" id="playerName" placeholder="Nome" maxlength="20" enterkeyhint="done">
       <button class="btn small">Aggiungi</button>
@@ -227,9 +267,27 @@ ol.script li.off{opacity:.45}
   </section>
 </main>
 
+<!-- Narratore automatico: il telefono va al centro -->
+<section class="stage nt" id="tavolo" hidden>
+  <div class="top"><span>Tutti hanno il ruolo</span><button class="back" id="quitAuto" style="color:var(--muted)">Esci</button></div>
+  <div class="mid" style="justify-content:center;padding-top:0">
+    <svg class="moon" viewBox="0 0 64 64" aria-hidden="true"><path d="M44 50A22 22 0 1 1 30 10a18 18 0 0 0 14 40Z" fill="#E9E1C8"/></svg>
+    <div class="kicker">Mettete il telefono</div>
+    <div class="who">al centro</div>
+    <p class="nt-sub">Volume alto: narra il telefono.</p>
+  </div>
+  <div class="bottomActions"><button class="btn" id="startAuto">Inizia la notte</button></div>
+</section>
+
+<!-- Notte (si riempie da sola) -->
+<section class="stage nt" id="notte" hidden></section>
+<!-- Giorno, giro dei messaggi, fine: si riempiono da sole -->
+<section class="stage" id="giorno" hidden></section>
+
 <div class="toast" id="toast" hidden></div>
 
 <script src="ruoli.js"></script>
+<script src="motore.js"></script>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -255,8 +313,8 @@ const roleById = id => roles.find(r => r.id === id);
 const teamOf = r => TEAM[r && r.squadra] || TEAM.villaggio;
 
 let players = loadJSON(K_PL, []); if (!Array.isArray(players)) players = [];
-let cfg = Object.assign({ conteggi: { lupo: 2, veggente: 1 }, riempitivo: 'contadino', mostraSquadra: true, aperti: {} }, loadJSON(K_CFG, {}));
-let G = loadJSON(K_GAME, null);   // partita: { carte:[{nome, ruolo}], idx, fase, morti:[], notte, squadra }
+let cfg = Object.assign({ conteggi: { lupo: 2, veggente: 1 }, riempitivo: 'contadino', mostraSquadra: true, aperti: {}, narratore: 'persona', rivela: true }, loadJSON(K_CFG, {}));
+let G = loadJSON(K_GAME, null);   // partita: { carte:[{nome, ruolo}], idx, fase, morti:[], notte, squadra, auto, rivela, A } (A: vedi motore.js)
 const savePl = () => saveJSON(K_PL, players), saveCfg = () => saveJSON(K_CFG, cfg);
 const saveGame = () => { if (G) saveJSON(K_GAME, G); else try { localStorage.removeItem(K_GAME); } catch (e) {} };
 
@@ -286,6 +344,11 @@ function renderSetup() {
   }).join('');
   $('filler').innerHTML = roles.map(r => `<option value="${r.id}" ${f && r.id === f.id ? 'selected' : ''}>${esc(r.nome)}</option>`).join('');
   $('showTeam').checked = !!cfg.mostraSquadra;
+  const tel = cfg.narratore === 'telefono';
+  document.querySelectorAll('#narrSeg [data-narra]').forEach(b => b.setAttribute('aria-pressed', b.dataset.narra === cfg.narratore));
+  $('autoOpts').hidden = !tel;
+  $('rivela').checked = !!cfg.rivela;
+  $('playersSub').textContent = tel ? 'Tutti, nell’ordine in cui siete seduti (in senso antiorario).' : 'Senza il narratore, nell’ordine in cui passerà il telefono.';
 
   const P = plan(), counts = {};
   P.deck.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
@@ -318,6 +381,9 @@ $('roleGroups').addEventListener('click', e => {
 $('roleGroups').addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.team) { cfg.aperti[d.dataset.team] = d.open; saveCfg(); } }, true);
 $('filler').onchange = e => { cfg.riempitivo = e.target.value; saveCfg(); renderSetup(); };
 $('showTeam').onchange = e => { cfg.mostraSquadra = e.target.checked; saveCfg(); };
+$('narrSeg').addEventListener('click', e => { const b = e.target.closest('[data-narra]'); if (!b) return; cfg.narratore = b.dataset.narra; saveCfg(); renderSetup(); });
+$('rivela').onchange = e => { cfg.rivela = e.target.checked; saveCfg(); };
+$('testVoice').onclick = () => { parla('Tutti chiudono gli occhi. Lupi, aprite gli occhi.'); };
 $('suggestBtn').onclick = () => {
   const n = players.length;
   if (n < 3) { toast('Prima aggiungi i giocatori'); return; }
@@ -341,7 +407,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   }
   clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
   players = []; savePl();
-  cfg = { conteggi: { lupo: 2, veggente: 1 }, riempitivo: 'contadino', mostraSquadra: true, aperti: {} }; saveCfg();
+  cfg = { conteggi: { lupo: 2, veggente: 1 }, riempitivo: 'contadino', mostraSquadra: true, aperti: {}, narratore: 'persona', rivela: true }; saveCfg();
   renderSetup(); toast('Tutto come all’inizio');
 });
 
@@ -349,7 +415,8 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 function deal() {
   const P = plan(); if (P.n < 3 || P.extra < 0) return;
   const deck = shuffle(P.deck);
-  G = { carte: players.map((nome, i) => ({ nome, ruolo: { ...roleById(deck[i]) } })), idx: 0, fase: 'passa', morti: [], notte: 'prima', squadra: !!cfg.mostraSquadra };
+  G = { carte: players.map((nome, i) => ({ nome, ruolo: { ...roleById(deck[i]) } })), idx: 0, fase: 'passa', morti: [], notte: 'prima', squadra: !!cfg.mostraSquadra,
+    auto: cfg.narratore === 'telefono', rivela: !!cfg.rivela };
   saveGame(); showPass();
 }
 function showPass() {
@@ -371,6 +438,7 @@ $('showBtn').onclick = () => {
 $('hideBtn').onclick = () => {
   G.idx++;
   if (G.idx < G.carte.length) { saveGame(); showPass(); }
+  else if (G.auto) { LUPUS.nuovo(G); G.fase = 'auto'; saveGame(); mostraTavolo(); }
   else { G.fase = 'narratore-attesa'; saveGame(); show('toNarr'); }
 };
 $('narrBtn').onclick = () => { G.fase = 'narratore'; saveGame(); showNarr(); };
@@ -446,14 +514,416 @@ $('againNo').onclick = () => { $('againConfirm').hidden = true; };
 $('againYes').onclick = () => { $('againConfirm').hidden = true; if (afterConfirm) afterConfirm(); };
 $('resumeBtn').onclick = () => resume();
 $('dealBtn').onclick = () => {
-  if (G && G.fase === 'narratore' && !$('dealBtn').dataset.armed) { $('dealBtn').dataset.armed = '1'; $('dealBtn').textContent = 'C’è una partita in corso: tocca ancora per chiuderla'; return; }
+  if (G && (G.fase === 'narratore' || G.fase === 'auto') && !$('dealBtn').dataset.armed) { $('dealBtn').dataset.armed = '1'; $('dealBtn').textContent = 'C’è una partita in corso: tocca ancora per chiuderla'; return; }
   delete $('dealBtn').dataset.armed; $('dealBtn').textContent = 'Distribuisci i ruoli';
   deal();
 };
 
+/* ---------------- Narratore automatico (il telefono al centro) ----------------
+   La logica sta in motore.js (self.LUPUS). Qui: voce, schermate della notte, alba, giro dei
+   messaggi, giorno col voto, fine. Stato in G.A, salvato dopo ogni passo: se la pagina si
+   ricarica, la notte riparte dal passo in corso. */
+// Nelle prove si accelera tutto (sessionStorage gds-lupus-vel = 0.01).
+const VEL = (() => { try { return Number(sessionStorage.getItem('gds-lupus-vel')) || 1; } catch (e) { return 1; } })();
+const attesa = ms => new Promise(r => setTimeout(r, ms * VEL));
+const caso = (a, b) => a + randInt(b - a + 1);
+const NM = i => esc(G.carte[i].nome);
+const vivi = () => LUPUS.vivi(G);
+
+/* Voce: italiana, un po' più lenta del normale. Se il telefono non chiama la fine della frase,
+   si va avanti lo stesso dopo un tempo proporzionato alla lunghezza. */
+let voce = null, ultimaFrase = '';
+function scegliVoce() {
+  try {
+    const vs = speechSynthesis.getVoices().filter(v => /^it([-_]|$)/i.test(v.lang));
+    voce = vs.find(v => /premium|enhanced|migliorat|neural/i.test(v.name)) || vs.find(v => /alice|federica|paola|emma|luca/i.test(v.name)) || vs[0] || null;
+  } catch (e) { voce = null; }
+}
+if ('speechSynthesis' in window) { scegliVoce(); try { speechSynthesis.addEventListener('voiceschanged', scegliVoce); } catch (e) {} }
+function parla(t) {
+  ultimaFrase = t;
+  return new Promise(res => {
+    if (!('speechSynthesis' in window)) { setTimeout(res, (900 + t.length * 45) * VEL); return; }
+    let fatto = false;
+    const fine = () => { if (fatto) return; fatto = true; clearTimeout(tt); res(); };
+    const tt = setTimeout(fine, (3000 + t.length * 120) * VEL);
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = 'it-IT'; if (voce) u.voice = voce; u.rate = 0.95;
+      u.onend = fine; u.onerror = fine;
+      speechSynthesis.speak(u);
+    } catch (e) { fine(); }
+  });
+}
+const zitto = () => { try { speechSynthesis.cancel(); } catch (e) {} };
+
+/* Schermo sempre acceso durante la partita, dove si può */
+let lock = null;
+async function tieniAcceso() { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && G && G.auto && G.fase === 'auto') tieniAcceso(); });
+
+/* ---- tavolo ---- */
+function mostraTavolo() {
+  $('startAuto').textContent = G.A.n === 0 ? 'Inizia il giorno zero' : 'Inizia la notte';
+  show('tavolo');
+}
+$('startAuto').onclick = () => {
+  tieniAcceso();
+  if (G.A.n === 0) { G.A.fase = 'giorno'; G.A.oggi = { zero: true, morti: [] }; saveGame(); show('giorno'); disegnaGiorno(); parla('Giorno zero. C’è l’angelo: discutete e votate prima della prima notte.'); }
+  else notte();
+};
+let esciT = 0;
+function esci() {
+  if (Date.now() - esciT > 2500) { esciT = Date.now(); toast('Tocca di nuovo «Esci»: la partita resta salvata'); return false; }
+  esciT = 0; corsa++; staccare(); zitto(); show('setup'); renderSetup(); return true;
+}
+$('quitAuto').onclick = esci;
+
+function riprendiAuto() {
+  const A = G.A;
+  if (!A || A.fase === 'tavolo') return mostraTavolo();
+  if (A.fase === 'notte') {
+    show('notte');
+    $('notte').innerHTML = notteHTML({ frase: `Notte ${A.n}`, sotto: 'Tutti a occhi chiusi: si riprende dal passo in corso.', azioni: '<button class="btn" id="riprendiNotte">Riprendi la notte</button>' });
+    $('riprendiNotte').onclick = () => notte();
+    return;
+  }
+  show('giorno'); disegnaGiorno();
+}
+
+/* ---- schermate della notte ---- */
+function notteHTML({ ruolo = '', frase = '', sotto = '', corpo = '', azioni = '' }) {
+  return `<div class="nt-tools"><span class="nt-night">Notte ${G.A.n}</span><span><button data-nt="ripeti">Ripeti</button> · <button data-nt="esci">Esci</button></span></div>
+    <div class="mid">${ruolo ? `<div class="nt-role">${esc(ruolo)}</div>` : ''}${frase ? `<p class="nt-say">${esc(frase)}</p>` : ''}${sotto ? `<p class="nt-sub">${esc(sotto)}</p>` : ''}${corpo}</div>
+    <div class="bottomActions">${azioni}</div>`;
+}
+const schermo = o => { $('notte').innerHTML = notteHTML(o); };
+$('notte').addEventListener('click', e => {
+  const b = e.target.closest('[data-nt]'); if (!b) return;
+  if (b.dataset.nt === 'ripeti' && ultimaFrase) parla(ultimaFrase);
+  if (b.dataset.nt === 'esci') esci();
+});
+// una sola attesa di tocchi alla volta: la nuova stacca la vecchia
+let staccaUltimo = null;
+function staccare() { if (staccaUltimo) { staccaUltimo(); staccaUltimo = null; } }
+function ascolta(fn) {
+  staccare();
+  const el = $('notte');
+  el.addEventListener('click', fn);
+  staccaUltimo = () => el.removeEventListener('click', fn);
+}
+// Scegliere giocatori: quanti = quanti servono; nessuno = testo del tasto per non scegliere.
+function scegli({ ruolo, frase, sotto = '', tra, quanti = 1, nessuno = '', conferma = 'Conferma' }) {
+  return new Promise(res => {
+    let sel = [];
+    const ok = () => sel.includes(-1) || sel.length === quanti;
+    const draw = () => schermo({ ruolo, frase, sotto,
+      corpo: `<div class="pick">${tra.map(i => `<button data-i="${i}" aria-pressed="${sel.includes(i)}">${NM(i)}</button>`).join('')}${nessuno ? `<button class="wide" data-i="-1" aria-pressed="${sel.includes(-1)}">${esc(nessuno)}</button>` : ''}</div>`,
+      azioni: `<button class="btn" data-ok ${ok() ? '' : 'disabled'}>${esc(conferma)}</button>` });
+    draw();
+    ascolta(e => {
+      const b = e.target.closest('[data-i]');
+      if (b) {
+        const i = +b.dataset.i;
+        if (i === -1) sel = sel.includes(-1) ? [] : [-1];
+        else {
+          sel = sel.filter(x => x !== -1);
+          if (sel.includes(i)) sel = sel.filter(x => x !== i);
+          else if (quanti === 1) sel = [i];
+          else if (sel.length < quanti) sel.push(i);
+        }
+        draw(); return;
+      }
+      if (e.target.closest('[data-ok]') && ok()) { staccare(); res(sel.includes(-1) ? [] : sel); }
+    });
+  });
+}
+function avviso({ ruolo, frase = '', sotto = '', corpo = '', bottone = 'Fatto' }) {
+  return new Promise(res => {
+    schermo({ ruolo, frase, sotto, corpo, azioni: `<button class="btn" data-ok>${esc(bottone)}</button>` });
+    ascolta(e => { if (e.target.closest('[data-ok]')) { staccare(); res(); } });
+  });
+}
+function bottoni({ ruolo, frase = '', sotto = '', scelte }) {
+  return new Promise(res => {
+    schermo({ ruolo, frase, sotto, azioni: scelte.map((c, k) => `<button class="btn ${k ? 'ghost' : ''}" data-v="${esc(c.v)}">${esc(c.t)}</button>`).join('') });
+    ascolta(e => { const b = e.target.closest('[data-v]'); if (b) { staccare(); res(b.dataset.v); } });
+  });
+}
+
+/* Cosa fa chi si sveglia. Le scelte vanno in G.A.nd (si applicano all'alba) o nello stato. */
+const AZIONI = {
+  guarda: p => avviso({ ruolo: p.nome, frase: 'Riconoscetevi.', bottone: 'Fatto' }),
+  giudice: p => avviso({ ruolo: p.nome, frase: 'Una volta per partita puoi far rifare subito il voto.', sotto: 'Di giorno, dopo un voto, tocca «Seconda votazione» sul telefono (così ti scopri).', bottone: 'Ho capito' }),
+  async scelta(p) {
+    const tra = vivi().filter(i => p.id === 'gufo' || !p.chi.includes(i));
+    const frase = { guardia: 'Chi proteggi stanotte?', gufo: 'Chi mandi al ballottaggio domani?', selvaggio: 'Chi scegli come modello?' }[p.id] || 'Scegli un giocatore.';
+    const [j] = await scegli({ ruolo: p.nome, frase, tra });
+    if (p.id === 'guardia') G.A.nd.protetto = j; else if (p.id === 'gufo') G.A.nd.gufo = j; else if (p.id === 'selvaggio') G.A.modello = j;
+    saveGame();
+  },
+  async due(p) {
+    const A = G.A;
+    if (p.id === 'cupido') {
+      const s = await scegli({ ruolo: p.nome, frase: 'Scegli i due innamorati.', sotto: 'Puoi scegliere anche te.', tra: vivi(), quanti: 2 });
+      A.amanti = s;
+      s.forEach((i, k) => { (A.msg[i] ||= []).push(`Sei innamorato di ${G.carte[s[1 - k]].nome}. Se uno di voi muore, muore di dolore anche l’altro.`); });
+    } else {
+      const tra = vivi().filter(i => !p.chi.includes(i) && !A.incantati.includes(i));
+      if (!tra.length) { await avviso({ ruolo: p.nome, frase: 'Sono già tutti incantati.' }); return; }
+      const s = await scegli({ ruolo: p.nome, frase: 'Chi incanti stanotte?', tra, quanti: Math.min(2, tra.length) });
+      A.incantati.push(...s);
+      const inc = A.incantati.filter(i => LUPUS.vivo(G, i));
+      inc.forEach(i => {
+        A.msg[i] = (A.msg[i] || []).filter(m => !m.startsWith('Sei incantato'));
+        A.msg[i].push(`Sei incantato dal pifferaio magico. Gli incantati sono: ${inc.map(j => G.carte[j].nome).join(', ')}.`);
+      });
+    }
+    saveGame();
+  },
+  async veggente(p) {
+    const [j] = await scegli({ ruolo: p.nome, frase: 'Chi vuoi scoprire?', tra: vivi().filter(i => !p.chi.includes(i)) });
+    G.A.nd.veggente = j; saveGame();
+    const lupo = G.A.p[j].lupo;
+    await avviso({ ruolo: p.nome, corpo: `<p class="res ${lupo ? 'lupo' : 'no'}">${NM(j)} ${lupo ? 'è un lupo mannaro' : 'non è un lupo mannaro'}</p>`, bottone: 'Ho visto' });
+  },
+  async volpe(p) {
+    const s = await scegli({ ruolo: p.nome, frase: 'Vuoi annusare qualcuno?', sotto: 'Scopri se c’è un lupo tra lui e i suoi due vicini.', tra: vivi().filter(i => !p.chi.includes(i)), nessuno: 'Non stanotte' });
+    if (!s.length) return;
+    const tre = [s[0], ...LUPUS.vicini(G, s[0])], c = tre.some(i => G.A.p[i].lupo);
+    if (!c) G.A.volpe = false;
+    saveGame();
+    await avviso({ ruolo: p.nome, corpo: `<p class="res ${c ? 'lupo' : 'no'}">${c ? 'C’è almeno un lupo' : 'Nessun lupo'}</p><p class="nt-sub">tra ${tre.map(NM).join(', ')}${c ? '' : '. Hai perso il potere.'}</p>`, bottone: 'Ho visto' });
+  },
+  async strega(p) {
+    const A = G.A, v = A.nd.infetta ? null : A.nd.vittima;
+    const attacco = v != null ? `Stanotte i lupi hanno attaccato ${G.carte[v].nome}.` : 'Stanotte i lupi non hanno attaccato nessuno.';
+    if (A.poz.vita && v != null) {
+      const r = await bottoni({ ruolo: p.nome, frase: attacco, scelte: [{ v: 'si', t: 'Usa la pozione: salvalo' }, { v: 'no', t: 'Non salvarlo' }] });
+      if (r === 'si') { A.nd.salva = true; A.poz.vita = false; }
+    } else await avviso({ ruolo: p.nome, frase: attacco, sotto: A.poz.vita ? '' : 'La pozione per salvare l’hai già usata.', bottone: 'Avanti' });
+    if (A.poz.morte) {
+      const s = await scegli({ ruolo: p.nome, frase: 'Vuoi avvelenare qualcuno?', tra: vivi().filter(i => !p.chi.includes(i)), nessuno: 'Nessuno' });
+      if (s.length) { A.nd.veleno = s[0]; A.poz.morte = false; }
+    }
+    saveGame();
+  },
+  medium(p) {
+    const u = G.A.ultimo;
+    return avviso({ ruolo: p.nome, corpo: `<p class="res ${u.lupo ? 'lupo' : 'no'}">${NM(u.i)} ${u.lupo ? 'era un lupo mannaro' : 'non era un lupo mannaro'}</p>`, bottone: 'Ho visto' });
+  },
+  async mitomane(p) {
+    const me = p.chi[0], A = G.A;
+    const [j] = await scegli({ ruolo: p.nome, frase: 'Chi vuoi imitare?', tra: vivi().filter(i => i !== me) });
+    let res;
+    if (A.p[j].lupo) { A.p[me] = { r: 'lupo', lupo: true, branco: true }; res = 'È un lupo: ora sei un lupo mannaro e ti svegli col branco.'; }
+    else if (A.p[j].r === 'veggente') { A.p[me].r = 'veggente'; res = 'È la veggente: ora sei veggente anche tu e ti svegli con lei.'; }
+    else { A.p[me].r = 'contadino'; res = 'Non è né un lupo né la veggente: sei un contadino.'; }
+    saveGame();
+    await avviso({ ruolo: p.nome, corpo: `<p class="res">${NM(j)}</p><p class="nt-sub">${esc(res)}</p>`, bottone: 'Ho capito' });
+  },
+  async canelupo(p) {
+    const r = await bottoni({ ruolo: p.nome, frase: 'Da che parte stai, per sempre?', scelte: [{ v: 'villaggio', t: 'Villaggio' }, { v: 'lupi', t: 'Lupi' }] });
+    if (r === 'lupi') p.chi.forEach(i => { G.A.p[i].lupo = true; G.A.p[i].branco = true; });
+    saveGame();
+  },
+  async branco(p) {
+    const tra = vivi().filter(i => !G.A.p[i].branco);
+    if (!tra.length) { await avviso({ ruolo: p.nome, frase: 'Non c’è nessuno da sbranare.' }); return; }
+    const [j] = await scegli({ ruolo: p.nome, frase: 'Chi sbranate stanotte?', tra });
+    G.A.nd.vittima = j; saveGame();
+  },
+  async bianco(p) {
+    const s = await scegli({ ruolo: p.nome, frase: 'Vuoi eliminare un lupo?', tra: vivi().filter(i => G.A.p[i].branco && !p.chi.includes(i)), nessuno: 'No' });
+    G.A.nd.bianco = s.length ? s[0] : null; saveGame();
+  },
+  async padre(p) {
+    const v = G.A.nd.vittima;
+    if (v == null) { await avviso({ ruolo: p.nome, frase: 'Stanotte non c’è nessuno da infettare.' }); return; }
+    const r = await bottoni({ ruolo: p.nome, frase: `Vuoi infettare ${G.carte[v].nome}?`, sotto: 'Una volta per partita: non muore e diventa un lupo.', scelte: [{ v: 'no', t: 'No' }, { v: 'si', t: 'Sì, infettalo' }] });
+    if (r === 'si') G.A.nd.infetta = true;
+    saveGame();
+  },
+  async grandelupo(p) {
+    const tra = vivi().filter(i => !G.A.p[i].branco && i !== G.A.nd.vittima);
+    if (!tra.length) { await avviso({ ruolo: p.nome, frase: 'Non c’è nessun altro da sbranare.' }); return; }
+    const [j] = await scegli({ ruolo: p.nome, frase: 'Chi sbrani per secondo?', tra });
+    G.A.nd.vittima2 = j; saveGame();
+  },
+};
+
+/* ---- la notte ---- */
+let corsa = 0; // ogni notte ha un numero: uscendo si ferma
+async function notte() {
+  const A = G.A, mio = ++corsa, viva = () => mio === corsa;
+  A.fase = 'notte'; saveGame(); show('notte'); tieniAcceso();
+  if (!A.passo) {
+    schermo({ frase: 'Tutti chiudono gli occhi.' });
+    await parla('È notte. Tutti chiudono gli occhi.'); if (!viva()) return;
+    await attesa(caso(2500, 4000)); if (!viva()) return;
+  }
+  for (;;) {
+    const lista = LUPUS.passi(G);
+    if (A.passo >= lista.length) break;
+    await passoNotte(lista[A.passo], viva); if (!viva()) return;
+    A.passo++; saveGame();
+  }
+  A.passo = 0;
+  alba();
+}
+async function passoNotte(p, viva) {
+  const pl = (a, b) => (p.molti ? b : a);
+  let apri = `${p.nome}, ${pl('apri', 'aprite')} gli occhi.`;
+  if (p.tipo === 'guarda' || (p.tipo === 'branco' && G.A.n === 1)) apri = `${p.nome}, aprite gli occhi e riconoscetevi.`;
+  schermo({ ruolo: p.nome, frase: apri });
+  await parla(apri); if (!viva()) return;
+  // chi non può fare niente (morto, potere finito) si chiama lo stesso: la pausa non deve dire niente
+  if (p.finto) { schermo({ ruolo: p.nome, frase: '…' }); await attesa(caso(6000, 11000)); }
+  else await AZIONI[p.tipo](p);
+  if (!viva()) return;
+  const chiudi = `${p.nome}, ${pl('chiudi', 'chiudete')} gli occhi.`;
+  schermo({ ruolo: p.nome, frase: chiudi });
+  await parla(chiudi); if (!viva()) return;
+  await attesa(caso(2000, 4000));
+}
+
+/* ---- alba e giorno ---- */
+const nomeRuolo = i => G.carte[i].ruolo.nome;
+function fraseMorti(morti, quando) {
+  if (!morti.length) return `${quando} non è morto nessuno.`;
+  const nomi = morti.map(m => G.carte[m.i].nome + (G.rivela ? `, ${nomeRuolo(m.i)}` : ''));
+  return `${quando} ${morti.length === 1 ? 'è morto' : 'sono morti'}: ${nomi.join('; ')}.`;
+}
+async function alba() {
+  const A = G.A;
+  const r = LUPUS.alba(G);
+  A.oggi = { morti: r.morti, ringhio: r.ringhio, gufo: r.gufo, voti: [] };
+  A.giro = LUPUS.serveGiro(G) ? vivi() : null; A.giroI = 0; A.giroVisto = false;
+  A.fase = 'giorno'; saveGame();
+  show('giorno'); disegnaGiorno();
+  await parla('Il villaggio si sveglia. Tutti aprono gli occhi.');
+  await parla(fraseMorti(r.morti, 'Stanotte'));
+  if (r.ringhio) await parla('Il domatore d’orsi sente un ringhio.');
+  if (r.gufo != null) await parla(`Il gufo ha scelto ${G.carte[r.gufo].nome}: oggi va al ballottaggio.`);
+  dopoMorti();
+}
+function causaTesto(c) { return LUPUS.CAUSE[c] || ''; }
+function morteHTML(m) {
+  const t = teamOf(G.carte[m.i].ruolo);
+  return `<div class="d"><b>${NM(m.i)}</b><span>${esc(causaTesto(m.causa))}</span>${G.rivela ? `<span class="rl" style="--tc:${t.c}">${esc(nomeRuolo(m.i))}</span>` : ''}</div>`;
+}
+let votoSel = null;
+function disegnaGiorno() {
+  const A = G.A, o = A.oggi || { morti: [], voti: [] }, el = $('giorno');
+  const top = `<div class="top"><span>${o.zero ? 'Giorno zero' : `Giorno ${A.n}`}</span><span><button class="back" data-g="ripeti" style="color:var(--muted)">Ripeti</button> · <button class="back" data-g="esci" style="color:var(--muted)">Esci</button></span></div>`;
+  // fine partita
+  if (A.fine) {
+    el.innerHTML = `${top}<div class="mid"><div class="kicker">Fine della partita</div><div class="daytitle">${esc(A.fine.testo)}</div>
+      <div class="fin">${G.carte.map((c, i) => `<div class="${LUPUS.vivo(G, i) ? '' : 'dead'}"><span class="dot" style="--tc:${teamOf(c.ruolo).c}"></span><span>${NM(i)}</span><span class="pr">${esc(c.ruolo.nome)}${A.p[i].r !== c.ruolo.id ? ` → ${esc((roleById(A.p[i].r) || {}).nome || A.p[i].r)}` : ''}${A.p[i].lupo && !c.ruolo.branco ? ' (lupo)' : ''}</span></div>`).join('')}</div></div>
+      <div class="bottomActions"><button class="btn" data-g="ancora">Nuova partita con gli stessi ruoli</button><button class="btn ghost" data-g="setup">Cambia giocatori o ruoli</button><button class="btn ghost" data-g="continua">Continua la partita</button></div>`;
+    return;
+  }
+  // il cacciatore deve sparare
+  const spari = LUPUS.cacciatori(G);
+  if (spari.length) {
+    const c = spari[0], tra = vivi();
+    el.innerHTML = `${top}<div class="mid"><div class="kicker">Il cacciatore spara</div><div class="daytitle">${NM(c)}</div><p class="nt-sub">Chi porti con te?</p>
+      <div class="pick">${tra.map(i => `<button data-sp="${i}" aria-pressed="${votoSel === i}">${NM(i)}</button>`).join('')}<button class="wide" data-sp="-1" aria-pressed="${votoSel === -1}">Nessuno</button></div></div>
+      <div class="bottomActions"><button class="btn" data-g="spara" ${votoSel == null ? 'disabled' : ''}>Conferma</button></div>`;
+    return;
+  }
+  // giro dei messaggi: il telefono passa a tutti, ognuno legge i suoi (o «niente di nuovo»);
+  // chi è morto nel frattempo (per esempio colpito dal cacciatore) si salta
+  while (A.giro && A.giroI < A.giro.length && !LUPUS.vivo(G, A.giro[A.giroI])) { A.giroI++; A.giroVisto = false; }
+  if (A.giro && A.giroI >= A.giro.length) A.giro = null;
+  if (A.giro && A.giroI < A.giro.length) {
+    const i = A.giro[A.giroI];
+    if (!A.giroVisto) {
+      el.innerHTML = `${top}<div class="mid"><div class="kicker">Giro dei messaggi · passa il telefono a</div><div class="who">${NM(i)}</div>
+        <div class="prog">${A.giro.map((_, k) => `<i class="${k <= A.giroI ? 'on' : ''}"></i>`).join('')}</div></div>
+        <div class="bottomActions"><button class="btn" data-g="sonoio">Sono io</button></div>`;
+    } else {
+      const m = A.msg[i] || [];
+      el.innerHTML = `${top}<div class="mid"><div class="kicker">${NM(i)}</div>${m.length ? m.map(t => `<p class="nt-say">${esc(t)}</p>`).join('') : '<p class="nt-say">Niente di nuovo per te.</p>'}</div>
+        <div class="bottomActions"><button class="btn" data-g="letto">Fatto, nascondi</button></div>`;
+    }
+    return;
+  }
+  // il giorno: com'è andata la notte, poi il voto
+  const notes = [];
+  if (o.ringhio) notes.push('Il domatore d’orsi sente un ringhio.');
+  if (o.gufo != null && LUPUS.vivo(G, o.gufo)) notes.push(`Il gufo ha scelto ${NM(o.gufo)}: oggi va al ballottaggio.`);
+  if (A.senzaPoteri) notes.push('Il villaggio ha eliminato l’anziano: gli abitanti hanno perso i loro poteri.');
+  const dawn = o.zero ? '' : `<div class="dawn">${o.morti.length ? o.morti.map(morteHTML).join('') : '<div class="note">Stanotte non è morto nessuno.</div>'}${notes.map(n => `<div class="note">${n}</div>`).join('')}</div>`;
+  const votati = o.voti.map(v => v.idiota != null ? `<div class="note">${NM(v.idiota)} è l’idiota del villaggio: resta in vita ma da ora non vota più.</div>` : v.morti.length ? v.morti.map(morteHTML).join('') : '<div class="note">Il voto non ha eliminato nessuno.</div>').join('');
+  const capro = vivi().some(i => A.p[i].r === 'capro');
+  const giudice = !A.giudice && vivi().some(i => A.p[i].r === 'giudice');
+  const votaOra = !o.voti.length || o.secondo === 'chiesto';
+  el.innerHTML = `${top}<div class="mid" style="justify-content:flex-start">
+      ${o.zero ? '<div class="daytitle">Giorno zero</div><p class="nt-sub">C’è l’angelo: discutete e votate prima della prima notte.</p>' : `<div class="daytitle">Il villaggio si sveglia</div>${dawn}`}
+      ${votati ? `<div class="dawn">${votati}</div>` : ''}
+      ${votaOra ? `<p class="nt-say" style="margin-top:14px">Chi elimina il voto?</p>
+        <div class="pick">${vivi().map(i => `<button data-vt="${i}" aria-pressed="${votoSel === i}">${NM(i)}</button>`).join('')}
+        <button class="wide" data-vt="-1" aria-pressed="${votoSel === -1}">Nessuno</button>${capro ? `<button class="wide" data-vt="-2" aria-pressed="${votoSel === -2}">Parità: tocca al capro espiatorio</button>` : ''}</div>` : ''}
+    </div>
+    <div class="bottomActions">${votaOra ? `<button class="btn" data-g="vota" ${votoSel == null ? 'disabled' : ''}>Conferma il voto</button>`
+      : `${giudice && !o.secondo ? '<button class="btn ghost" data-g="giudice">Seconda votazione (giudice)</button>' : ''}<button class="btn" data-g="notte">Tutti chiudono gli occhi: notte</button>`}</div>`;
+}
+async function annunciaVoto(r) {
+  if (r.idiota != null) return parla(`${G.carte[r.idiota].nome} è l’idiota del villaggio: resta in vita, ma da ora non vota più.`);
+  if (!r.morti.length) return parla('Il voto non ha eliminato nessuno.');
+  return parla(fraseMorti(r.morti, 'Oggi'));
+}
+// Dopo ogni morte: prima sparano i cacciatori, poi si guarda se qualcuno ha vinto.
+function dopoMorti() { if (!LUPUS.cacciatori(G).length) controllaFine(); }
+function controllaFine() {
+  const A = G.A;
+  if (A.continua) return false;
+  const v = LUPUS.vittoria(G);
+  if (!v) return false;
+  A.fine = v; saveGame(); disegnaGiorno(); parla(v.testo + '.'); return true;
+}
+$('giorno').addEventListener('click', async e => {
+  const A = G && G.A; if (!A) return;
+  const sp = e.target.closest('[data-sp]'), vt = e.target.closest('[data-vt]'), g = e.target.closest('[data-g]');
+  if (sp || vt) { const v = +(sp || vt).dataset[sp ? 'sp' : 'vt']; votoSel = votoSel === v ? null : v; disegnaGiorno(); return; }
+  if (!g) return;
+  const k = g.dataset.g;
+  if (k === 'ripeti') { if (ultimaFrase) parla(ultimaFrase); return; }
+  if (k === 'esci') { esci(); return; }
+  if (k === 'spara') {
+    const c = LUPUS.cacciatori(G)[0], t = votoSel === -1 ? null : votoSel; votoSel = null;
+    const morti = LUPUS.sparo(G, c, t);
+    (A.oggi.voti.length ? A.oggi.voti[A.oggi.voti.length - 1].morti : A.oggi.morti).push(...morti);
+    saveGame(); disegnaGiorno();
+    await parla(t == null ? 'Il cacciatore non spara.' : fraseMorti(morti, 'Colpito dal cacciatore,'));
+    dopoMorti(); return;
+  }
+  if (k === 'sonoio') { A.giroVisto = true; saveGame(); disegnaGiorno(); return; }
+  if (k === 'letto') { delete A.msg[A.giro[A.giroI]]; A.giroI++; A.giroVisto = false; if (A.giroI >= A.giro.length) A.giro = null; saveGame(); disegnaGiorno(); return; }
+  if (k === 'vota') {
+    if (votoSel == null) return;
+    let r;
+    if (votoSel === -2) { const capro = vivi().find(i => A.p[i].r === 'capro'); r = LUPUS.voto(G, capro); }
+    else r = LUPUS.voto(G, votoSel === -1 ? null : votoSel);
+    votoSel = null;
+    if (A.oggi.secondo === 'chiesto') A.oggi.secondo = 'fatto';
+    A.oggi.voti.push({ morti: r.morti || [], idiota: r.idiota });
+    saveGame(); disegnaGiorno();
+    await annunciaVoto(r);
+    dopoMorti(); return;
+  }
+  if (k === 'giudice') { A.giudice = true; A.oggi.secondo = 'chiesto'; saveGame(); disegnaGiorno(); parla('Il giudice chiede una seconda votazione.'); return; }
+  if (k === 'notte') { A.n++; A.passo = 0; A.oggi = null; saveGame(); notte(); return; }
+  if (k === 'ancora') { G = null; saveGame(); deal(); return; }
+  if (k === 'setup') { show('setup'); renderSetup(); return; }
+  if (k === 'continua') { A.continua = true; A.fine = null; saveGame(); disegnaGiorno(); }
+});
+
 /* ---------------- Utilità ---------------- */
 function show(id) {
-  ['setup', 'pass', 'show', 'toNarr', 'narr'].forEach(s => { $(s).hidden = s !== id; });
+  ['setup', 'pass', 'show', 'toNarr', 'narr', 'tavolo', 'notte', 'giorno'].forEach(s => { $(s).hidden = s !== id; });
   window.scrollTo(0, 0);
   if (window.gdsAppare) gdsAppare($(id));   // entrata morbida (comune/app.js)
 }
@@ -463,6 +933,7 @@ function resume() {
   if (!G) { show('setup'); renderSetup(); return; }
   if (G.fase === 'passa') showPass();
   else if (G.fase === 'narratore-attesa') show('toNarr');
+  else if (G.fase === 'auto') riprendiAuto();
   else showNarr();
 }
 

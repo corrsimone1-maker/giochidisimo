@@ -150,6 +150,37 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
 - I ruoli inventati da Simo si scrivono come li descrive lui.
 - Nella risposta segnala quello che non hai potuto verificare.
 
+### Lupus col narratore automatico → `giochi/lupus/motore.js` e `index.html`
+
+Chiesto da Simo il 2/11/2026 («mi gasa»): così gioca anche chi farebbe il narratore. In Impostazioni «Chi narra»:
+**Una persona** (come prima: il telefono passa al narratore con la scaletta) oppure **Il telefono** (`cfg.narratore`).
+Col telefono i giocatori sono **tutti**, nell'ordine in cui sono seduti (antiorario: a destra il successivo, a sinistra il
+precedente; serve a volpe, domatore e cavaliere). Opzione «Di chi muore si scopre il ruolo» (`cfg.rivela`, accesa di base).
+- **`motore.js`** (`self.LUPUS`, in `extra`, si prova da node): stato `G.A` (spiegato in cima al file), `passi(G)` della notte
+  (stesso `ordine` di `ruoli.js`; turno del branco a 20, poi lupo bianco 21 nelle notti pari, padre 22 una volta, grande lupo
+  23 finché nessun lupo è morto), `alba(G)`, `voto(G, i)`, `cacciatori`/`sparo`, `vittoria(G)`, `serveGiro(G)`.
+  Un passo **finto** (titolari morti, potere finito, villaggio senza poteri dopo l'anziano) si chiama lo stesso e aspetta 6–11 s:
+  la pausa non deve dire niente. Ogni ruolo nuovo con `notte` deve avere un `tipo` in `passi` e un'azione in `AZIONI` (pagina);
+  se no vale `guarda` (aprono gli occhi, «Fatto»).
+- **Notte** (pagina): la voce (`speechSynthesis`, italiana, `parla()` va avanti da sola se il telefono non chiama la fine)
+  dice «X, apri gli occhi», chi si sveglia sceglie sul telefono al centro (`scegli`, `avviso`, `bottoni`), poi «X, chiudi gli
+  occhi» e 2–4 s a caso. Le scelte vanno in `G.A.nd` e si applicano all'alba; la veggente, la volpe, la medium e la mitomane
+  vedono subito il risultato sullo schermo. Lo stato si salva dopo ogni passo: ricaricando, «Riprendi la notte» riparte dal
+  passo in corso (serve un tocco perché iOS faccia parlare la pagina). Schermo acceso con Wake Lock dove c'è.
+- **Alba**: morti con la causa (e il ruolo, se `rivela`), detti a voce; ringhio del domatore; gufo. Poi, nell'ordine: il
+  **cacciatore** morto spara (schermata pubblica), si controlla la **vittoria**, il **giro dei messaggi** (il telefono passa a
+  tutti i vivi; gli innamorati di cupido, gli infettati dal padre e gli incantati dal pifferaio leggono il loro messaggio, gli
+  altri «Niente di nuovo per te»: si fa ogni volta che quei ruoli sono in gioco, così non svela niente; chi muore nel frattempo
+  si salta), infine il **voto** (chi elimina il voto, «Nessuno», «Parità» col capro espiatorio; idiota; «Seconda votazione» del
+  giudice, che così si scopre) e «Tutti chiudono gli occhi: notte».
+- **Vittoria**: villaggio senza lupi; lupi almeno quanti gli altri (Lupus in Tabula); innamorati ultimi due; lupo bianco ultimo;
+  pifferaio con tutti incantati; angelo eliminato al giorno zero o la prima notte (con l'angelo in gioco si comincia dal
+  **giorno zero**). Se il gruppo gioca con un'altra regola c'è «Continua la partita».
+- Semplificazioni da sapere: una sola mitomane; la strega non vede la vittima se il padre l'ha infettata; le scelte dei lupi
+  le tocca uno di loro. Nelle prove `sessionStorage['gds-lupus-vel'] = '0.01'` accelera tutte le pause.
+- **Prove:** `node prove/lupus.test.js` (regole); `prove/lupus.pagina.test.js` nel browser (serve `python3 -m http.server 8765`;
+  voce finta che registra le frasi).
+
 ### Aggiungere un gioco o un'app nuova
 
 1. Crea `giochi/<nome>/index.html`, partendo da una pagina simile. Il Contapunti va bene per le pagine sempre in orizzontale, Impostore per quelle a «passa il telefono».
@@ -193,7 +224,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
 - **Casualità:** sempre con `crypto.getRandomValues` e scarto dei valori che distorcono il modulo (vedi `randInt` nelle pagine).
 - **Dati:** in `localStorage` con prefisso `gds-`. Chiavi in uso:
   - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics, Secret Societies, ALIBI e il versus a un telefono di Claude Machine);
-  - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
+  - `gds-impostore-v2`, `gds-lupus` (con `narratore` e `rivela`), `gds-lupus-partita` (col narratore automatico anche `auto`, `rivela` e lo stato `A`);
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
   - `gds-infronte` (`modo`, i testi `una` e `piu`, le opzioni `maiuscolo`, `mescola`, `capovolto` e `giro`: `{ firma, ordine, i }`, a che parola si è con «Più parole»);
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
