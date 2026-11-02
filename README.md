@@ -10,7 +10,7 @@ Tutti i segnapunti e gli strumenti per le serate di giochi, in un'unica app.
 | Carte | Dichiarare, Pegno, Tresette | `giochi/segnapunti/` (una pagina, il gioco si sceglie con `#dichiarare`, `#pegno`, `#tresette`) |
 | Carte | Conta Monete (tre monete a testa per 31 e Saltacavallo: tocco = ne perdi una, tieni premuto = la riprendi) | `giochi/contamonete/` |
 | Contapunti | Schermo diviso in 2, 3 o 4 colori, un tocco = un punto, blocco anti-tocco, tempo di gioco; sempre in orizzontale | `giochi/contapunti/` (la carta della home lo apre direttamente) |
-| Giochi | Impostore (parola segreta, pacchetti di parole scelti dalle Impostazioni) | `giochi/impostore/` (parole in `parole.js`) |
+| Giochi | Impostore in tre varianti: Parole (parola segreta, pacchetti scelti dalle Impostazioni), Numeri (una domanda a cui si risponde con un numero scritto di nascosto; poi si scoprono domanda e numeri) e Luoghi (tutti sanno dove siete e ognuno fa una domanda a chi ha a destra); l’impostore sa di esserlo, con o senza indizio, oppure — con Numeri e Luoghi — non lo sa e ha una domanda o un luogo simile ma diverso | `giochi/impostore/` (parole in `parole.js`, domande in `numeri.js`, luoghi in `luoghi.js`, controllo in `prove/impostore.test.js`, prova nel browser in `prove/impostore.pagina.test.js`) |
 | Giochi | Lupus (30 ruoli tra cui scegliere, distribuzione segreta, scaletta della notte per il narratore) | `giochi/lupus/` (ruoli in `ruoli.js`) |
 | Giochi | Perudo (i propri dadi sotto il bicchiere: si guarda tenendo premuto, si mescola tenendo premuto, −1 dado, calza) | `giochi/perudo/` |
 | Giochi | Hex ad Aste (Hex in cui ogni pedina si conquista con un’asta di carte vere: l’app gestisce solo la scacchiera; si sceglie a mano chi ha vinto l’asta, Pareggio e gettone di priorità, annulla tenendo premuto, 5×5–11×11, mazzo francese o italiano, regolamento con schemi) | `giochi/hex/` |
@@ -76,7 +76,7 @@ rete e usa la copia salvata solo senza connessione. Non c'è nessun numero di ve
   - gli storici di 7 Wonders, Dossier, Camel Up: Economics, Nome in Codice: Double Agents, Secret Societies, ALIBI,
     MENTAL (le sfide giocate e come sono andate) e Traccia (le tavole risolte) restano;
   - le chiavi di ogni gioco sono nel campo `dati` di `giochi.js` (vedi `comune/pulizia.js`).
-- **Parole di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
+- **Parole, domande e luoghi di Impostore e ruoli di Lupus:** solo nella repo, così sono uguali per tutti e non si perdono.
   - `giochi/impostore/parole.js`: pacchetti (Standard, Roma, Matematica, Musica, Personaggi, Meme), ognuno con le sue
     categorie. Per un pacchetto nuovo si copia un blocco e si cambia `id` e `nome`; `attivo: true` lo accende di base.
   - `giochi/lupus/ruoli.js`: ogni ruolo ha squadra, descrizione, se e quando si sveglia di notte, ordine di chiamata

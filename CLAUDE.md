@@ -34,7 +34,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `comune/app.css` | Incluso in **ogni** pagina: passaggi morbidi (circa 0,2 s) tra le pagine, tra home e categorie, per le schermate (`.appare`) e le finestre (`.velo`). |
 | `comune/pulizia.js` | Incluso nell'`<head>` di **ogni** pagina, dopo `giochi.js` e prima dello script del gioco. Cancella i dati dei giochi non aperti da più di 7 giorni e dà `gdsPulizia.tutto()` al tasto «Pulisci tutto» della home (vedi «Pulizia dei dati»). |
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
-| `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
+| `giochi/impostore/parole.js`, `numeri.js`, `luoghi.js` | **Parole di Impostore** (in pacchetti), **domande** della variante Numeri e **luoghi** della variante Luoghi. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
 | `giochi/mental/sfide/`, `strumenti/mental.js` e `strumenti/mental-enigmi.js` | **Sfide di MENTAL**, un file per mese, lo strumento che ne prepara di nuove e il catalogo degli enigmi scritti a mano (vedi la sezione MENTAL). |
 | `comune/lib/` | **Librerie esterne copiate nella repo** (`mqtt.min.js` per poker e stanze di Claude Machine, `qrcode.js` per il QR del tavolo), con versione, licenza e impronta nel `LEGGIMI.md`. |
@@ -48,6 +48,41 @@ Categorie in `giochi.js`:
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
+
+### Impostore: varianti e modi → `giochi/impostore/index.html`
+
+Nel pannello «Partita» si sceglie la **variante** (`cfg.variante`) e, sotto, il **modo dell'impostore**:
+- **Parole:** come sempre; modi «sa di esserlo» e «sa, con indizio» (vede la categoria; è `cfg.indizio`, che prima era in Impostazioni).
+  Le Impostazioni (pacchetti) si vedono solo con Parole.
+- **Numeri** (`cfg.modoN`): tutti hanno la stessa domanda e, quando guardano la carta, **scrivono il loro numero** di nascosto
+  (obbligatorio, solo cifre con `,` `.` `-`). Finito il giro, la schermata della discussione mostra la domanda vera e i numeri di
+  tutti insieme; poi ognuno spiega il suo, in senso antiorario.
+- **Luoghi** (`cfg.modoL`): tutti hanno lo stesso luogo; chi inizia fa una domanda a chi ha alla sua destra, che risponde e fa la
+  domanda dopo, in senso antiorario. Nella discussione c'è «Elenco dei luoghi» (tutti, per categoria, come la carta di riferimento di
+  Spyfall). Con l'impostore che sa di esserlo, a fine round il luogo si mostra solo col tasto, dopo il suo tentativo di indovinarlo.
+- **Modi** di Numeri e Luoghi: `sa` (carta rossa, niente indizio), `indizio` (Numeri: «La risposta è …» col `tipo` del gruppo; Luoghi:
+  la categoria), `nonsa` (l'impostore riceve un **altro membro dello stesso gruppo**, con una carta identica a quelle degli altri; con più
+  impostori hanno tutti lo stesso). Ogni variante ricorda il suo modo.
+- Si pesca un **gruppo** non uscito di recente (`cfg.usateN`, `cfg.usateL`, come `cfg.usate` per le parole); dentro il gruppo uno è di
+  tutti e un altro dell'impostore (`dueDiversi`). Reset torna a Parole e ai modi di base ma tiene quello che è già uscito.
+- **Prove:** `node prove/impostore.test.js` (contenuti) e `prove/impostore.pagina.test.js` (tutte le varianti e i modi nel browser).
+
+### Aggiungere domande (Numeri) → `giochi/impostore/numeri.js`
+
+`self.NUMERI` è un array di gruppi `{ tipo, domande: [...] }` (spiegazione in cima al file):
+- le domande di un gruppo si rispondono con **un numero**, sono **simili ma non troppo** (stesso ordine di grandezza, risposte un po'
+  diverse) e finiscono con `?`; meglio domande su di sé che di cultura generale;
+- `tipo` completa «La risposta è …» (`un numero di ore`, `una cifra in euro`, `un voto da 1 a 10`…) ed è l'indizio dell'impostore;
+- almeno due domande per gruppo, apostrofi tipografici, niente doppioni; poi `node prove/impostore.test.js`.
+
+### Aggiungere luoghi (Luoghi) → `giochi/impostore/luoghi.js`
+
+`self.LUOGHI` è un array di categorie `{ cat, gruppi: [[...], ...] }` (spiegazione in cima al file):
+- `cat` è l'indizio: deve dire che tipo di posto è senza svelarlo, quindi ogni categoria ha **almeno due gruppi**;
+- un gruppo sono luoghi **simili ma non troppo** (`['aeroporto', 'stazione dei treni', 'porto']`): reggono le stesse domande generiche ma
+  danno risposte diverse a quelle precise. Almeno due per gruppo;
+- un luogo nuovo va nel gruppo giusto, oppure se ne fa uno nuovo con due o tre luoghi simili; nomi comuni minuscoli, nomi propri
+  maiuscoli, niente doppioni; poi `node prove/impostore.test.js`.
 
 ### Aggiungere parole a Impostore → `giochi/impostore/parole.js`
 

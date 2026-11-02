@@ -105,6 +105,33 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 .pack input{flex:0 0 auto;width:24px;height:24px;accent-color:var(--teal)}
 .switch small{display:block;color:var(--muted);font-size:13px;font-weight:500;margin-top:3px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;max-width:90vw;padding:11px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+
+/* Varianti e modo dell'impostore */
+.seg{display:flex;gap:4px;padding:4px;margin:12px 0 2px;border-radius:14px;background:var(--night-3);border:1px solid var(--line)}
+.seg button{flex:1;padding:9px 6px;border:0;border-radius:10px;background:none;font-weight:700;font-size:15px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1A1F2B}
+.modi{margin-top:6px}
+.modo{display:flex;align-items:flex-start;gap:12px;width:100%;padding:11px 2px;border:0;border-top:1px solid var(--line);background:none;text-align:left}
+.modo:first-child{border-top:0}
+.modo .pt{flex:0 0 auto;width:22px;height:22px;margin-top:1px;border-radius:50%;border:2px solid #4A5675}
+.modo[aria-pressed="true"] .pt{border-color:var(--gold);background:radial-gradient(circle,var(--gold) 0 5px,transparent 6px)}
+.modo b{display:block;font-size:16px}
+.modo small{display:block;color:var(--muted);font-size:13.5px;line-height:1.4;margin-top:2px;font-weight:500}
+.card .word.lunga{font-size:clamp(30px,9vw,46px);line-height:1.05}
+.card .domanda{font-family:var(--display);font-weight:800;font-size:clamp(26px,7.6vw,36px);line-height:1.12;letter-spacing:-.01em}
+.risp{display:grid;gap:10px;width:100%;margin-top:6px}
+.risp .in{height:58px;font-size:26px;font-weight:800;text-align:center}
+.domandaVera{font-family:var(--display);font-weight:800;font-size:clamp(23px,6.6vw,30px);line-height:1.15;max-width:24ch}
+.risposte{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0 18px}
+.risposte div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 14px;border-radius:12px;background:var(--night-2);border:1px solid var(--line);text-align:left}
+.risposte span{min-width:0;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.risposte b{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
+.who.medio{font-size:clamp(34px,10vw,48px)}
+.altro{font-family:var(--display);font-weight:800;font-size:clamp(24px,7vw,34px);line-height:1.1;color:#F0A493}
+.overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(4,6,12,.78)}
+.sheet{width:min(460px,100%);max-height:calc(100dvh - 40px);overflow:auto;background:var(--night-2);border:1px solid var(--line);border-radius:18px;padding:18px;line-height:1.45}
+.elenco h3{margin:14px 0 4px;font-size:14px;color:var(--gold);letter-spacing:.02em}
+.elenco p{margin:0;color:var(--text);font-size:15px}
 </style>
 </head>
 <body>
@@ -113,7 +140,7 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 <main class="wrap" id="setup">
   <div class="toprow"><a class="back" href="../../">‹ Giochi</a><button class="reset" id="resetBtn">Reset</button></div>
   <h1>Impostore</h1>
-  <p class="lede">Tutti ricevono la stessa parola segreta, tranne l’impostore. A turno ognuno dice una parola collegata, poi si vota chi bluffa.</p>
+  <p class="lede" id="lede"></p>
 
   <section class="panel">
     <h2>Giocatori</h2>
@@ -132,6 +159,10 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 
   <section class="panel">
     <div class="between"><h2 style="margin:0">Partita</h2><button class="linkbtn" id="settingsBtn">Impostazioni</button></div>
+    <div class="seg" id="varSeg" role="group" aria-label="Variante">
+      <button data-v="parole">Parole</button><button data-v="numeri">Numeri</button><button data-v="luoghi">Luoghi</button>
+    </div>
+    <div class="modi" id="modi" role="group" aria-label="L’impostore"></div>
     <dl class="recap" id="recap"></dl>
   </section>
 
@@ -147,9 +178,6 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
     <h2>Pacchetti di parole</h2>
     <p class="sub">Si pesca a caso tra le parole dei pacchetti accesi.</p>
     <div id="packs"></div>
-  </section>
-  <section class="panel">
-    <label class="switch"><span>L’impostore vede la categoria<small>Es. «Cibo» o «Cantanti italiani»: gli rende la vita più facile.</small></span><input type="checkbox" id="hint"></label>
   </section>
   <button class="btn" id="settingsDone">Fatto</button>
 </main>
@@ -168,17 +196,24 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
 <!-- Mostra la parola -->
 <section class="stage" id="show" hidden>
   <div class="top"><span id="showWho"></span><span></span></div>
-  <div class="mid"><div class="card" id="card"></div></div>
-  <div class="bottomActions"><button class="btn" id="hideBtn">Fatto, nascondi</button></div>
+  <div class="mid"><div class="card" id="card"></div>
+    <form class="risp" id="risp" autocomplete="off" hidden>
+      <input class="in" id="numIn" inputmode="decimal" placeholder="Il tuo numero" maxlength="14" enterkeyhint="done" aria-label="La tua risposta">
+      <button class="btn">Salva e nascondi</button>
+    </form>
+  </div>
+  <div class="bottomActions" id="hideArea"><button class="btn" id="hideBtn">Fatto, nascondi</button></div>
 </section>
 
 <!-- Discussione -->
 <section class="stage" id="talk" hidden>
   <div class="top"><span>Tutti hanno visto</span><button class="back" id="quit2" style="color:var(--muted)">Esci</button></div>
   <div class="mid">
-    <div class="kicker">Inizia</div>
+    <div id="talkTop" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px"></div>
+    <div class="kicker" id="firstKicker">Inizia</div>
     <div class="who" id="firstName"></div>
-    <p class="lede" style="margin:8px 0 0;text-align:center">Uno alla volta, in senso antiorario: ognuno dice una parola legata a quella segreta. Fate uno o due giri, poi votate.</p>
+    <p class="lede" id="talkText" style="margin:8px 0 0;text-align:center"></p>
+    <button class="linkbtn" id="elencoBtn" hidden>Elenco dei luoghi</button>
   </div>
   <div class="bottomActions" id="revealArea">
     <button class="btn" id="revealBtn">Rivela l’impostore</button>
@@ -195,9 +230,7 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
   <div class="mid">
     <div class="kicker" id="endKicker">L’impostore era</div>
     <div class="result" id="endImp"></div>
-    <div class="kicker" style="margin-top:22px">La parola era</div>
-    <div class="who" id="endWord" style="font-size:clamp(34px,10vw,52px)"></div>
-    <div class="kicker" id="endCat"></div>
+    <div id="endBody" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px"></div>
   </div>
   <div class="bottomActions">
     <button class="btn" id="againBtn">Nuovo round</button>
@@ -205,9 +238,20 @@ textarea.in{height:auto;min-height:120px;padding:10px 12px;line-height:1.45;resi
   </div>
 </section>
 
+<!-- Elenco dei luoghi (come la carta di riferimento: lo possono guardare tutti) -->
+<div class="overlay velo" id="elenco" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="elencoTit">
+    <h2 id="elencoTit">Tutti i luoghi</h2>
+    <div class="elenco" id="elencoLista"></div>
+    <button class="btn" id="elencoOk" style="margin-top:16px">Chiudi</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden></div>
 
 <script src="parole.js"></script>
+<script src="numeri.js"></script>
+<script src="luoghi.js"></script>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -219,9 +263,15 @@ function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 /* Le parole ora stanno solo in parole.js: via i dati della versione con l'editor */
 try { localStorage.removeItem('gds-impostore'); localStorage.removeItem('gds-impostore-parole'); } catch (e) {}
 
+/* gds-impostore-v2: { pacchetti, imp, indizio (Parole: l'impostore vede la categoria), usate (parole già uscite),
+   variante: 'parole'|'numeri'|'luoghi', modoN e modoL: 'sa'|'indizio'|'nonsa' (Numeri e Luoghi), usateN, usateL } */
+const BASE = () => ({ pacchetti: {}, imp: 1, indizio: false, usate: [], variante: 'parole', modoN: 'sa', modoL: 'sa', usateN: [], usateL: [] });
 let players = loadJSON(K_PL, []);
 if (!Array.isArray(players)) players = [];
-let cfg = Object.assign({ pacchetti: {}, imp: 1, indizio: false, usate: [] }, loadJSON(K_CFG, {}));
+let cfg = Object.assign(BASE(), loadJSON(K_CFG, {}));
+if (!['parole', 'numeri', 'luoghi'].includes(cfg.variante)) cfg.variante = 'parole';
+['modoN', 'modoL'].forEach(k => { if (!['sa', 'indizio', 'nonsa'].includes(cfg[k])) cfg[k] = 'sa'; });
+['usate', 'usateN', 'usateL'].forEach(k => { if (!Array.isArray(cfg[k])) cfg[k] = []; });
 const saveCfg = () => saveJSON(K_CFG, cfg), savePl = () => saveJSON(K_PL, players);
 
 /* Casualità uniforme (crittografica) */
@@ -230,7 +280,7 @@ function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0;
 const norm = s => String(s).trim().replace(/\s+/g, ' ');
 const key = s => norm(s).toLocaleLowerCase('it');
 
-/* ---------------- Pacchetti ---------------- */
+/* ---------------- Contenuti ---------------- */
 const isOn = p => (p.id in cfg.pacchetti) ? !!cfg.pacchetti[p.id] : !!p.attivo;
 const countOf = p => Object.values(p.categorie).reduce((s, l) => s + l.length, 0);
 function pool() {
@@ -241,18 +291,66 @@ function pool() {
   })));
   return out;
 }
+/* Gruppi di cose simili ma non troppo: { membri, cat (Luoghi) | tipo (Numeri) } */
+const GRUPPI = {
+  luoghi: (self.LUOGHI || []).flatMap(c => (c.gruppi || []).filter(g => g.length >= 2).map(g => ({ cat: c.cat, membri: g.map(norm) }))),
+  numeri: (self.NUMERI || []).filter(n => (n.domande || []).length >= 2).map(n => ({ tipo: n.tipo, membri: n.domande.map(norm) }))
+};
+const quanti = v => GRUPPI[v].reduce((s, g) => s + g.membri.length, 0);
 const maxImp = () => Math.max(1, Math.floor((players.length - 1) / 2));
+/* Il modo dell'impostore nella variante scelta: 'sa' | 'indizio' | 'nonsa' (Parole: niente 'nonsa') */
+const modo = () => cfg.variante === 'numeri' ? cfg.modoN : cfg.variante === 'luoghi' ? cfg.modoL : (cfg.indizio ? 'indizio' : 'sa');
+function setModo(m) {
+  if (cfg.variante === 'numeri') cfg.modoN = m;
+  else if (cfg.variante === 'luoghi') cfg.modoL = m;
+  else cfg.indizio = m === 'indizio';
+  saveCfg();
+}
+
+const LEDE = {
+  parole: 'Tutti ricevono la stessa parola segreta, tranne l’impostore. A turno ognuno dice una parola collegata, poi si vota chi bluffa.',
+  numeri: 'Tutti ricevono la stessa domanda, tranne l’impostore, e rispondono con un numero scritto di nascosto. Poi si scoprono domanda e numeri e si cerca chi bluffa.',
+  luoghi: 'Tutti sanno dove siete, tranne l’impostore. A turno ognuno fa una domanda sul luogo a chi ha alla sua destra, poi si vota chi bluffa.'
+};
+const MODI = {
+  parole: [
+    ['sa', 'L’impostore sa di esserlo', 'Non sa la parola: ascolta gli altri e si mimetizza'],
+    ['indizio', 'Sa di esserlo, con indizio', 'Vede anche la categoria della parola']],
+  numeri: [
+    ['sa', 'L’impostore sa di esserlo', 'Non vede la domanda: scrive un numero e poi se lo deve difendere'],
+    ['indizio', 'Sa di esserlo, con indizio', 'Sa che tipo di numero serve: ore, euro, un voto da 1 a 10…'],
+    ['nonsa', 'Non sa di esserlo', 'Ha una domanda simile ma diversa: se ne accorge quando si scoprono i numeri']],
+  luoghi: [
+    ['sa', 'L’impostore sa di esserlo', 'Non sa dove siete: ascolta domande e risposte per capirlo'],
+    ['indizio', 'Sa di esserlo, con indizio', 'Vede la categoria del luogo (Viaggi, Sport, Roma…)'],
+    ['nonsa', 'Non sa di esserlo', 'Ha un luogo simile ma diverso: nessuno sa chi è, nemmeno lui']]
+};
 
 function renderSetup() {
   $('players').innerHTML = players.map((p, i) => `<li>${esc(p)}<button class="x" data-del="${i}" aria-label="Togli ${esc(p)}">×</button></li>`).join('');
-  const on = PACCHETTI.filter(isOn), n = pool().length;
   cfg.imp = Math.min(Math.max(1, cfg.imp), maxImp());
   $('impN').textContent = cfg.imp;
   renderImpInfo();
-  $('recap').innerHTML = `
-    <div><dt>Pacchetti</dt><dd>${on.length ? on.map(p => esc(p.nome)).join(', ') : 'nessuno'} <small>${n} parole</small></dd></div>
-    <div><dt>Indizio</dt><dd>${cfg.indizio ? 'l’impostore vede la categoria' : 'nessuno'}</dd></div>`;
-  const warn = players.length < 3 ? 'Servono almeno 3 giocatori.' : (!n ? 'Accendi almeno un pacchetto di parole nelle Impostazioni.' : '');
+  const v = cfg.variante, m = modo();
+  $('lede').textContent = LEDE[v];
+  document.querySelectorAll('#varSeg [data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+  $('modi').innerHTML = MODI[v].map(([id, t, d]) => `<button class="modo" data-modo="${id}" aria-pressed="${id === m}"><span class="pt" aria-hidden="true"></span><span><b>${t}</b><small>${d}</small></span></button>`).join('');
+  $('settingsBtn').hidden = v !== 'parole';
+  let n, warn = '';
+  if (v === 'parole') {
+    const on = PACCHETTI.filter(isOn); n = pool().length;
+    $('recap').innerHTML = `<div><dt>Pacchetti</dt><dd>${on.length ? on.map(p => esc(p.nome)).join(', ') : 'nessuno'} <small>${n} parole</small></dd></div>`;
+    if (!n) warn = 'Accendi almeno un pacchetto di parole nelle Impostazioni.';
+  } else if (v === 'numeri') {
+    n = quanti('numeri');
+    $('recap').innerHTML = `<div><dt>Domande</dt><dd>${n} <small>a gruppi di domande simili</small></dd></div>`;
+    if (!n) warn = 'Non ci sono domande in numeri.js.';
+  } else {
+    n = quanti('luoghi');
+    $('recap').innerHTML = `<div><dt>Luoghi</dt><dd>${n} <small>in ${(self.LUOGHI || []).length} categorie</small></dd></div>`;
+    if (!n) warn = 'Non ci sono luoghi in luoghi.js.';
+  }
+  if (players.length < 3) warn = 'Servono almeno 3 giocatori.';
   $('setupWarn').textContent = warn; $('setupWarn').hidden = !warn;
   $('playBtn').disabled = !!warn;
 }
@@ -260,7 +358,6 @@ function renderSettings() {
   $('packs').innerHTML = PACCHETTI.map(p => `
     <label class="pack"><span><b>${esc(p.nome)}</b><small>${esc(p.descrizione || '')} · ${countOf(p)} parole</small></span>
       <input type="checkbox" data-pack="${esc(p.id)}" ${isOn(p) ? 'checked' : ''}></label>`).join('') || '<p class="sub">Nessun pacchetto in parole.js.</p>';
-  $('hint').checked = !!cfg.indizio;
 }
 $('addPlayer').addEventListener('submit', e => {
   e.preventDefault();
@@ -270,6 +367,8 @@ $('addPlayer').addEventListener('submit', e => {
 });
 $('players').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; players.splice(+b.dataset.del, 1); savePl(); renderSetup(); });
 $('packs').addEventListener('change', e => { const c = e.target.closest('[data-pack]'); if (!c) return; cfg.pacchetti[c.dataset.pack] = c.checked; saveCfg(); });
+$('varSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || b.dataset.v === cfg.variante) return; cfg.variante = b.dataset.v; saveCfg(); renderSetup(); if (window.gdsAppare) gdsAppare($('modi')); });
+$('modi').addEventListener('click', e => { const b = e.target.closest('[data-modo]'); if (!b) return; setModo(b.dataset.modo); renderSetup(); });
 $('impMinus').onclick = () => { cfg.imp = Math.max(1, cfg.imp - 1); saveCfg(); renderSetup(); };
 $('impPlus').onclick = () => { if (cfg.imp >= maxImp()) { toast(players.length < 3 ? 'Prima aggiungi i giocatori' : `Con ${players.length} giocatori al massimo ${maxImp()}`); return; } cfg.imp++; saveCfg(); renderSetup(); };
 /* Consiglio sul numero di impostori: regola pratica, non una regola ufficiale */
@@ -285,7 +384,8 @@ function renderImpInfo() {
 }
 $('impInfoBtn').onclick = () => { const i = $('impInfo'); i.hidden = !i.hidden; $('impInfoBtn').setAttribute('aria-expanded', !i.hidden); };
 $('impInfo').addEventListener('click', e => { if (e.target.id === 'useRec') { cfg.imp = Math.min(consigliati(players.length), maxImp()); saveCfg(); renderSetup(); } });
-/* Reset: giocatori, impostori, pacchetti e indizio tornano a quelli di base (serve un secondo tocco) */
+/* Reset: giocatori, impostori, variante, modo e pacchetti tornano a quelli di base (serve un secondo tocco).
+   Le parole, domande e luoghi già usciti restano, così non si ripetono subito. */
 let resetT = null;
 $('resetBtn').onclick = () => {
   const b = $('resetBtn');
@@ -296,28 +396,45 @@ $('resetBtn').onclick = () => {
   }
   clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
   players = []; savePl();
-  cfg = { pacchetti: {}, imp: 1, indizio: false, usate: cfg.usate || [] }; saveCfg();
+  cfg = Object.assign(BASE(), { usate: cfg.usate, usateN: cfg.usateN, usateL: cfg.usateL }); saveCfg();
   $('impInfo').hidden = true; $('impInfoBtn').setAttribute('aria-expanded', false);
   renderSetup(); toast('Tutto come all’inizio');
 };
-$('hint').onchange = e => { cfg.indizio = e.target.checked; saveCfg(); };
 $('settingsBtn').onclick = () => { renderSettings(); show('settings'); };
 $('settingsBack').onclick = $('settingsDone').onclick = () => { show('setup'); renderSetup(); };
 
-/* ---------------- Round ---------------- */
-let R = null;   // { parola, cat, imp:Set, idx, primo }
-function newRound() {
-  const P = pool();
-  if (players.length < 3 || !P.length) { show('setup'); renderSetup(); return; }
-  let cand = P.filter(x => !cfg.usate.includes(key(x.w)));
-  if (!cand.length) { cfg.usate = []; cand = P; }
-  const pick = cand[randInt(cand.length)];
-  cfg.usate.push(key(pick.w));
-  const keep = Math.min(300, Math.floor(P.length * 0.7));   // niente ripetizioni a breve
-  cfg.usate = keep > 0 ? cfg.usate.slice(-keep) : [];
+/* ---------------- Round ----------------
+   R = { v (variante), m (modo), imp: Set, idx, primo, ... }
+     parole: parola, cat
+     luoghi: luogo, altro (quello dell'impostore se non sa di esserlo), cat, mostrato (il luogo alla fine)
+     numeri: domanda, altra, tipo, risp: [numero scritto da ognuno] */
+let R = null;
+/* Un gruppo non uscito di recente (gli ultimi 70% non si ripetono) */
+function pesca(lista, chiaveUsate, chiave) {
+  let cand = lista.filter(x => !cfg[chiaveUsate].includes(chiave(x)));
+  if (!cand.length) { cfg[chiaveUsate] = []; cand = lista; }
+  const x = cand[randInt(cand.length)];
+  cfg[chiaveUsate].push(chiave(x));
+  const keep = Math.min(300, Math.floor(lista.length * 0.7));
+  cfg[chiaveUsate] = keep > 0 ? cfg[chiaveUsate].slice(-keep) : [];
   saveCfg();
+  return x;
+}
+/* Due membri diversi dello stesso gruppo: quello di tutti e quello dell'impostore */
+function dueDiversi(g) { const i = randInt(g.membri.length), j = (i + 1 + randInt(g.membri.length - 1)) % g.membri.length; return [g.membri[i], g.membri[j]]; }
+function newRound() {
+  const v = cfg.variante;
+  if (players.length < 3 || (v === 'parole' ? !pool().length : !quanti(v))) { show('setup'); renderSetup(); return; }
   const k = Math.min(cfg.imp, maxImp());
-  R = { parola: pick.w, cat: pick.cat, imp: new Set(shuffle(players.map((_, i) => i)).slice(0, k)), idx: 0, primo: randInt(players.length) };
+  R = { v, m: modo(), imp: new Set(shuffle(players.map((_, i) => i)).slice(0, k)), idx: 0, primo: randInt(players.length) };
+  if (v === 'parole') {
+    const pick = pesca(pool(), 'usate', x => key(x.w));
+    Object.assign(R, { parola: pick.w, cat: pick.cat });
+  } else {
+    const g = pesca(GRUPPI[v], v === 'luoghi' ? 'usateL' : 'usateN', x => key(x.membri[0])), [a, b] = dueDiversi(g);
+    if (v === 'luoghi') Object.assign(R, { luogo: a, altro: b, cat: g.cat, mostrato: false });
+    else Object.assign(R, { domanda: a, altra: b, tipo: g.tipo, risp: players.map(() => '') });
+  }
   showPass();
 }
 function showPass() {
@@ -326,29 +443,91 @@ function showPass() {
   $('passProg').innerHTML = players.map((_, i) => `<i class="${i <= R.idx ? 'on' : ''}"></i>`).join('');
   show('pass');
 }
+/* La carta di chi ha il telefono. Se l'impostore non sa di esserlo la sua carta è identica alle altre. */
+function carta(i) {
+  const nome = esc(players[i]), imp = R.imp.has(i), sa = imp && R.m !== 'nonsa', ind = R.m === 'indizio';
+  const lunga = t => t.length > 16 ? ' lunga' : '';
+  if (sa) {
+    const indizio = !ind ? '' : R.v === 'parole' ? `Categoria: ${esc(R.cat)}` : R.v === 'luoghi' ? `Il luogo è nella categoria: ${esc(R.cat)}` : `La risposta è ${esc(R.tipo)}`;
+    const consiglio = R.v === 'parole' ? 'Ascolta gli altri e mimetizzati.' : R.v === 'luoghi' ? 'Non sai dove siete: ascolta domande e risposte e cerca di capirlo.' : 'Non vedi la domanda: scrivi un numero che non ti tradisca.';
+    return { imp: true, html: `<div class="lab">${nome}, sei</div><div class="word">l’impostore</div>${indizio ? `<div class="cat">${indizio}</div>` : ''}<div class="cat" style="font-weight:600">${consiglio}</div>` };
+  }
+  if (R.v === 'parole') return { html: `<div class="lab">${nome}, la parola è</div><div class="word">${esc(R.parola)}</div><div class="cat">${esc(R.cat)}</div>` };
+  if (R.v === 'luoghi') { const l = imp ? R.altro : R.luogo; return { html: `<div class="lab">${nome}, il luogo è</div><div class="word${lunga(l)}">${esc(l)}</div><div class="cat">${esc(R.cat)}</div>` }; }
+  return { html: `<div class="lab">${nome}, la domanda è</div><div class="domanda">${esc(imp ? R.altra : R.domanda)}</div>` };
+}
 $('showBtn').onclick = () => {
-  const imp = R.imp.has(R.idx), card = $('card');
-  card.className = 'card' + (imp ? ' imp' : '');
-  card.innerHTML = imp
-    ? `<div class="lab">${esc(players[R.idx])}, sei</div><div class="word">l’impostore</div>${cfg.indizio ? `<div class="cat">Categoria: ${esc(R.cat)}</div>` : ''}<div class="cat" style="font-weight:600">Ascolta gli altri e mimetizzati.</div>`
-    : `<div class="lab">${esc(players[R.idx])}, la parola è</div><div class="word">${esc(R.parola)}</div><div class="cat">${esc(R.cat)}</div>`;
+  const c = carta(R.idx), card = $('card');
+  card.className = 'card' + (c.imp ? ' imp' : '');
+  card.innerHTML = c.html;
+  const num = R.v === 'numeri';
+  $('risp').hidden = !num; $('hideArea').hidden = num;
+  $('numIn').value = '';
   $('showWho').textContent = players[R.idx];
   show('show');
 };
-$('hideBtn').onclick = () => {
+function avanti() {
   R.idx++;
   if (R.idx < players.length) showPass();
-  else { $('firstName').textContent = players[R.primo]; $('revealConfirm').hidden = true; $('revealArea').hidden = false; show('talk'); }
+  else showTalk();
+}
+$('hideBtn').onclick = avanti;
+/* Numeri: la risposta si scrive di nascosto e si scopre con quella di tutti */
+const NUMERO = /^-?\d+(?:[.,]\d+)*$/;
+$('risp').addEventListener('submit', e => {
+  e.preventDefault();
+  const t = $('numIn').value.replace(/\s+/g, '');
+  if (!NUMERO.test(t)) { toast(t ? 'Solo un numero, per favore' : 'Scrivi un numero'); return; }
+  R.risp[R.idx] = t; $('numIn').value = ''; $('numIn').blur();
+  avanti();
+});
+const TALK = {
+  parole: () => 'Uno alla volta, in senso antiorario: ognuno dice una parola legata a quella segreta. Fate uno o due giri, poi votate.',
+  luoghi: () => `Chiede qualcosa sul luogo a chi ha alla sua destra, che risponde e fa la domanda dopo a chi ha alla sua destra, e così via in senso antiorario. Né troppo vaghi né troppo precisi; quando volete, votate.`
+    + (R.m === 'nonsa' ? ' Uno di voi ha un luogo simile ma diverso e non lo sa: può essere chiunque, anche tu.' : ' Se scoprite l’impostore, ha ancora una possibilità: indovinare il luogo.'),
+  numeri: () => 'A turno, in senso antiorario, ognuno spiega perché ha scritto il suo numero. Poi votate.'
+    + (R.m === 'nonsa' ? ' Chi aveva un’altra domanda se n’è appena accorto: ora bluffa anche lui.' : '')
 };
+function showTalk() {
+  $('firstName').textContent = players[R.primo];
+  $('firstName').classList.toggle('medio', R.v === 'numeri');
+  $('firstKicker').textContent = R.v === 'luoghi' ? 'Fa la prima domanda' : R.v === 'numeri' ? 'Inizia a spiegare' : 'Inizia';
+  $('talkText').textContent = TALK[R.v]();
+  $('talkTop').innerHTML = R.v !== 'numeri' ? '' : `<div class="kicker">La domanda era</div><div class="domandaVera">${esc(R.domanda)}</div>
+    <div class="risposte">${players.map((p, i) => `<div><span>${esc(p)}</span><b>${esc(R.risp[i])}</b></div>`).join('')}</div>`;
+  $('elencoBtn').hidden = R.v !== 'luoghi';
+  $('revealConfirm').hidden = true; $('revealArea').hidden = false;
+  show('talk');
+}
+/* Elenco di tutti i luoghi, per categoria */
+$('elencoBtn').onclick = () => {
+  $('elencoLista').innerHTML = (self.LUOGHI || []).map(c => `<h3>${esc(c.cat)}</h3><p>${c.gruppi.flat().map(norm).sort((a, b) => a.localeCompare(b, 'it')).map(esc).join(' · ')}</p>`).join('');
+  $('elenco').hidden = false;
+};
+$('elenco').addEventListener('click', e => { if (e.target === $('elenco') || e.target.id === 'elencoOk') $('elenco').hidden = true; });
 $('revealBtn').onclick = () => { $('revealArea').hidden = true; $('revealConfirm').hidden = false; };
 $('revealNo').onclick = () => { $('revealConfirm').hidden = true; $('revealArea').hidden = false; };
-$('revealYes').onclick = () => {
-  const names = [...R.imp].sort((a, b) => a - b).map(i => players[i]);
-  $('endKicker').textContent = names.length > 1 ? 'Gli impostori erano' : 'L’impostore era';
+$('revealYes').onclick = () => { renderEnd(); show('end'); };
+function renderEnd() {
+  const idx = [...R.imp].sort((a, b) => a - b), names = idx.map(i => players[i]), piu = names.length > 1;
+  $('endKicker').textContent = piu ? 'Gli impostori erano' : 'L’impostore era';
   $('endImp').textContent = names.join(' e ');
-  $('endWord').textContent = R.parola; $('endCat').textContent = R.cat;
-  show('end');
-};
+  const chi = `${esc(names.join(' e '))} ${piu ? 'avevano' : 'aveva'}`;
+  let h = '';
+  if (R.v === 'parole') h = `<div class="kicker" style="margin-top:12px">La parola era</div><div class="who" style="font-size:clamp(34px,10vw,52px)">${esc(R.parola)}</div><div class="kicker">${esc(R.cat)}</div>`;
+  else if (R.v === 'luoghi') {
+    h = '<div class="kicker" style="margin-top:12px">Il luogo era</div>';
+    if (R.m !== 'nonsa' && !R.mostrato) h += `<p class="lede" style="margin:0;text-align:center">Prima ${piu ? 'gli impostori provano' : 'l’impostore prova'} a indovinarlo: se ci prende, vince.</p><button class="btn" id="luogoBtn" style="max-width:320px">Mostra il luogo</button>`;
+    else h += `<div class="who" style="font-size:clamp(34px,10vw,52px)">${esc(R.luogo)}</div><div class="kicker">${esc(R.cat)}</div>`;
+    if (R.m === 'nonsa') h += `<div class="kicker" style="margin-top:14px">${chi}</div><div class="altro">${esc(R.altro)}</div>`;
+  } else {
+    h = `<div class="kicker" style="margin-top:12px">La domanda era</div><div class="domandaVera">${esc(R.domanda)}</div>`;
+    if (R.m === 'nonsa') h += `<div class="kicker" style="margin-top:14px">${chi}</div><div class="domandaVera" style="color:#F0A493">${esc(R.altra)}</div>`;
+    else h += `<div class="kicker" style="margin-top:14px">${idx.map(i => `${esc(players[i])} ha scritto <b style="color:var(--text)">${esc(R.risp[i])}</b>`).join(' · ')}</div>`;
+  }
+  $('endBody').innerHTML = h;
+}
+$('endBody').addEventListener('click', e => { if (e.target.id === 'luogoBtn') { R.mostrato = true; renderEnd(); if (window.gdsAppare) gdsAppare($('endBody')); } });
 $('againBtn').onclick = newRound;
 $('toSetup').onclick = () => { show('setup'); renderSetup(); };
 $('playBtn').onclick = newRound;
@@ -362,6 +541,7 @@ $('quit1').onclick = quit; $('quit2').onclick = quit;
 /* ---------------- Utilità ---------------- */
 function show(id) {
   ['setup', 'settings', 'pass', 'show', 'talk', 'end'].forEach(s => { $(s).hidden = s !== id; });
+  $('elenco').hidden = true;
   window.scrollTo(0, 0);
   if (window.gdsAppare) gdsAppare($(id));   // entrata morbida (comune/app.js)
 }
