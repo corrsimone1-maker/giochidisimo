@@ -37,6 +37,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/impostore/parole.js` | **Parole di Impostore**, divise in pacchetti. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
 | `giochi/mental/sfide/`, `strumenti/mental.js` e `strumenti/mental-enigmi.js` | **Sfide di MENTAL**, un file per mese, lo strumento che ne prepara di nuove e il catalogo degli enigmi scritti a mano (vedi la sezione MENTAL). |
+| `comune/lib/` | **Librerie esterne copiate nella repo** (`mqtt.min.js` per poker e stanze di Claude Machine, `qrcode.js` per il QR del tavolo), con versione, licenza e impronta nel `LEGGIMI.md`. |
 | `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide a tre livelli sospesi, dado, stelle). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
 
 Categorie in `giochi.js`:
@@ -607,6 +608,12 @@ Fiches sul telefono, multigiocatore senza server nostro. Ogni tavolo è un messa
     finto e si tiene un broker finto in node (`exposeBinding`), con un contesto separato per ogni telefono.
 
 ## Cose da sapere
+
+- **Niente script da altri siti** (CDN come jsDelivr, unpkg, cdnjs, né analytics): il sito sta su
+  `corrsimone1-maker.github.io`, lo stesso indirizzo di vistidisimo, e ogni script che gira qui può leggere la memoria
+  del browser di tutti i siti di Simo su questo indirizzo, compreso il token GitHub di vistidisimo. Una libreria si copia
+  in `comune/lib/` dal pacchetto npm (vedi il `LEGGIMI.md` lì) e si mette in `extra` del gioco. I Google Fonts vanno
+  bene: sono solo CSS e font, non eseguono codice.
 
 - Su iPhone lo schermo regge al massimo 5 dita insieme: al sesto tocco iOS li annulla tutti. Chi inizia ha la modalità nascosta «un tocco alla volta» proprio per questo.
 - Il poker usa broker MQTT pubblici. Dalla sandbox non si raggiungono, quindi negli errori di console dei test sono normali (vedi la sezione Poker per provarlo con un broker finto).

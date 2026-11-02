@@ -824,7 +824,8 @@ function caricaMqtt() {
   if (mqttPronto) return mqttPronto;
   mqttPronto = new Promise((ok, ko) => {
     const prova = (src, poi) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = poi; document.head.appendChild(s); };
-    prova('https://cdn.jsdelivr.net/npm/mqtt@5.16.1/dist/mqtt.min.js', () => prova('https://unpkg.com/mqtt@5.16.1/dist/mqtt.min.js', () => { mqttPronto = null; ko(new Error('mqtt')); }));
+    // copia nella repo (comune/lib, vedi il LEGGIMI lì): niente codice da siti esterni sullo stesso indirizzo di vistidisimo
+    prova('../../comune/lib/mqtt.min.js', () => { mqttPronto = null; ko(new Error('mqtt')); });
   });
   return mqttPronto;
 }
