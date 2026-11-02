@@ -44,7 +44,7 @@ Categorie in `giochi.js`:
 - `carte` (Dichiarare, Pegno, Tresette, Conta Monete);
 - `contapunti` (con `diretto: true`: la carta della home apre subito il gioco);
 - `giochi` (Impostore, Lupus, Perudo, Hex ad Aste, Claude Machine, MENTAL, ALIBI, Traccia);
-- `altro` (Poker, 7 Wonders, Chi inizia; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
+- `altro` (Poker, 7 Wonders, Chi inizia, In fronte; ha `unita: ['app/gioco','app/giochi']`, quindi la carta dice «n app/giochi»).
 - `expansions` (Secret Hitler: Dossier, Camel Up: Economics, Nome in Codice: Double Agents, 7 Wonders: Secret Societies; carta «Expansions» con il fascicolo «Riservato», `unita: ['espansione','espansioni']`).
 
 ## Richieste frequenti
@@ -123,7 +123,7 @@ ogni notte:  10 veggente · 15 guardia · [20 branco] · 21 lupobianco · 22 pad
    - `colore`: **diverso da tutti gli altri** (oggi, scelti da Simo: Dichiarare verde acceso `#2ED15A`,
      Pegno burgundy `#A3324F`, Tresette lilla `#B39DF0`, Conta Monete oro `#E3B23C`, Contapunti indaco `#4F58D9`,
      Impostore nero `#000000` con `filo: '#FFFFFF'`, Lupus blu notte `#1F2E8C`, Perudo fucsia `#E0249A`, Poker rosso caramella `#E8102A`,
-     7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`,
+     7 Wonders rosa aranciato color tramonto `#FF8A70`, Chi inizia blu `#3A78E0`, In fronte argento `#C3CAD5`,
      Dossier turchese acceso `#08E8DE`, Hex ad Aste blu elettrico `#006BFF`, Camel Up: Economics sabbia calda `#C8A273`,
      Nome in Codice: Double Agents verde acido `#B7E449`, 7 Wonders: Secret Societies porpora `#9B4DDB`, Claude Machine arancione Claude `#D97757`,
      ALIBI giallo evidenziatore `#F2D21B`, MENTAL verde menta `#3DDCA0`, Traccia crema della linea `#FFE9BD`);
@@ -148,7 +148,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - le azioni pericolose si fanno **tenendo premuto** (mescolare, sbloccare, riprendere una moneta);
   - dove serve c'è il blocco schermo: un tocco blocca, per sbloccare si tiene premuto;
   - le azioni frequenti ma sbagliabili hanno «Annulla».
-- **Pagine sempre in orizzontale** (Contapunti, Conta Monete): Simo tiene il telefono in verticale con la rotazione bloccata. Quando è `orientation:portrait` la pagina si gira di 90° con
+- **Pagine sempre in orizzontale** (Contapunti, Conta Monete, lo schermo nero di In fronte): Simo tiene il telefono in verticale con la rotazione bloccata. Quando è `orientation:portrait` la pagina si gira di 90° con
   `width:100dvh;height:100vw;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)`.
   Usa `clientWidth`/`offsetWidth`, non `getBoundingClientRect`, per le misure dentro la pagina girata.
 - **Animazioni:** quello che si apre entra sfumando e salendo di poco, in circa 0,2 s (Simo le vuole pulite e veloci).
@@ -160,6 +160,7 @@ Convenzioni che Simo ha chiesto, da rispettare in ogni pagina:
   - `gds-giocatori` (nomi in comune tra Impostore, Lupus, Dossier, Camel Up: Economics, Secret Societies, ALIBI e il versus a un telefono di Claude Machine);
   - `gds-impostore-v2`, `gds-lupus`, `gds-lupus-partita`;
   - `gds-contapunti`, `gds-chiinizia`, `gds-perudo`, `gds-contamonete`;
+  - `gds-infronte` (`modo`, i testi `una` e `piu`, le opzioni `maiuscolo`, `mescola`, `capovolto` e `giro`: `{ firma, ordine, i }`, a che parola si è con «Più parole»);
   - `gds-hex` (impostazioni: `n`, `colori`, `mazzo`), `gds-hex-partita` (`n`, `mosse: [[casella, squadra], ...]`, `sel`, `gettone`);
   - `gds-dossier` (impostazioni), `gds-dossier-partita` (partita in corso, segreti compresi), `gds-dossier-storico` (risultati, per bilanciare);
   - `gds-camelup` (impostazioni e chi inizia), `gds-camelup-partita` (partita: eventi e sequenze dei dadi, segreti compresi), `gds-camelup-storico` (risultati, per bilanciare);
@@ -520,6 +521,30 @@ lilla `#c4a8ff`; font Major Mono Display solo per il marchio, B612 Mono, Figtree
   nel browser `prove/traccia.pagina.test.js` (serve `python3 -m http.server 8765`; risolve tutte le 83 tavole e le stelle
   trascinando con tocchi veri, anche riprendendo dalla punta, poi linee sbagliate, sospesa, Segreto, vista 3D di ogni superficie
   anche in R⁴, salvataggi, Reset, finestre; circa 4 minuti; `SCATTI=cartella`).
+
+### In fronte → `giochi/infronte/index.html`
+
+Scritta **bianca su nero, in grassetto, grande quanto tutto lo schermo in orizzontale** (richiesta di Simo), da mettere in fronte a chi
+deve indovinare. Si scrive in verticale nella pagina (tema notte normale, con l'anteprima dello schermo vero rimpicciolito) e si tocca
+**Mostra** (con «Una parola» anche Invio): lo schermo nero `#palco` si gira di 90° come le pagine sempre in orizzontale.
+- **Modi:** «Una parola» (anche un nome o una frase) e «Più parole» (una per riga, le righe vuote non contano): il **doppio tocco** passa
+  alla parola dopo, dopo l'ultima compare «Fine» in grigio e il doppio tocco dopo ricomincia (rimescolato se c'è «Mescola»). Il giro
+  si salva: «Riprendi» riparte da lì, finché l'elenco non cambia (`firma`).
+- **Uscita:** si torna a scrivere **tenendo premuto** 0,7 s (anello bianco dopo 0,15 s), col tasto indietro (c'è `#mostra` nella
+  cronologia) o con Esc. Le dita che partono a meno di 28 px dal bordo dello schermo non contano: sono quelle di chi tiene il telefono.
+- **Opzioni** (tasto piccolo in alto): Tutto maiuscolo (acceso di base), Mescola, Capovolgi (con la rotazione bloccata gira lo schermo di
+  −90° invece di 90°, per tenere il telefono dall'altro lato). Reset (due tocchi) cancella i testi e il giro, non le opzioni.
+- **Impaginazione** (`impagina()`): prova la scritta su 1–6 righe (a capo solo tra le parole, righe il più possibile pari) con le lettere
+  più strette; la grandezza è la più alta che entra in larghezza (righe misurate nel DOM) e in altezza (inchiostro vero da
+  `measureText`, dalla cima della prima riga al fondo dell'ultima); ogni riga in più costa il 6%. Poi allarga le lettere (`font-stretch`
+  da 62% a 125%) finché la riga più lunga ci sta. Le righe si mettono sulla linea di base con un segnaposto (`.b`). Margini: quelli
+  dell'isola dinamica uguali sui due lati corti, così la scritta resta al centro. Lo schermo si tiene acceso con Wake Lock dove c'è.
+- **Font:** Archivo variabile (larghezza 62–125, OFL, licenza in `font/OFL.txt`) copiato nella repo da `@fontsource-variable/archivo@5.3.0`
+  (`files/archivo-latin-wdth-normal.woff2`, SHA-256 `e3a28ead…8f5e`), in `extra`: funziona anche senza rete. Tutto si misura col font vero,
+  quindi se manca si adatta al font di riserva.
+- **Prove:** `prove/infronte.pagina.test.js` (serve `python3 -m http.server 8765`): controlla sui **pixel** degli screenshot che la scritta
+  stia dentro i margini, al centro, e riempia un lato, per parole corte, lunghe, frasi, accenti e minuscole, girata, capovolta e in
+  orizzontale vero; poi doppio tocco, «Fine», mescola, riprendi, tieni premuto, bordo, indietro e Reset.
 
 ### Hex ad Aste → `giochi/hex/index.html`
 

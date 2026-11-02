@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141C2F" id="themeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giochi">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../icone/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../../icone/apple-touch-icon.png?v=3">
+<style>@view-transition{navigation:auto}</style>
+<link rel="stylesheet" href="../../comune/app.css">
+<script src="../../giochi.js"></script>
+<script src="../../comune/pulizia.js"></script>
+<title>In fronte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* La scritta grande usa Archivo variabile (larghezza da 62% a 125%), copiata nella repo
+   (font/, licenza OFL in font/OFL.txt): così funziona anche senza rete e la larghezza
+   delle lettere si sceglie per riempire lo schermo. */
+@font-face{font-family:'Archivo IF';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;
+  src:url(font/archivo.woff2) format('woff2-variations'),url(font/archivo.woff2) format('woff2')}
+:root{
+  --night:#141C2F; --night-2:#1B2540; --night-3:#0E1424; --line:rgba(232,226,212,.12);
+  --text:#ECE7DC; --muted:#97A3BA; --gold:#D8A84A;
+  --display:'Bricolage Grotesque','Arial Narrow',system-ui,sans-serif;
+  --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --big:'Archivo IF','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--text);font-family:var(--ui);-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- Schermata per scrivere ---------- */
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left))}
+.back{justify-self:start;color:var(--gold);font-weight:700;font-size:15px;text-decoration:none;padding:8px 0}
+.title{font-family:var(--display);font-weight:800;font-size:20px;margin:0;white-space:nowrap}
+.right{justify-self:end;display:flex;align-items:center;gap:12px}
+.reset{padding:8px 0;border:0;background:none;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.reset.armed{color:#F0A493}
+.ico{display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:10px;border:1px solid var(--line);background:var(--night-2);color:var(--muted)}
+.ico svg{width:18px;height:18px}
+
+.corpo{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px max(16px,env(safe-area-inset-right)) 2px max(16px,env(safe-area-inset-left))}
+.seg{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--night-2);border:1px solid var(--line)}
+.seg button{flex:1;padding:9px 10px;border:0;border-radius:10px;background:none;font-weight:700;font-size:15px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1A1F2B}
+
+/* Anteprima: lo stesso schermo nero, rimpicciolito */
+.ant{position:relative;flex:0 0 auto;align-self:center;max-width:100%;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.35)}
+.mini{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.ant .vuota{position:absolute;inset:0;display:grid;place-items:center;color:#4A4F5A;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.ant .cont{position:absolute;right:10px;bottom:8px;color:#6F7686;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+
+.testo{flex:0 0 auto;width:100%;min-height:96px;resize:none;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--night-2);
+  font-family:var(--ui);font-weight:600;font-size:19px;line-height:1.4;-webkit-user-select:text;user-select:text;outline:none}
+.testo:focus{border-color:rgba(216,168,74,.55)}
+.testo::placeholder{color:#66708A}
+.piu .testo{flex:1 1 auto;min-height:120px}
+.info{min-height:18px;margin-top:-4px;color:var(--muted);font-size:13.5px;font-weight:600}
+
+.fondo{padding:10px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.go{display:block;width:100%;padding:15px;border:0;border-radius:14px;background:var(--gold);color:#1A1F2B;font-weight:800;font-size:17px}
+.go.spento{opacity:.45}
+.riprendi{display:block;width:100%;margin-top:8px;padding:12px;border-radius:14px;border:1px solid rgba(216,168,74,.5);background:none;color:var(--gold);font-weight:800;font-size:15.5px}
+.hint{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45;text-align:center}
+/* Schermi bassi (telefono in orizzontale): meno spazio sprecato */
+@media (max-height:520px){.hint{display:none}.testo{min-height:64px}.piu .testo{min-height:80px}.corpo{gap:8px}.fondo{padding-top:8px}}
+
+/* Opzioni */
+.overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(4,6,12,.75)}
+.sheet{width:min(420px,100%);max-height:100%;overflow:auto;background:var(--night-2);border:1px solid var(--line);border-radius:18px;padding:18px;line-height:1.45}
+.sheet h2{margin:0 0 12px;font-family:var(--display);font-weight:800;font-size:22px}
+.opz{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;text-align:left}
+.opz:first-of-type{border-top:0}
+.opz .t{flex:1}
+.opz b{display:block;font-size:16px}
+.opz small{display:block;color:var(--muted);font-size:13px;font-weight:500;margin-top:2px}
+.sw{flex:0 0 auto;position:relative;width:46px;height:28px;border-radius:999px;background:#2C3754;transition:background .18s ease}
+.sw::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#C9D0DD;transition:transform .18s ease}
+.opz[aria-pressed="true"] .sw{background:var(--gold)}
+.opz[aria-pressed="true"] .sw::after{transform:translateX(18px);background:#1A1F2B}
+.come{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.22);color:var(--muted);font-size:14px}
+.come b{color:var(--text)}
+.fatto{display:block;width:100%;margin-top:14px;padding:13px;border:0;border-radius:14px;background:var(--gold);color:#1A1F2B;font-weight:800;font-size:16px}
+
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;max-width:90%;padding:10px 16px;border-radius:12px;background:#ECE7DC;color:#1A1F2B;font-weight:700;font-size:14.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.45);pointer-events:none}
+
+/* ---------- Lo schermo da mettere in fronte ----------
+   Bianco su nero, tutto lo spazio. Sempre in orizzontale: col telefono in verticale
+   (rotazione bloccata) si gira di 90°, come il Contapunti. «Capovolgi» lo gira
+   dall'altra parte. Resta sempre impaginato (solo invisibile) così l'anteprima ne
+   legge le misure. */
+.palco{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:50;background:#000;overflow:hidden;
+  visibility:hidden;opacity:0;transition:opacity .16s ease,visibility 0s linear .16s;touch-action:none;cursor:default}
+.palco.on{visibility:visible;opacity:1;transition:opacity .16s ease}
+@media (orientation:portrait){
+  .palco{width:100vh;width:100dvh;height:100vw;transform-origin:0 0;transform:rotate(90deg) translateY(-100%)}
+  .palco.capo{transform:rotate(-90deg) translateX(-100%)}
+}
+/* Margini: l'isola dinamica (e la tacca) sta su un lato corto, quindi lo stesso spazio
+   da tutte e due le parti, così la scritta resta al centro dello schermo. */
+.box{position:absolute;top:3vh;bottom:3vh;
+  left:calc(max(env(safe-area-inset-left),env(safe-area-inset-right)) + 1.5vw);
+  right:calc(max(env(safe-area-inset-left),env(safe-area-inset-right)) + 1.5vw)}
+@media (orientation:portrait){
+  .palco .box{top:3vw;bottom:3vw;
+    left:calc(max(env(safe-area-inset-top),env(safe-area-inset-bottom)) + 1.5vh);
+    right:calc(max(env(safe-area-inset-top),env(safe-area-inset-bottom)) + 1.5vh)}
+}
+.riga{position:absolute;left:0;right:0;margin:0;text-align:center;white-space:pre;color:#fff;font-family:var(--big);font-weight:800;line-height:0;
+  -webkit-font-smoothing:antialiased;font-kerning:normal}
+.riga.fine{color:#6E6E6E}
+.riga .b{display:inline-block;width:0;height:0;vertical-align:baseline}
+.box.nuova{animation:if-entra .14s ease-out}
+@keyframes if-entra{from{opacity:.15}}
+.palco .ring{position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;pointer-events:none;opacity:0}
+.palco .ring circle{fill:none;stroke:#fff;stroke-opacity:.75;stroke-width:6;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transform:rotate(-90deg);transform-origin:center}
+.palco.holding .ring{opacity:1}
+.palco.holding .ring circle{transition:stroke-dashoffset .55s linear;stroke-dashoffset:0}
+
+/* Dove si misurano le parole: fuori dallo schermo, mai girato */
+.misura{position:fixed;left:-100000px;top:0;visibility:hidden;white-space:pre;font-family:var(--big);font-weight:800;font-size:200px;line-height:1}
+@media (prefers-reduced-motion:reduce){.box.nuova{animation:none}.palco,.palco.on{transition:none}.palco.holding .ring circle{transition:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top">
+    <a class="back" href="../../">‹ Giochi</a>
+    <h1 class="title">In fronte</h1>
+    <div class="right">
+      <button class="ico" id="optBtn" aria-label="Opzioni"><svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M3 5h8.2a2.5 2.5 0 0 1 4.6 0H17v2h-1.2a2.5 2.5 0 0 1-4.6 0H3V5Zm0 8h1.2a2.5 2.5 0 0 1 4.6 0H17v2H8.8a2.5 2.5 0 0 1-4.6 0H3v-2Z"/></svg></button>
+      <button class="reset" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="corpo" id="corpo">
+    <div class="seg" id="modoSeg" role="group" aria-label="Quante parole">
+      <button data-m="una" aria-pressed="true">Una parola</button>
+      <button data-m="piu" aria-pressed="false">Più parole</button>
+    </div>
+    <div class="ant" id="ant" aria-label="Anteprima">
+      <div class="mini" id="mini"><div class="box" id="miniBox"></div></div>
+      <div class="vuota" id="antVuota">Anteprima</div>
+      <span class="cont" id="antCont"></span>
+    </div>
+    <textarea class="testo" id="testo" rows="3" autocomplete="off" spellcheck="false" maxlength="2000"></textarea>
+    <div class="info" id="info"></div>
+  </div>
+
+  <div class="fondo">
+    <button class="go" id="goBtn">Mostra</button>
+    <button class="riprendi" id="riprendiBtn" hidden></button>
+    <p class="hint" id="hint"></p>
+  </div>
+</div>
+
+<div class="palco" id="palco" aria-hidden="true">
+  <div class="box" id="box"></div>
+  <svg class="ring" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54"/></svg>
+</div>
+
+<div class="overlay velo" id="opzioni" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="opzTit">
+    <h2 id="opzTit">Opzioni</h2>
+    <button class="opz" data-k="maiuscolo"><span class="t"><b>Tutto maiuscolo</b><small>Si legge meglio da lontano</small></span><span class="sw" aria-hidden="true"></span></button>
+    <button class="opz" data-k="mescola"><span class="t"><b>Mescola le parole</b><small>Con «Più parole»: ordine a caso, rimescolate a ogni giro</small></span><span class="sw" aria-hidden="true"></span></button>
+    <button class="opz" data-k="capovolto"><span class="t"><b>Capovolgi</b><small>Con la rotazione bloccata: la scritta si legge tenendo il telefono dall’altro lato</small></span><span class="sw" aria-hidden="true"></span></button>
+    <div class="come"><b>Come si usa.</b> Scrivi, tocca <b>Mostra</b>, gira il telefono in orizzontale e mettilo in fronte a chi deve indovinare. Con «Più parole» un <b>doppio tocco</b> passa alla parola dopo; dopo l’ultima compare «Fine» e si ricomincia. Per tornare qui <b>tieni premuto</b> lo schermo.</div>
+    <button class="fatto" id="fattoBtn">Fatto</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<div class="misura" id="misura" aria-hidden="true"><span id="misSpan"></span></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* ---------- Dati sul telefono ----------
+   gds-infronte: { modo: 'una'|'piu', una, piu (testi scritti), maiuscolo, mescola, capovolto,
+                   giro: { firma, ordine, i } }   giro = dove si è arrivati con «Più parole»
+   (i = n vuol dire che si vede «Fine»). */
+const KEY = 'gds-infronte';
+let S = { modo: 'una', una: '', piu: '', maiuscolo: true, mescola: false, capovolto: false, giro: null };
+try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && typeof v === 'object') Object.assign(S, v); } catch (e) {}
+if (S.modo !== 'piu') S.modo = 'una';
+['una', 'piu'].forEach(k => { if (typeof S[k] !== 'string') S[k] = ''; });
+['maiuscolo', 'mescola', 'capovolto'].forEach(k => { S[k] = !!S[k]; });
+if (!S.giro || !Array.isArray(S.giro.ordine) || typeof S.giro.firma !== 'string') S.giro = null;
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+function randInt(n) {   // intero in [0, n) senza distorsione del modulo
+  const lim = Math.floor(0x100000000 / n) * n, b = new Uint32Array(1);
+  let x; do { crypto.getRandomValues(b); x = b[0]; } while (x >= lim);
+  return x % n;
+}
+function mescolati(n) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const parole = () => S.piu.split('\n').map(p => p.trim().replace(/\s+/g, ' ')).filter(Boolean);
+const scritta = t => { t = t.trim().replace(/\s+/g, ' '); return S.maiuscolo ? t.toLocaleUpperCase('it') : t; };
+
+/* ---------- Impaginazione: la scritta più grande possibile nel riquadro ----------
+   Si prova la scritta su 1, 2, … righe (a capo solo tra le parole, righe il più possibile
+   pari) e per ognuna si calcola la grandezza massima con le lettere più strette (62%):
+   in larghezza contano le righe misurate davvero, in altezza l'inchiostro vero
+   (dalla cima delle lettere della prima riga al fondo dell'ultima). Vince la grandezza
+   più alta (ogni riga in più costa il 6%, a parità si preferiscono meno righe). Poi le
+   lettere si allargano fin dove ci stanno ancora (fino al 125%): così la scritta riempie
+   lo schermo anche in larghezza. Tutto si misura col font vero, quindi va bene anche
+   se Archivo non c'è. */
+const REF = 200, SMIN = 62, SMAX = 125, SPAZIO = 0.14, MAXRIGHE = 6;
+const FAM = "'Archivo IF','Helvetica Neue',Arial,sans-serif";
+const misSpan = $('misSpan');
+const cv = document.createElement('canvas').getContext('2d');
+let cacheL = new Map(), cacheI = new Map();
+function larg(t, s) {
+  const k = s + '|' + t; let w = cacheL.get(k);
+  if (w === undefined) { misSpan.style.fontStretch = s + '%'; misSpan.textContent = t; w = misSpan.getBoundingClientRect().width; cacheL.set(k, w); }
+  return w;
+}
+function inchiostro(t) {
+  let v = cacheI.get(t);
+  if (!v) {
+    cv.font = `800 ${REF}px ${FAM}`;
+    const m = cv.measureText(t);
+    let a = m.actualBoundingBoxAscent / REF, d = m.actualBoundingBoxDescent / REF;
+    if (!(a + d > 0.04) || !isFinite(a + d)) { a = 0.72; d = 0; }
+    v = { a, d }; cacheI.set(t, v);
+  }
+  return v;
+}
+function svuotaCache() { cacheL = new Map(); cacheI = new Map(); }
+
+/* Divide le parole in k righe con la riga più lunga più corta possibile (programmazione dinamica) */
+function righeIn(ps, k, wp, sp) {
+  const n = ps.length, pre = [0];
+  for (let i = 0; i < n; i++) pre.push(pre[i] + wp[i]);
+  const L = (i, j) => pre[j] - pre[i] + sp * (j - i - 1);          // parole i..j-1 su una riga
+  const f = Array.from({ length: k + 1 }, () => new Array(n + 1).fill(Infinity)), da = Array.from({ length: k + 1 }, () => new Array(n + 1).fill(0));
+  f[0][0] = 0;
+  for (let r = 1; r <= k; r++) for (let j = r; j <= n; j++) for (let i = r - 1; i < j; i++) {
+    const v = Math.max(f[r - 1][i], L(i, j));
+    if (v < f[r][j]) { f[r][j] = v; da[r][j] = i; }
+  }
+  const out = []; let j = n;
+  for (let r = k; r > 0; r--) { const i = da[r][j]; out.unshift(ps.slice(i, j).join(' ')); j = i; }
+  return out;
+}
+function impagina(testo, W, H) {
+  const ps = testo.split(' ').filter(Boolean);
+  if (!ps.length || W < 10 || H < 10) return null;
+  const wp = ps.map(p => larg(p, SMIN)), sp = larg(' ', SMIN);
+  let best = null;
+  for (let k = 1; k <= Math.min(ps.length, MAXRIGHE); k++) {
+    const righe = righeIn(ps, k, wp, sp);
+    const lw = Math.max(...righe.map(r => larg(r, SMIN)));
+    const ink = righe.map(inchiostro);
+    const A = Math.max(...ink.map(x => x.a)), D = Math.max(0, ...ink.map(x => x.d));
+    const passo = A + D + SPAZIO;
+    const alto = ink[0].a + (k - 1) * passo + ink[k - 1].d;
+    const em = Math.min(W * REF / lw, H / alto) * 0.985;
+    const voto = em * (1 - 0.06 * (k - 1));
+    if (!best || voto > best.voto + 1e-6) best = { righe, em, ink, passo, alto, voto };
+  }
+  const em = best.em, entra = s => Math.max(...best.righe.map(r => larg(r, s))) * em / REF <= W * 0.995;
+  let s = SMIN;
+  if (entra(SMAX)) s = SMAX;
+  else { let lo = SMIN, hi = SMAX; for (let i = 0; i < 9; i++) { const m = (lo + hi) / 2; if (entra(m)) lo = m; else hi = m; } s = lo; }
+  s = Math.floor(s * 10) / 10;
+  const top = (H - best.alto * em) / 2;
+  return { righe: best.righe, em, s, basi: best.righe.map((_, i) => top + (best.ink[0].a + i * best.passo) * em) };
+}
+/* Mette la scritta nel riquadro: le righe si posizionano sulla linea di base calcolata */
+function disegna(box, testo, fine) {
+  box.textContent = '';
+  const L = testo ? impagina(testo, box.clientWidth, box.clientHeight) : null;
+  if (!L) return null;
+  L.righe.forEach((r, i) => {
+    const d = document.createElement('div');
+    d.className = 'riga' + (fine ? ' fine' : '');
+    d.style.fontSize = L.em.toFixed(2) + 'px';
+    d.style.fontStretch = L.s + '%';
+    d.textContent = r;
+    const b = document.createElement('span'); b.className = 'b'; d.appendChild(b);
+    box.appendChild(d);
+    d.style.top = (L.basi[i] - b.offsetTop).toFixed(2) + 'px';
+  });
+  return L;
+}
+
+/* ---------- Schermata per scrivere ---------- */
+const testo = $('testo');
+function renderModo() {
+  document.querySelectorAll('#modoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === S.modo)));
+  $('app').classList.toggle('piu', S.modo === 'piu');
+  testo.value = S[S.modo];
+  if (S.modo === 'una') {
+    testo.placeholder = 'Scrivi qui la parola, il nome o la frase…';
+    testo.setAttribute('enterkeyhint', 'go'); testo.rows = 3;
+    $('hint').textContent = 'Poi gira il telefono in orizzontale e mettilo in fronte · tieni premuto lo schermo per tornare qui';
+  } else {
+    testo.placeholder = 'Una parola per riga\n…\n…';
+    testo.setAttribute('enterkeyhint', 'enter'); testo.rows = 6;
+    $('hint').textContent = 'Doppio tocco: parola dopo · tieni premuto: torni qui';
+  }
+  renderInfo(); anteprima();
+}
+function renderInfo() {
+  if (S.modo === 'una') { $('info').textContent = S.una.trim() ? 'La scritta si adatta da sola a tutto lo schermo' : ''; }
+  else { const n = parole().length; $('info').textContent = n ? `${n} ${n === 1 ? 'parola' : 'parole'} · una per riga` : ''; }
+  $('goBtn').classList.toggle('spento', !(S.modo === 'una' ? S.una.trim() : parole().length));
+  const g = giroValido();
+  $('riprendiBtn').hidden = !(S.modo === 'piu' && g && g.i > 0 && g.i < g.ordine.length);
+  if (!$('riprendiBtn').hidden) $('riprendiBtn').textContent = `Riprendi dalla ${g.i + 1}ª di ${g.ordine.length}`;
+}
+/* Il giro salvato vale solo se l'elenco non è cambiato */
+function giroValido() {
+  const g = S.giro, ps = parole();
+  if (!g || g.firma !== ps.join('\n') || g.ordine.length !== ps.length || !(g.i >= 0 && g.i <= ps.length)) return null;
+  return g;
+}
+
+/* Anteprima: lo schermo vero, impaginato con le sue misure, rimpicciolito */
+const palco = $('palco'), box = $('box');
+function anteprima() {
+  const Ws = palco.clientWidth, Hs = palco.clientHeight, ant = $('ant'), cs = getComputedStyle($('corpo'));
+  /* tutta la larghezza, ma mai più di un terzo dell'altezza (serve col telefono in orizzontale) */
+  const largo = $('corpo').clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const f = Math.max(0.05, Math.min(largo / Ws, innerHeight * 0.34 / Hs));
+  ant.style.width = (Ws * f).toFixed(1) + 'px'; ant.style.height = (Hs * f).toFixed(1) + 'px';
+  const mini = $('mini'), mb = $('miniBox');
+  mini.style.width = Ws + 'px'; mini.style.height = Hs + 'px'; mini.style.transform = `scale(${f})`;
+  Object.assign(mb.style, { left: box.offsetLeft + 'px', top: box.offsetTop + 'px', width: box.clientWidth + 'px', height: box.clientHeight + 'px', right: 'auto', bottom: 'auto' });
+  let t = '', cont = '';
+  if (S.modo === 'una') t = S.una;
+  else {
+    const righe = testo.value.split('\n'), riga = testo.value.slice(0, testo.selectionStart || 0).split('\n').length - 1;
+    t = (righe[Math.min(riga, righe.length - 1)] || '').trim();
+    if (!t) for (let i = Math.min(riga, righe.length - 1); i >= 0 && !t; i--) t = (righe[i] || '').trim();
+    const ps = parole(), n = ps.length;
+    if (n && t) { const k = testo.value.split('\n').slice(0, riga + 1).filter(r => r.trim()).length; cont = `${Math.max(1, Math.min(k, n))} / ${n}`; }
+  }
+  const L = disegna(mb, scritta(t));
+  $('antVuota').hidden = !!L; $('antCont').textContent = L ? cont : '';
+}
+
+testo.addEventListener('input', () => { S[S.modo] = testo.value; save(); renderInfo(); anteprima(); });
+['keyup', 'click', 'focus'].forEach(t => testo.addEventListener(t, () => { if (S.modo === 'piu') anteprima(); }));
+document.addEventListener('selectionchange', () => { if (S.modo === 'piu' && document.activeElement === testo) anteprima(); });
+testo.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && S.modo === 'una' && !e.isComposing) { e.preventDefault(); mostra(false); }
+});
+$('modoSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === S.modo) return;
+  S.modo = b.dataset.m; save(); renderModo();
+  if (window.gdsAppare) gdsAppare($('corpo'));
+});
+
+/* ---------- Lo schermo in fronte ---------- */
+let attivo = false, spinto = false, wake = null;
+function mostra(riprendi) {
+  let t, fine = false;
+  if (S.modo === 'una') {
+    t = S.una;
+    if (!t.trim()) { toast('Scrivi qualcosa prima'); testo.focus(); return; }
+  } else {
+    const ps = parole();
+    if (!ps.length) { toast('Scrivi almeno una parola'); testo.focus(); return; }
+    const g = giroValido();
+    if (!(riprendi && g)) S.giro = { firma: ps.join('\n'), ordine: S.mescola ? mescolati(ps.length) : ps.map((_, i) => i), i: 0 };
+    save(); renderInfo();
+  }
+  testo.blur(); $('toast').hidden = true;
+  palco.classList.toggle('capo', S.capovolto);
+  attivo = true;
+  palco.classList.add('on'); palco.setAttribute('aria-hidden', 'false');
+  $('themeColor').content = '#000000';
+  aggiorna();
+  if (location.hash !== '#mostra') { try { history.pushState(null, '', '#mostra'); spinto = true; } catch (e) {} }
+  sveglia();
+}
+/* Cosa c'è sullo schermo adesso */
+function aggiorna(anim) {
+  if (S.modo === 'una') disegna(box, scritta(S.una));
+  else {
+    const ps = parole(), g = giroValido();
+    if (!g) { disegna(box, ''); return; }
+    if (g.i >= ps.length) disegna(box, 'FINE', true);
+    else disegna(box, scritta(ps[g.ordine[g.i]]));
+  }
+  if (anim) { box.classList.remove('nuova'); void box.offsetWidth; box.classList.add('nuova'); }
+}
+function avanti() {
+  if (S.modo !== 'piu') return;
+  const ps = parole(), g = giroValido(); if (!g) return;
+  g.i++;
+  if (g.i > ps.length) { g.i = 0; if (S.mescola) g.ordine = mescolati(ps.length); }   // dopo «Fine» si ricomincia
+  save(); aggiorna(true);
+}
+function nascondi() {
+  if (!attivo) return;
+  attivo = false; tieni.annulla();
+  palco.classList.remove('on'); palco.setAttribute('aria-hidden', 'true');
+  $('themeColor').content = '#141C2F';
+  dormi(); renderInfo(); anteprima();
+}
+function esci() {
+  if (spinto && location.hash === '#mostra') { spinto = false; history.back(); }   // popstate chiude
+  else nascondi();
+}
+window.addEventListener('popstate', () => { if (location.hash !== '#mostra') { spinto = false; nascondi(); } });
+if (location.hash === '#mostra') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+
+/* Lo schermo resta acceso finché si vede la scritta (dove il telefono lo permette) */
+async function sveglia() { try { if (attivo && 'wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; } }
+function dormi() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+document.addEventListener('visibilitychange', () => { if (attivo && document.visibilityState === 'visible') sveglia(); });
+
+/* Tocchi sullo schermo nero:
+   - doppio tocco → parola dopo (con «Più parole»);
+   - tieni premuto 0,7 s → torni a scrivere.
+   Le dita che toccano il bordo (chi tiene il telefono in fronte) non contano. */
+const BORDO = 28;
+const tieni = (() => {
+  const dita = new Map(); let timer = null, anello = null, fatto = false, ultimo = null;
+  const sulBordo = e => e.clientX < BORDO || e.clientY < BORDO || e.clientX > innerWidth - BORDO || e.clientY > innerHeight - BORDO;
+  function annulla() { clearTimeout(timer); clearTimeout(anello); timer = anello = null; palco.classList.remove('holding'); }
+  palco.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  palco.addEventListener('contextmenu', e => e.preventDefault());
+  palco.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (!attivo || sulBordo(e)) return;
+    dita.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
+    if (dita.size > 1) { annulla(); return; }
+    fatto = false;
+    anello = setTimeout(() => palco.classList.add('holding'), 150);   // l'anello solo se si tiene davvero (i tocchi non lo fanno lampeggiare)
+    timer = setTimeout(() => { timer = null; fatto = true; palco.classList.remove('holding'); ultimo = null; esci(); }, 700);
+  });
+  function su(e, annullato) {
+    const d = dita.get(e.pointerId); if (!d) return;
+    dita.delete(e.pointerId);
+    if (fatto) { if (!dita.size) fatto = false; return; }
+    annulla();
+    if (annullato || dita.size) return;
+    const ora = performance.now();
+    if (ora - d.t > 350 || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 30) { ultimo = null; return; }
+    if (ultimo && ora - ultimo.t < 400 && Math.hypot(e.clientX - ultimo.x, e.clientY - ultimo.y) < 90) { ultimo = null; avanti(); }
+    else ultimo = { x: e.clientX, y: e.clientY, t: ora };
+  }
+  palco.addEventListener('pointerup', e => su(e, false));
+  palco.addEventListener('pointercancel', e => su(e, true));
+  palco.addEventListener('pointermove', e => { const d = dita.get(e.pointerId); if (d && timer && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 30) annulla(); });
+  return { annulla };
+})();
+document.addEventListener('keydown', e => {
+  if (!attivo) return;
+  if (e.key === 'Escape') { e.preventDefault(); esci(); }
+  else if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); avanti(); }
+});
+
+/* ---------- Pulsanti ---------- */
+$('goBtn').onclick = () => mostra(false);
+$('riprendiBtn').onclick = () => mostra(true);
+
+function renderOpzioni() { document.querySelectorAll('.opz').forEach(b => b.setAttribute('aria-pressed', String(!!S[b.dataset.k]))); }
+$('optBtn').onclick = () => { testo.blur(); renderOpzioni(); $('opzioni').hidden = false; };
+$('opzioni').addEventListener('click', e => {
+  const b = e.target.closest('.opz');
+  if (b) { S[b.dataset.k] = !S[b.dataset.k]; save(); renderOpzioni(); anteprima(); return; }
+  if (e.target === $('opzioni') || e.target.closest('#fattoBtn')) $('opzioni').hidden = true;
+});
+
+/* Reset: cancella quello che è scritto (serve un secondo tocco entro 3 secondi); le opzioni restano */
+let resetT = null;
+$('resetBtn').onclick = () => {
+  const b = $('resetBtn');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'Sicuro? Tocca ancora';
+    clearTimeout(resetT); resetT = setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Reset'; }, 3000);
+    return;
+  }
+  clearTimeout(resetT); b.classList.remove('armed'); b.textContent = 'Reset';
+  S.una = ''; S.piu = ''; S.giro = null; save(); renderModo(); toast('Tutto cancellato');
+};
+
+let toastT = null;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1800); }
+
+/* Misure nuove quando cambia lo schermo o arriva il font */
+let rz = null;
+function rimisura() { svuotaCache(); anteprima(); if (attivo) aggiorna(); }
+window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(rimisura, 60); });
+if (document.fonts && document.fonts.load) {
+  document.fonts.load(`800 ${REF}px 'Archivo IF'`).then(rimisura, () => {});
+  if (document.fonts.ready) document.fonts.ready.then(rimisura, () => {});
+}
+
+renderModo();
+</script>
+<script src="../../comune/app.js"></script>
+</body>
+</html>

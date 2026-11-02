@@ -35,7 +35,7 @@ self.GIOCHI = {
     { id: 'carte', nome: 'Carte', descrizione: 'Segnapunti e monete per le serate a carte', simbolo: 'carte' },
     { id: 'contapunti', nome: 'Contapunti', descrizione: 'Schermo diviso a colori: un tocco, un punto', simbolo: 'punti', diretto: true, etichetta: '2, 3 o 4 squadre' },
     { id: 'giochi', nome: 'Giochi', descrizione: 'Impostore, Lupus, Perudo, Hex ad Aste, Claude\u00A0Machine, MENTAL, ALIBI e Traccia', simbolo: 'maschera' },
-    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo e chi inizia', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
+    { id: 'altro', nome: 'Altro', descrizione: 'Poker, giochi da tavolo, chi inizia e la scritta in fronte', simbolo: 'dado', unita: ['app/gioco', 'app/giochi'] },
     { id: 'expansions', nome: 'Expansions', descrizione: 'Espansioni nostre per i giochi da tavolo che abbiamo già', simbolo: 'fascicolo', unita: ['espansione', 'espansioni'] }
   ],
   giochi: [
@@ -57,6 +57,7 @@ self.GIOCHI = {
     { categoria: 'altro', nome: 'Poker', descrizione: 'Le fiches sul telefono: ognuno entra col codice del tavolo', link: 'giochi/poker/', colore: '#E8102A', extra: ['comune/lib/mqtt.min.js', 'comune/lib/qrcode.js'], dati: [{ poker: true }] },
     { categoria: 'altro', nome: '7 Wonders', descrizione: 'Punti finali di tutti, scienza compresa, con storico', link: 'giochi/7wonders/', colore: '#FF8A70', dati: ['giochidisimo:7wonders'] },
     { categoria: 'altro', nome: 'Chi inizia', descrizione: 'Un dito a testa: chi inizia, squadre o ordine di gioco', link: 'giochi/chiinizia/', colore: '#3A78E0', dati: ['gds-chiinizia'] },
+    { categoria: 'altro', nome: 'In fronte', descrizione: 'Scritta gigante in orizzontale, da mettere in fronte a chi deve indovinare', link: 'giochi/infronte/', colore: '#C3CAD5', extra: ['giochi/infronte/font/archivo.woff2'], dati: ['gds-infronte'] },
     { categoria: 'expansions', nome: 'Secret Hitler: Dossier', descrizione: 'Ruoli dal telefono, indizi logici veri, poteri liberali e voltagabbana', link: 'giochi/dossier/', colore: '#08E8DE', dati: ['gds-dossier', 'gds-dossier-partita', 'gds-giocatori'] },
     { categoria: 'expansions', nome: 'Camel Up: Economics', descrizione: 'Piramide digitale, spionaggio sui dadi e Borsa sul vincitore di tappa', link: 'giochi/camelup/', colore: '#C8A273', extra: ['giochi/camelup/motore.js'], dati: ['gds-camelup', 'gds-camelup-partita', 'gds-giocatori'] },
     { categoria: 'expansions', nome: 'Nome\u00A0in\u00A0Codice: Double\u00A0Agents', descrizione: 'Due mappe segrete, doppi agenti contesi, intercettazioni e messaggi criptati', link: 'giochi/codenames/', colore: '#B7E449', extra: ['giochi/codenames/motore.js'], dati: ['gds-codenames', 'gds-codenames-partita'] },
