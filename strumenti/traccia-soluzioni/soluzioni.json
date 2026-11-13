@@ -1,0 +1,765 @@
+{
+ "f1": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "URRU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f2": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RUURDDRUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f3": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RDRDLDRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f4": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RURURU",
+   "URURRU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "f5": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "LUULDDLUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f6": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RUURDRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f7": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RDRDDR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "f8": {
+  "area": "frecce",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRULURRUUR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n1": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "URUR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n2": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "RURU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n3": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "URRDRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n4": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "RUULURRDDDRUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n5": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRULLURRRU",
+   "URRDRUULLLURRR"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "n6": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "RURDRRULULLLURRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "n7": {
+  "area": "numeri",
+  "superficie": "piano",
+  "soluzioni": [
+   "UURULURRDRDDLLDRRRUUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l1": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "RULURR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l2": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "DDLULD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l3": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRRULLLUURDRUR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l4": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "RDLDDRURRD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l5": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "LURUULDLDLUU",
+   "LURUULDLDDLUUU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "l6": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRULLURURRDDDRUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "l7": {
+  "area": "lati",
+  "superficie": "piano",
+  "soluzioni": [
+   "LLURRULURULLDDLDDLUUURUL"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s1": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URRRU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s2": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URURDDRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s3": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URDRURULLLURRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s4": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URDRURULLLURRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s5": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RDLDRDRUURDD",
+   "RDLDRDRUUURDDD"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "s6": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RUUURDDDRUUUR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "s7": {
+  "area": "specchi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URDRURRULLULDLUURRRDRU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co1": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "URURDRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co2": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "URURDRDRUULULURR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co3": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "ULURURDRUULL"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co4": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "DRDRRDLDRDRURD",
+   "DDRRRDLDRDRURD"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "co5": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "UUUURDRRULURRDRU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co6": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRRULLLURULUURDRUULL"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "co7": {
+  "area": "contorni",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRRULLLUURRURDDRDDRURULURUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc1": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRRULURU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc2": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URULUURRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc3": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "LULUUURDDRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc4": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRDRURDRDDDLDR",
+   "DRURDRURDRDDDLDR"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "oc5": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "URRULLURULURRRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc6": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RURURULLLURRURULLDLU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "oc7": {
+  "area": "occhi",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRUUURRDDLDRRRULUURUULLURR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "c1": {
+  "area": "cilindro",
+  "superficie": "cilindro",
+  "soluzioni": [
+   "LLLURRRULLLUR"
+  ],
+  "numero_soluzioni_totali": 146,
+  "stella": 0
+ },
+ "c2": {
+  "area": "cilindro",
+  "superficie": "cilindro",
+  "soluzioni": [
+   "UULDDLUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "c3": {
+  "area": "cilindro",
+  "superficie": "cilindro",
+  "soluzioni": [
+   "RURDRURUULDLUL"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "c4": {
+  "area": "cilindro",
+  "superficie": "cilindro",
+  "soluzioni": [
+   "UUURRDDLDRRUUU",
+   "UUURDDRDRUUU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "c5": {
+  "area": "cilindro",
+  "superficie": "cilindro",
+  "soluzioni": [
+   "RULUUURDDRDDRUUULU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "m1": {
+  "area": "mobius",
+  "superficie": "mobius",
+  "soluzioni": [
+   "ULLLDRRRULL"
+  ],
+  "numero_soluzioni_totali": 47,
+  "stella": 0
+ },
+ "m2": {
+  "area": "mobius",
+  "superficie": "mobius",
+  "soluzioni": [
+   "UUULLUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "m3": {
+  "area": "mobius",
+  "superficie": "mobius",
+  "soluzioni": [
+   "ULLULDLLLLDRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "m4": {
+  "area": "mobius",
+  "superficie": "mobius",
+  "soluzioni": [
+   "RULUURDRDRUUU",
+   "UUURDRDRUULUR"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "m5": {
+  "area": "mobius",
+  "superficie": "mobius",
+  "soluzioni": [
+   "ULULLURULLDLLLD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "sf1": {
+  "area": "sfera",
+  "superficie": "sfera",
+  "soluzioni": [
+   "LDLU",
+   "LULLLU",
+   "LLLU"
+  ],
+  "numero_soluzioni_totali": 3,
+  "stella": 0
+ },
+ "sf2": {
+  "area": "sfera",
+  "superficie": "sfera",
+  "soluzioni": [
+   "LLRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "sf3": {
+  "area": "sfera",
+  "superficie": "sfera",
+  "soluzioni": [
+   "LLDLRRDDURDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "sf4": {
+  "area": "sfera",
+  "superficie": "sfera",
+  "soluzioni": [
+   "LDLRUULD",
+   "RULLDDLU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "sf5": {
+  "area": "sfera",
+  "superficie": "sfera",
+  "soluzioni": [
+   "ULULUULDDDDDRUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "t1": {
+  "area": "toro",
+  "superficie": "toro",
+  "soluzioni": [
+   "LLL"
+  ],
+  "numero_soluzioni_totali": 242,
+  "stella": 0
+ },
+ "t2": {
+  "area": "toro",
+  "superficie": "toro",
+  "soluzioni": [
+   "LLUURRDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "t3": {
+  "area": "toro",
+  "superficie": "toro",
+  "soluzioni": [
+   "RRULULDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "t4": {
+  "area": "toro",
+  "superficie": "toro",
+  "soluzioni": [
+   "LLLDRRDRUU",
+   "LDDRURRULL"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "t5": {
+  "area": "toro",
+  "superficie": "toro",
+  "soluzioni": [
+   "RRUURDDDLLDLUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "k1": {
+  "area": "klein",
+  "superficie": "klein",
+  "soluzioni": [
+   "LLL"
+  ],
+  "numero_soluzioni_totali": 250,
+  "stella": 0
+ },
+ "k2": {
+  "area": "klein",
+  "superficie": "klein",
+  "soluzioni": [
+   "LUULDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "k3": {
+  "area": "klein",
+  "superficie": "klein",
+  "soluzioni": [
+   "RDDDDRDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "k4": {
+  "area": "klein",
+  "superficie": "klein",
+  "soluzioni": [
+   "LDDLULUL",
+   "RDDRRULU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "k5": {
+  "area": "klein",
+  "superficie": "klein",
+  "soluzioni": [
+   "LLLURURULLDRDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "r1": {
+  "area": "rp2",
+  "superficie": "rp2",
+  "soluzioni": [
+   "LLLLLL"
+  ],
+  "numero_soluzioni_totali": 148,
+  "stella": 0
+ },
+ "r2": {
+  "area": "rp2",
+  "superficie": "rp2",
+  "soluzioni": [
+   "RRULURDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "r3": {
+  "area": "rp2",
+  "superficie": "rp2",
+  "soluzioni": [
+   "UUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "r4": {
+  "area": "rp2",
+  "superficie": "rp2",
+  "soluzioni": [
+   "LULDLDLD",
+   "RRRDLDRURU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "r5": {
+  "area": "rp2",
+  "superficie": "rp2",
+  "soluzioni": [
+   "LDDLUULDRRURDD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "bt1": {
+  "area": "bitoro",
+  "superficie": "bitoro",
+  "soluzioni": [
+   "LLLL",
+   "UUUU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 0
+ },
+ "bt2": {
+  "area": "bitoro",
+  "superficie": "bitoro",
+  "soluzioni": [
+   "LLURRD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "bt3": {
+  "area": "bitoro",
+  "superficie": "bitoro",
+  "soluzioni": [
+   "LLLLDDDDRRRRUUUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "bt4": {
+  "area": "bitoro",
+  "superficie": "bitoro",
+  "soluzioni": [
+   "LLDLULLDDDDDRRRRRUUUUU",
+   "LLDLUURRRUULLDDDDDRRUU"
+  ],
+  "numero_soluzioni_totali": 2,
+  "stella": 2
+ },
+ "bt5": {
+  "area": "bitoro",
+  "superficie": "bitoro",
+  "soluzioni": [
+   "LLDLUURRRUULLDDRDLDDRRUU"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "x1": {
+  "area": "segreto",
+  "superficie": "piano",
+  "soluzioni": [
+   "UUURDDRURDDRUUULUR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "x2": {
+  "area": "segreto",
+  "superficie": "piano",
+  "soluzioni": [
+   "DRDRRURDDLLLDRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "x3": {
+  "area": "segreto",
+  "superficie": "toro",
+  "soluzioni": [
+   "LLUUURRDLDRD"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "x4": {
+  "area": "segreto",
+  "superficie": "piano",
+  "soluzioni": [
+   "RRRUURURULLLDDLLURULURRRRR"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ },
+ "x5": {
+  "area": "segreto",
+  "superficie": "sfera",
+  "soluzioni": [
+   "LDDRURDRURRURUDL"
+  ],
+  "numero_soluzioni_totali": 1,
+  "stella": 0
+ }
+}

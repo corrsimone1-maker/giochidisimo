@@ -36,6 +36,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 | `giochi/<nome>/index.html` | Una pagina per gioco, autonoma (HTML, CSS e JS nello stesso file). |
 | `giochi/impostore/parole.js`, `numeri.js`, `luoghi.js` | **Parole di Impostore** (in pacchetti), **domande** della variante Numeri e **luoghi** della variante Luoghi. |
 | `giochi/lupus/ruoli.js` | **Ruoli di Lupus**. |
+| `strumenti/traccia-soluzioni/` | Schermate con le soluzioni di tutte le tavole di Traccia (una scheda per area) e `soluzioni.json`. Servono solo a Simo, l'app non le usa. Se una tavola cambia, rifarle. |
 | `giochi/mental/sfide/`, `strumenti/mental.js` e `strumenti/mental-enigmi.js` | **Sfide di MENTAL**, un file per mese, lo strumento che ne prepara di nuove e il catalogo degli enigmi scritti a mano (vedi la sezione MENTAL). |
 | `comune/lib/` | **Librerie esterne copiate nella repo** (`mqtt.min.js` per poker e stanze di Claude Machine, `qrcode.js` per il QR del tavolo), con versione, licenza e impronta nel `LEGGIMI.md`. |
 | `icone/icona.svg` | **Icona dell'app** (asso di cuori con la S, pedone, piramide a tre livelli sospesi, dado, stelle). I PNG si rigenerano con `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node icone/genera.js`; se cambi l'icona, alza anche il `?v=` nei link `icone/…` delle pagine e del manifest. |
