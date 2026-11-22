@@ -23,6 +23,11 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
    tiene la versione vecchia fino a una decina di minuti. Dalla shell `github.io` di solito non si raggiunge.
 7. Rispondi corto: cosa è cambiato e dove si trova nell'app.
 
+**Versione:** in fondo alla home, al centro della riga con «Pulisci tutto» e «Condividi», c'è un «vN» piccolissimo
+(`<span class="ver">` in `index.html`, scritto nell'HTML, non da JavaScript, così si legge anche con WebFetch). **Alzalo di 1
+a ogni modifica pubblicata** (nello stesso commit): serve a Simo, e a te nella verifica del punto 6, per sapere se sul telefono
+è arrivata la versione nuova. Se vedi il numero vecchio, la cache di GitHub non si è ancora aggiornata (fino a una decina di minuti).
+
 ## Struttura
 
 | File | Cosa fa |
