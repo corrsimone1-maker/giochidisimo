@@ -113,6 +113,41 @@ const CLIENT_FINTO = `(() => {
     assert.equal(await a.ev(() => totaliSquadra().domande), 3);
     bene('collaborativa: chi entra si adatta alla stanza, le prove di tutti finiscono su un nastro unico, domande contate insieme');
 
+    // Un telefono ostile (o uno scherzo): chiunque conosca il codice può scrivere sui broker pubblici.
+    // Quello che pubblica non deve finire nella pagina come codice HTML, far girare niente né bloccare le pagine degli altri.
+    const pubblicaOstile = async (pid, obj) => {
+      for (const br of Object.values(brokers)) {
+        const t = `claude-machine/v1/${c}/g/${pid}`, m = JSON.stringify(obj);
+        br.retained.set(t, { m, scade: null, props: null });
+        for (const [id, cl] of br.clients) if ([...cl.subs].some(p => combacia(p, t))) await consegna(cl.page, id, 'msg', t, m);
+      }
+      await pausa(700);
+    };
+    // 1) dati ben formati ma col codice di una prova che contiene HTML (l'unico punto che prima non faceva escape)
+    await pubblicaOstile('ostile1', { n: 5, t: Date.now(), nome: 'Mallory', domande: 1,
+      prove: [{ t: Date.now(), codice: ['<img src=x onerror="window.__xss=1">', 2, 3], esiti: { 0: true } }] });
+    for (const T of [a, b]) {
+      assert.equal(await T.ev(() => window.__xss), undefined, T.nome + ': il codice dell’altro telefono non gira');
+      assert.equal(await T.ev(() => document.querySelectorAll('.nastro img').length), 0, T.nome + ': nessun tag nel registro');
+    }
+    // 2) dati storti di ogni tipo: niente tag, niente blocchi, il nome si vede come testo
+    await pubblicaOstile('ostile2', { n: 99, t: Date.now(), nome: '<b>Zorro</b>', domande: '<img src=x onerror="window.__xss=2">',
+      prove: [{ t: Date.now(), codice: ['<svg onload="window.__xss=3">', 2, 3], esiti: { 0: true, 1: false } },
+              { t: 'x', codice: 'non un array', esiti: 5 }, null, 7] });
+    for (const T of [a, b]) {
+      assert.equal(await T.ev(() => window.__xss), undefined, T.nome + ': nessun codice dell’altro telefono è girato');
+      assert.equal(await T.ev(() => document.querySelectorAll('.nastro img, .nastro svg, .chip b, .chip img').length), 0, T.nome + ': niente tag inseriti');
+      assert.ok(await T.ev(() => [...document.querySelectorAll('.chip')].some(x => x.textContent === '<b>Zorro</b>')), T.nome + ': il nome compare come testo e la pagina si disegna');
+    }
+    assert.ok(await a.ev(() => document.querySelector('.nastro') !== null), 'la pagina funziona ancora');
+    // si tolgono i giocatori di prova (messaggio vuoto = cancellato), se no le loro domande entrano nei conteggi dopo
+    for (const pid of ['ostile1', 'ostile2']) for (const br of Object.values(brokers)) {
+      const t = `claude-machine/v1/${c}/g/${pid}`; br.retained.delete(t);
+      for (const [id, cl] of br.clients) if ([...cl.subs].some(p => combacia(p, t))) await consegna(cl.page, id, 'msg', t, '');
+    }
+    await pausa(400);
+    bene('un telefono ostile non può inserire HTML né codice nelle pagine degli altri, né bloccarle');
+
     // Luca dichiara il codice giusto: fine per tutti e due
     await b.tap('[data-az="soluzione"]');
     for (let i = 0; i < 3; i++) await b.tap(`[data-sol="${i}-${sec[i]}"]`);

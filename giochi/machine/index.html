@@ -295,9 +295,9 @@ const FORME = [
 ];
 const forma = i => `<svg class="forma f-${COLORI[i]}" viewBox="0 0 14 14" aria-label="${COLORI[i]}" role="img">${FORME[i]}</svg>`;
 const testo = s => esc(s).replace(/\{b\}/g, forma(0)).replace(/\{g\}/g, forma(1)).replace(/\{v\}/g, forma(2));
-const codHtml = c => `<span class="cod">${c.map((x, i) => `<span class="c-${COLORI[i]}">${x == null ? '·' : x}</span>`).join('')}</span>`;
+const codHtml = c => `<span class="cod">${c.map((x, i) => `<span class="c-${COLORI[i]}">${x == null ? '·' : esc(x)}</span>`).join('')}</span>`;
 const completo = c => Array.isArray(c) && c.every(x => x >= 1 && x <= 5);
-const pl = (n, uno, tanti) => `${n} ${n === 1 ? uno : tanti}`;
+const pl = (n, uno, tanti) => { n = Number(n) || 0; return `${n} ${n === 1 ? uno : tanti}`; };
 let toastT = null;
 function toast(msg, ms = 2600) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms); }
 
@@ -900,13 +900,44 @@ function suConnessione(mia, L) {
     }, Date.now() - R.meta.t < 5000 ? 0 : 2000);
   }
 }
+/* Tutto quello che arriva dai broker pubblici lo può scrivere chiunque conosca il codice della stanza:
+   si tengono solo i campi che conosciamo, col tipo giusto (numeri, booleani, testi corti, codici da 1 a 5),
+   così niente di strano può finire nelle pagine né rompere i calcoli. */
+const _int = (v, max = 1e9) => (Number.isFinite(v) ? Math.max(0, Math.min(max, Math.trunc(v))) : 0);
+const _cod = v => (Array.isArray(v) ? v.slice(0, 8).map(x => (Number.isInteger(x) && x >= 1 && x <= 5 ? x : null)) : []);
+const _ids = v => (Array.isArray(v) ? v.slice(0, 50).filter(x => typeof x === 'string' && x.length <= 40) : []);
+function pulisciIo(g) {
+  if (!g || typeof g !== 'object' || Array.isArray(g)) return null;
+  const o = { n: _int(g.n), t: _int(g.t, 1e15), nome: typeof g.nome === 'string' ? g.nome.slice(0, 18) : '', domande: _int(g.domande, 1e6) };
+  if (g.r !== undefined) o.r = Math.max(1, _int(g.r, 1000));
+  if (g.fatto !== undefined) o.fatto = g.fatto === true;
+  if (g.dich && typeof g.dich === 'object') {
+    o.dich = { codice: _cod(g.dich.codice) };
+    if (g.dich.r !== undefined) o.dich.r = _int(g.dich.r, 1000);
+    if (g.dich.ok !== undefined) o.dich.ok = g.dich.ok === true;
+    if (g.dich.t !== undefined) o.dich.t = _int(g.dich.t, 1e15);
+  } else o.dich = null;
+  if (g.avvio && typeof g.avvio === 'object') o.avvio = { t: _int(g.avvio.t, 1e15), giocatori: _ids(g.avvio.giocatori) };
+  if (g.tolti !== undefined) o.tolti = _ids(g.tolti);
+  if (Array.isArray(g.prove)) {
+    o.prove = g.prove.slice(0, 100).filter(x => x && typeof x === 'object').map(x => {
+      const esiti = {};
+      if (x.esiti && typeof x.esiti === 'object') for (let i = 0; i < 10; i++) if (x.esiti[i] !== undefined) esiti[i] = x.esiti[i] === true;
+      const p = { t: _int(x.t, 1e15), codice: _cod(x.codice), esiti };
+      if (x.aperta) p.aperta = true;
+      return p;
+    });
+  }
+  return o;
+}
 function suMessaggio(L, sotto, txt) {
   if (!R || !S || !S.st || L.client == null) return;
   if (sotto === 'meta') {
     if (!txt) return;
     let m; try { m = JSON.parse(txt); } catch (e) { return; }
+    if (!m || typeof m !== 'object') return;
     if (m.chiusa) { L.lapideVista = true; stanzaChiusa(m); return; }
-    if (!m.puzzle || CM.controlla(m.puzzle)) return;
+    if (!m || typeof m !== 'object' || !m.puzzle || !LIV[m.livello] || (m.modo !== 'coop' && m.modo !== 'versus') || CM.controlla(m.puzzle)) return;
     L.metaVisto = true;
     if (!R.meta || R.meta.t !== m.t) R.meta = m;
     if (!S.st.puzzle) { S.st.puzzle = m.puzzle; }
@@ -922,7 +953,8 @@ function suMessaggio(L, sotto, txt) {
   if (sotto.startsWith('g/')) {
     const pid = sotto.slice(2);
     if (!txt) { if (pid !== S.st.pid) delete R.giocatori[pid]; disegnaPresto(); return; }
-    let g; try { g = JSON.parse(txt); } catch (e) { return; }
+    let g; try { g = pulisciIo(JSON.parse(txt)); } catch (e) { return; }
+    if (!g) return;
     L.giocatori.add(pid);
     if (pid === S.st.pid) { adottaMio(g); return; }
     const prima = R.giocatori[pid];
