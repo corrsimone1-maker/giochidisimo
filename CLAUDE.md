@@ -25,7 +25,7 @@ e vuole che tu faccia **tutto da solo**: modifica, prova, commit e push. Lui non
 
 **Versione:** in fondo alla home, al centro della riga con «Pulisci tutto» e «Condividi», c'è un «vN» piccolissimo
 (`<span class="ver">` in `index.html`, scritto nell'HTML, non da JavaScript, così si legge anche con WebFetch). **Alzalo di 1
-a ogni modifica pubblicata** (nello stesso commit): serve a Simo, e a te nella verifica del punto 6, per sapere se sul telefono
+a ogni modifica pubblicata** (nello stesso commit; è partito dal numero dei commit della repo: 49 il 23/11/2026, quindi v50 con quello che l'ha introdotto: una stima, non va tenuta precisa): serve a Simo, e a te nella verifica del punto 6, per sapere se sul telefono
 è arrivata la versione nuova. Se vedi il numero vecchio, la cache di GitHub non si è ancora aggiornata (fino a una decina di minuti).
 
 ## Struttura
